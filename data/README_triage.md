@@ -1,7 +1,8 @@
 # Apertus triage pipeline
 
-Assigns **Impact**, **Urgency**, **Priority**, a continuous **priority score
-(0–1)**, and a **top-10 similar-ticket ranking** to all 20,000 tickets.
+Assigns **Work type**, **Impact**, **Urgency**, **Priority**, a continuous
+**priority score (0–1)**, and a **top-10 similar-ticket ranking** to all 20,000
+tickets.
 
 ## Why this is not a supervised model
 
@@ -30,9 +31,9 @@ Apertus 70B          ->  deterministic rubric  ->  matrix lookup
    evidence JSON             Impact/Urgency            Priority + score
 ```
 
-The model never names an Impact or Urgency. It only reports observable facts
-(scope, outage extent, workaround, regulatory exposure, deadline, request-vs-
-incident). All judgement lives in `rubric.py` as readable tables.
+The model never names an Impact, Urgency or Priority. It reports observable
+facts only — work type, scope, outage extent, workaround, regulatory exposure
+and deadline. All judgement lives in `rubric.py` as readable tables.
 
 **20,000 rows cost 173 extractions.** The corpus collapses to 173 distinct
 (Summary, Description, Service) variants; results are joined back onto every
@@ -71,9 +72,26 @@ Failed variants get one cool-down retry pass before the run gives up.
 
 ### `priority_score` — 0 to 1
 
-The categorical priority fixes a band; severity sub-signals order tickets
-*within* it. Sorting 20,000 tickets by this number can never contradict the
-graded matrix.
+The categorical priority fixes a band; three factors order tickets *within* it.
+Sorting 20,000 tickets by this number can never contradict the graded matrix.
+
+| Factor | Weight | What it measures |
+|---|---|---|
+| Severity | 0.60 | critical service, regulatory/security, no workaround, full outage, broad scope, hard deadline |
+| **Age** | 0.25 | how long an *unresolved* ticket has been waiting, ramping to full at 120 days |
+| **Difficulty** | 0.15 | how long the ticket's peer group (same template + service) historically took to resolve |
+
+Age only applies to unresolved tickets — a closed ticket has no waiting cost.
+It is measured from the corpus's own latest `Created date`, not from today, so
+results are reproducible rather than drifting.
+
+**The difficulty factor carries a noise guard.** Before use, it measures how
+much of the variance in resolution time is explained by peer group (η²). Below
+a 0.01 threshold it switches itself off and redistributes its weight, rather
+than injecting random jitter into the ranking. On this corpus it stays off:
+resolution time is a uniform random draw (KS test against Uniform[1,21] gives
+p=0.32, η²≈0.0005), exactly like Priority/Urgency/Impact. On real Jira data or
+the challenge set the guard passes and the factor activates automatically.
 
 | Priority | Band |
 |---|---|
@@ -82,10 +100,6 @@ graded matrix.
 | medium | 0.40–0.60 |
 | high | 0.60–0.80 |
 | highest | 0.80–1.00 |
-
-Within-band position is a weighted blend: critical service (0.25), regulatory
-or security exposure (0.25), no workaround (0.20), full outage (0.15), broad
-scope (0.10), hard deadline (0.05).
 
 `confidence` is reported **separately** (agreement across the 3 votes).
 Severity and certainty are different questions and mixing them into one number
@@ -99,16 +113,24 @@ arbitrary rows all scoring 1.000. Similarity is therefore **faceted**:
 
 | Facet | Weight |
 |---|---|
-| TF-IDF text cosine | 0.30 |
+| TF-IDF text cosine | 0.35 |
 | Service (1.0 exact, 0.3 same criticality) | 0.25 |
 | Scenario template | 0.15 |
 | Work type | 0.10 |
 | Service team | 0.10 |
 | Business entity | 0.05 |
-| Severity proximity | 0.05 |
 
 Weights sum to 1.0, so the score is an honest absolute scale — a ticket with no
 good match genuinely scores low rather than being rank-normalised upward.
+
+**Similarity carries no priority or severity term.** It is measured on content
+only. Priority is a conclusion drawn *about* a ticket, not a description of it,
+and two identical faults are equally good precedent regardless of how they were
+triaged. Excluding it also keeps the direction of information one-way —
+similarity can inform priority reasoning without priority having already shaped
+similarity — and stops the age component of `priority_score` leaking in, which
+would otherwise make two identical tickets look less alike purely for having
+been raised months apart.
 
 Neighbours are returned **one per facet signature** (864 exist) so the list is
 diverse rather than ten copies of the same ticket. Two honesty columns come
@@ -126,13 +148,23 @@ with each neighbour:
 
 | File | Contents |
 |---|---|
-| `jira_triaged.csv` | all 20k rows with Impact/Urgency/Priority, score, confidence, evidence |
+| `jira_triaged.csv` | all 20k rows: Work type, Impact/Urgency/Priority, score, its three factors, confidence |
 | `similarity_neighbours.csv` | per ticket: 10 neighbours, rank, similarity, tie-group size |
 | `decision_audit.csv` | **every distinct decision the pipeline can make** — 173 rows |
 | `similarity_signatures.csv` | the 864 facet signatures and their representatives |
 
 `decision_audit.csv` is the review artefact: the entire decision surface fits on
-one page, so the whole policy can be checked by hand rather than trusted.
+one page, so the whole policy can be checked by hand rather than trusted. It
+carries the full `Description` text, so each decision can be read against its
+actual source rather than a model-generated quote.
+
+### Why the schema is enums-only
+
+The extraction schema contains only enums and booleans. A free-text `evidence`
+field was tried and removed: under vLLM guided decoding it intermittently ran
+away (one response emitted 305 lines) or truncated mid-string, breaking the
+JSON on roughly one variant in ten. The constrained fields have never failed a
+single call. If you extend the schema, keep it constrained.
 
 ## Validation
 
@@ -154,10 +186,23 @@ the model had collapsed to one class for all 20,000 rows. Both scripts, their
 model directories and the `Data_Cleaning.py` chain that orchestrated them have
 been removed; `triage/` replaces them.
 
-`Work type` **is** trustworthy, though — the README only randomises
-Priority/Urgency/Impact. So each run reports agreement between the extracted
-`is_request` and the recorded `Work type`. That is the one honest accuracy
-number available here, and it is a genuine check on the extraction step.
+`Work type` **is** trustworthy, though — the challenge README only randomises
+Priority/Urgency/Impact. So `work_type` is a first-class predicted field:
+Apertus assigns `Incident` or `Service Request` from the description, exactly
+as it does for the Impact and Urgency inputs, and each run prints accuracy plus
+a confusion matrix against the recorded value. That is the one honest accuracy
+number available here.
+
+**Ceiling is ~93.9%, and the remaining 6.1% is a labelling artefact.** All
+residual errors are one template, `Email notification received for <SVC>`
+(1,211 rows). Its body reads *"An external party sent an email warning… 
+references degraded service quality, a delayed feed, or a possible outage"* —
+and it is labelled `Service Request`. The near-identical `External email
+warning received for <SVC>` (4,212 rows), same service, same generic body, is
+labelled `Incident`. The two are paraphrases with opposite labels, so no
+semantic rule separates them. A tie-break on "warning" vs "notification" was
+tried and did not move the model, and was removed rather than left in to
+misfire on unseen text. The other ten templates are all correct.
 
 ### A note on prompting an open model
 

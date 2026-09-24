@@ -13,6 +13,8 @@ from __future__ import annotations
 import argparse
 import time
 
+import pandas as pd
+
 from triage import apply, config, extract, similarity
 
 
@@ -62,9 +64,13 @@ def main() -> None:
     # Work type is NOT randomised in this dataset (only Priority/Urgency/Impact
     # are), so it is the one field with usable ground truth -- which makes it
     # the only honest accuracy check available on the extraction step.
-    truth = frame["Work type"].eq("Service Request")
-    agreement = (frame["ev_is_request"] == truth).mean()
-    print(f"  is_request vs recorded Work type: {agreement:.3f} agreement")
+    correct = frame["work_type_pred"].eq(frame["Work type"])
+    print(f"  work_type accuracy vs recorded Work type: {correct.mean():.3f}")
+    confusion = pd.crosstab(frame["work_type_pred"], frame["Work type"])
+    print("  " + confusion.to_string().replace("\n", "\n  "))
+
+    distinct = frame["priority_score"].nunique()
+    print(f"  distinct priority_score values: {distinct:,} (was 7 before soft factors)")
 
     print("[4/4] Building similarity neighbours")
     neighbours, signatures = similarity.attach_neighbours(frame, top_k=args.top_k)

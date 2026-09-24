@@ -3,9 +3,12 @@
 Pure text similarity is degenerate on this dataset: 64% of rows sit in groups
 of 100+ byte-identical tickets (largest group 4,212), so a text-only top-10
 returns ten arbitrary rows all scoring 1.000. Similarity is therefore computed
-over *facets* -- text, service, scenario, work type, team, entity, severity --
-and neighbours are returned one-per-facet-signature so the list is diverse
-rather than ten copies of the same ticket.
+over *facets* of ticket content -- text, service, scenario, work type, team and
+entity -- and neighbours are returned one-per-facet-signature so the list is
+diverse rather than ten copies of the same ticket.
+
+Nothing here reads Impact, Urgency or Priority: similarity describes what a
+ticket *is*, not what was concluded about it.
 """
 
 from __future__ import annotations
@@ -17,14 +20,23 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from . import config
 
 # Weights sum to 1.0, so the composite score is directly interpretable on 0..1.
+#
+# Similarity is deliberately measured on ticket CONTENT only -- it carries no
+# priority or severity term. Two reasons:
+#   1. Priority is a conclusion drawn about a ticket, not a description of it.
+#      Retrieval exists to find precedent for how a problem was handled, and
+#      two identical faults are equally good precedent whoever triaged them.
+#   2. Keeping it out prevents circularity: similarity can now feed priority
+#      reasoning without priority having already fed similarity. It also stops
+#      the age term in priority_score leaking in, which would make two
+#      identical tickets look less alike purely for being raised months apart.
 SIMILARITY_WEIGHTS = {
-    "text": 0.30,
+    "text": 0.35,
     "service": 0.25,
     "template": 0.15,
     "work_type": 0.10,
     "team": 0.10,
     "entity": 0.05,
-    "severity": 0.05,
 }
 
 # Partial credit when two different services share a criticality rating.
@@ -57,7 +69,6 @@ def build_signatures(frame: pd.DataFrame) -> pd.DataFrame:
         tie_group_size=("ticket_id", "size"),
         n_with_resolution=("has_resolution_text", "sum"),
         text=("sim_text", "first"),
-        priority_score=("priority_score", "first"),
         service_is_critical=("service_is_critical", "first"),
     ).reset_index()
 
@@ -90,9 +101,6 @@ def similarity_matrix(signatures: pd.DataFrame) -> np.ndarray:
     # criticality still carries real triage signal, so it gets partial credit.
     service_sim = np.maximum(service_exact, same_class * SERVICE_CLASS_CREDIT)
 
-    score = signatures["priority_score"].to_numpy(dtype=np.float32)
-    severity_sim = 1.0 - np.abs(score[:, None] - score[None, :])
-
     components = {
         "text": text_sim,
         "service": service_sim,
@@ -100,7 +108,6 @@ def similarity_matrix(signatures: pd.DataFrame) -> np.ndarray:
         "work_type": _equality_matrix(signatures["Work type"]),
         "team": _equality_matrix(signatures["team"]),
         "entity": _equality_matrix(signatures["entity"]),
-        "severity": severity_sim,
     }
 
     total = np.zeros_like(text_sim)

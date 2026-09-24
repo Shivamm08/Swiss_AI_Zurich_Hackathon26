@@ -79,7 +79,7 @@ class ApertusClient:
         schema_name: str = "evidence",
         temperature: float = 0.0,
         seed: int | None = None,
-        max_tokens: int = 400,
+        max_tokens: int = 300,
     ) -> dict:
         """One schema-constrained completion, returned as a parsed dict."""
         payload = {
@@ -107,10 +107,18 @@ class ApertusClient:
             content = raw["choices"][0]["message"]["content"]
         except (KeyError, IndexError) as exc:
             raise ApertusError(f"Unexpected response shape: {raw}") from exc
+        # strict=False tolerates raw control characters, which the guided
+        # decoder occasionally emits inside a long string value.
         try:
-            return json.loads(content)
-        except json.JSONDecodeError as exc:
-            raise ApertusError(f"Model did not return JSON: {content[:300]}") from exc
+            return json.loads(content, strict=False)
+        except json.JSONDecodeError:
+            cleaned = "".join(c if c >= " " else " " for c in content)
+            try:
+                return json.loads(cleaned, strict=False)
+            except json.JSONDecodeError as exc:
+                raise ApertusError(
+                    f"Model did not return JSON: {content[:300]}"
+                ) from exc
 
     def _post(self, path: str, payload: dict) -> dict:
         body = json.dumps(payload).encode("utf-8")

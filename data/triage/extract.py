@@ -84,9 +84,6 @@ def _extract_one(client: ApertusClient, variant: dict) -> dict:
         evidence[field] = value
         agreements.append(share)
 
-    # Keep the longest quote offered; the short ones tend to be fragments.
-    evidence["evidence"] = max((s.get("evidence", "") for s in samples), key=len)
-
     return {
         "variant_id": variant["variant_id"],
         "evidence": evidence,

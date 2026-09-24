@@ -1,5 +1,11 @@
 """Evidence schema extracted by Apertus, plus the ordinal vocabularies.
 
+The schema is deliberately enums-and-booleans only. A free-text field was
+tried and removed: under vLLM guided decoding it intermittently ran away
+(hundreds of newlines) or truncated mid-string, breaking the JSON. The
+constrained fields have never failed. Source text for auditing comes from the
+corpus itself, which is more trustworthy than a model-generated quote anyway.
+
 Only rubric-relevant facts are extracted. The model never names an Impact,
 Urgency or Priority itself -- that mapping lives in ``rubric.py`` so it stays
 deterministic and auditable.
@@ -14,20 +20,34 @@ SCOPE = ("individual", "team", "one_entity", "multi_entity", "external_counterpa
 OUTAGE = ("none", "partial_degradation", "full_unavailability")
 WORKAROUND = ("none", "difficult", "easy", "not_applicable")
 DEADLINE = ("none", "soft", "hard")
+# Work type is a first-class predicted field, using the dataset's own vocabulary.
+WORK_TYPE = ("Incident", "Service Request")
 
 # Fields decided by majority vote across N_VOTES samples.
 VOTED_FIELDS = (
+    "work_type",
     "scope",
     "outage_extent",
     "workaround",
     "regulatory_or_security",
     "deadline_pressure",
-    "is_request",
 )
 
 EVIDENCE_SCHEMA = {
     "type": "object",
     "properties": {
+        "work_type": {
+            "type": "string",
+            "enum": list(WORK_TYPE),
+            "description": (
+                "'Incident' when an IT service is interrupted, degraded, "
+                "erroring, delayed or behaving unexpectedly -- including "
+                "monitoring alerts and third-party warnings about a service. "
+                "'Service Request' when a user asks for something to be "
+                "provided or withdrawn (access, licence, provisioning, "
+                "information) and nothing is broken."
+            ),
+        },
         "scope": {
             "type": "string",
             "enum": list(SCOPE),
@@ -73,30 +93,14 @@ EVIDENCE_SCHEMA = {
                 "'none' no time pressure stated."
             ),
         },
-        "is_request": {
-            "type": "boolean",
-            "description": (
-                "True if this is really a service request (access, licence, "
-                "provisioning) rather than something being broken. Judge the "
-                "body, not the title -- titles are misleading on purpose."
-            ),
-        },
-        "evidence": {
-            "type": "string",
-            "description": (
-                "One short verbatim quote from the ticket supporting the "
-                "assessment. Empty string if the ticket states nothing concrete."
-            ),
-        },
     },
     "required": [
+        "work_type",
         "scope",
         "outage_extent",
         "workaround",
         "regulatory_or_security",
         "deadline_pressure",
-        "is_request",
-        "evidence",
     ],
     "additionalProperties": False,
 }
@@ -105,18 +109,24 @@ SYSTEM_PROMPT = (
     "You are an experienced L2 IT service desk agent at a pan-European asset "
     "manager. You read a Jira ticket and report the observable facts needed to "
     "triage it. Work through the steps in order.\n\n"
-    "STEP 1 - Is something broken, or is someone asking for something new?\n"
-    "  INCIDENT (is_request=false): a monitoring alert fired, an error or "
-    "delay occurred, a third party sent a warning, a user reported a "
-    "disruption, or the ticket text is broken/unclear about a fault.\n"
-    "  REQUEST (is_request=true): ONLY when someone asks to be given or "
-    "removed something -- a licence, an account, access rights, a "
-    "provisioning action. If nobody is asking for an entitlement, it is not "
-    "a request.\n"
-    "  Judge this from the description body. Titles are misleading on purpose.\n\n"
+    "STEP 1 - work_type. Is something broken, or is someone asking for "
+    "something?\n"
+    "  'Incident': an IT service is interrupted, degraded, erroring, delayed "
+    "or behaving unexpectedly. Monitoring alerts, third-party warnings about "
+    "a service, and reported disruptions are all Incidents.\n"
+    "  'Service Request': someone asks for something to be provided or "
+    "withdrawn -- a licence, an account, access rights, a provisioning "
+    "action, or information. Nothing is broken.\n"
+    "  Judge this from the description body. Titles are misleading on purpose.\n"
+    "  MALFORMED TICKETS: some tickets are unclear, incomplete or misrouted "
+    "and report no fault at all. Do not default these to Incident. Classify "
+    "them by the workflow the text says they deviate from: a malformed "
+    "'incident note' is still an 'Incident', whereas text that does not match "
+    "the expected 'service request pattern', or that is a general/unclear "
+    "enquiry, is a 'Service Request' to be redirected or rejected.\n\n"
     "STEP 2 - outage_extent. This follows directly from Step 1.\n"
-    "  If REQUEST: nothing is down. Use 'none'.\n"
-    "  If INCIDENT: something IS wrong, so NEVER use 'none'.\n"
+    "  If Service Request: nothing is down. Use 'none'.\n"
+    "  If Incident: something IS wrong, so NEVER use 'none'.\n"
     "    'full_unavailability' only when the text says the service is "
     "completely unusable, fully down, or totally blocked.\n"
     "    'partial_degradation' for everything else -- monitoring alerts, "
@@ -124,8 +134,8 @@ SYSTEM_PROMPT = (
     "and any alert that asks someone to confirm the impact. This is the "
     "normal answer for an incident.\n\n"
     "STEP 3 - workaround.\n"
-    "  If REQUEST: 'not_applicable'.\n"
-    "  If INCIDENT: 'easy' if the text offers a simple alternative, "
+    "  If Service Request: 'not_applicable'.\n"
+    "  If Incident: 'easy' if the text offers a simple alternative, "
     "'difficult' if the alternative is manual or slow, 'none' if the text "
     "gives no way around the fault. Do not invent a workaround that the "
     "ticket does not mention.\n\n"
@@ -147,16 +157,24 @@ SYSTEM_PROMPT = (
     "Worked examples:\n"
     "  'X generated an automated monitoring alert... repeated execution "
     "errors, service degradation, or a processing delay. Please review the "
-    "event, confirm the impact.' -> is_request=false, "
+    "event, confirm the impact.' -> work_type='Incident', "
     "outage_extent='partial_degradation', workaround='none', "
     "scope='one_entity', deadline_pressure='none'.\n"
     "  'A new user requires a licence for X... needs validation before the "
-    "entitlement is assigned.' -> is_request=true, outage_extent='none', "
-    "workaround='not_applicable', scope='individual'.\n"
+    "entitlement is assigned.' -> work_type='Service Request', "
+    "outage_extent='none', workaround='not_applicable', scope='individual'.\n"
     "  'A third party sent a warning regarding X. The email references a "
-    "delayed feed or degraded service performance.' -> is_request=false, "
+    "delayed feed or degraded service performance.' -> work_type='Incident', "
     "outage_extent='partial_degradation', "
-    "scope='external_counterparty'.\n\n"
+    "scope='external_counterparty'.\n"
+    "  'The incident note for X is not aligned with the expected service "
+    "context and contains malformed or unrelated information.' -> "
+    "work_type='Incident' (it is a malformed incident note), "
+    "outage_extent='partial_degradation'.\n"
+    "  'The ticket text for X is unclear and not aligned with the expected "
+    "service request pattern. The message appears incomplete or misrouted.' "
+    "-> work_type='Service Request' (it fails the service request pattern), "
+    "outage_extent='none', workaround='not_applicable'.\n\n"
     "Report only what the ticket says. Do not inflate severity. Answer with "
     "JSON only."
 )
