@@ -1561,7 +1561,8 @@
               "openai",
               "none"
             ],
-            "title": "Provider"
+            "title": "Provider",
+            "description": "Main provider (Apertus is listed in `models` when configured)"
           },
           "default_model": {
             "anyOf": [
@@ -1576,7 +1577,7 @@
           },
           "models": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ModelOption"
             },
             "type": "array",
             "title": "Models",
@@ -1695,6 +1696,35 @@
           "field_override_counts"
         ],
         "title": "Metrics"
+      },
+      "ModelOption": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Send this as `model` in triage/assistant requests"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "azure",
+              "openai",
+              "apertus"
+            ],
+            "title": "Provider"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "provider"
+        ],
+        "title": "ModelOption"
       },
       "PriorityRequest": {
         "properties": {

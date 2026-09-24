@@ -27,7 +27,10 @@ def draft_comment(ticket: Ticket, cls: Classification, playbook_doc: KbDocument 
         f"DECISION\nservice={cls.service} work_type={cls.work_type} resolution={cls.resolution}\n\n"
         f"REFERENCE RESOLUTION\n{reference}"
     )
-    text = llm.complete(SYSTEM_PROMPT, user, model)
+    try:
+        text = llm.complete(SYSTEM_PROMPT, user, model)
+    except Exception:  # keep the proposal usable if the model call fails
+        text = None
     if text:
         return text.strip()
     if playbook_doc and cls.resolution == "done":

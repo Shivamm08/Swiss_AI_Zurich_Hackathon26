@@ -18,7 +18,7 @@ export default function ModelProvider({ children }: { children: ReactNode }) {
   const [stored, setStored] = useState<string | undefined>(readStored)
 
   // Drop a remembered model the backend no longer offers.
-  const model = stored === HEURISTIC || (stored && data?.models.includes(stored)) ? stored : undefined
+  const model = stored === HEURISTIC || (stored && data?.models.some((m) => m.id === stored)) ? stored : undefined
 
   const value = useMemo(
     () => ({

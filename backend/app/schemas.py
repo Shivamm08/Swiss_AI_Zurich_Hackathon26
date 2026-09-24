@@ -58,10 +58,19 @@ class ReferenceData(BaseModel):
     )
 
 
+Provider = Literal["azure", "openai", "apertus"]
+
+
+class ModelOption(BaseModel):
+    id: str = Field(description="Send this as `model` in triage/assistant requests")
+    label: str
+    provider: Provider
+
+
 class LlmModels(BaseModel):
-    provider: LlmProvider
+    provider: LlmProvider = Field(description="Main provider (Apertus is listed in `models` when configured)")
     default_model: str | None
-    models: list[str] = Field(description="Choices for the model picker ('heuristic' is always allowed too)")
+    models: list[ModelOption] = Field(description="Choices for the model picker ('heuristic' is always allowed too)")
 
 
 class PriorityRequest(BaseModel):

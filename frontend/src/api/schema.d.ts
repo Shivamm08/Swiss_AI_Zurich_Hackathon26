@@ -557,6 +557,7 @@ export interface components {
         LlmModels: {
             /**
              * Provider
+             * @description Main provider (Apertus is listed in `models` when configured)
              * @enum {string}
              */
             provider: "azure" | "openai" | "none";
@@ -566,7 +567,7 @@ export interface components {
              * Models
              * @description Choices for the model picker ('heuristic' is always allowed too)
              */
-            models: string[];
+            models: components["schemas"]["ModelOption"][];
         };
         /** Metrics */
         Metrics: {
@@ -598,6 +599,21 @@ export interface components {
             field_override_counts: {
                 [key: string]: number;
             };
+        };
+        /** ModelOption */
+        ModelOption: {
+            /**
+             * Id
+             * @description Send this as `model` in triage/assistant requests
+             */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "azure" | "openai" | "apertus";
         };
         /** PriorityRequest */
         PriorityRequest: {

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -69,7 +69,10 @@ def ask_assistant(body: AssistantRequest, db: Session = Depends(get_db)) -> Assi
     knowledge = "\n\n".join(f"[{c.ref_id}] {c.title}\n{c.snippet}" for c in citations)
     user = f"QUESTION\n{body.question}\n\nTICKET\n{context or '(none)'}\n\nRETRIEVED KNOWLEDGE\n{knowledge}"
 
-    answer = llm.complete(ASSISTANT_PROMPT, user, model)
+    try:
+        answer = llm.complete(ASSISTANT_PROMPT, user, model)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"{model} failed: {exc}") from exc
     if answer is None:
         answer = "No LLM model selected, so here are the most relevant sources:\n" + "\n".join(
             f"- [{c.ref_id}] {c.title}" for c in citations

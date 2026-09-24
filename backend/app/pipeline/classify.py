@@ -5,6 +5,8 @@ best matching playbook entry. Team, priority and assignee are NOT decided here;
 rules.py derives them so they can never be inconsistent.
 """
 
+import logging
+
 from pydantic import BaseModel
 
 from app.domain import (
@@ -62,8 +64,11 @@ def _prompt(ticket: Ticket, evidence: list[Evidence]) -> str:
     return f"TICKET\n{ticket_text(ticket)}\n\nRETRIEVED KNOWLEDGE\n{refs or '(none)'}"
 
 
-def _heuristic(ticket: Ticket, evidence: list[Evidence]) -> Classification:
-    """Fallback when Azure OpenAI is not configured. Deliberately simple."""
+log = logging.getLogger(__name__)
+
+
+def _heuristic(ticket: Ticket, evidence: list[Evidence], reason: str = "no LLM model selected") -> Classification:
+    """Fallback when no model is selected or the model call fails. Deliberately simple."""
     top_card = next((e for e in evidence if e.kind == "service_card"), None)
     service = as_service(ticket.affected_service) or (as_service(top_card.title) if top_card else None)
     service = service or "Emailed Support Tickets"
@@ -79,12 +84,16 @@ def _heuristic(ticket: Ticket, evidence: list[Evidence]) -> Classification:
         resolution="clarification" if unclear else "done",
         playbook_ref=playbook.ref_id if playbook else None,
         confidence=0.3,
-        rationale="Heuristic fallback (no LLM model selected): kept intake values.",
+        rationale=f"Heuristic fallback ({reason}): kept intake values.",
     )
 
 
 def classify(ticket: Ticket, evidence: list[Evidence], model: str | None) -> Classification:
-    result = llm.parse(SYSTEM_PROMPT, _prompt(ticket, evidence), Classification, model)
+    try:
+        result = llm.parse(SYSTEM_PROMPT, _prompt(ticket, evidence), Classification, model)
+    except Exception as exc:
+        log.warning("Classification with %s failed: %s", model, exc)
+        return _heuristic(ticket, evidence, reason=f"{model} failed: {type(exc).__name__}")
     if result is None:
         return _heuristic(ticket, evidence)
     result.confidence = min(max(result.confidence, 0.0), 1.0)

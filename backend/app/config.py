@@ -28,6 +28,14 @@ class Settings(BaseSettings):
     azure_openai_chat_deployment: str | None = None
     azure_openai_embedding_deployment: str | None = None
 
+    # Apertus (Swiss open LLM) on Swisscom, an extra OpenAI-compatible provider offered next
+    # to the main one. Only the key is required. Default URL is the Swiss {ai} Weeks hackathon
+    # product (key from https://keymaker.ai-weeks.ch/); the public product uses
+    # .../products/swiss-ai-platform/apertus-1.5-70b/v1 instead.
+    apertus_api_key: str | None = None
+    apertus_base_url: str = "https://api.swisscom.com/products/swiss-ai-weeks/apertus-1.5-70b/v1"
+    apertus_model: str = "swiss-ai/Apertus-v1.5-70B"
+
     # Models offered in the UI's model picker (comma-separated ids / Azure deployments).
     # Unset = every chat model the OpenAI key can use (a long list).
     llm_model_choices: str | None = None
