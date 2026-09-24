@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -8,62 +9,72 @@ import pandas as pd
 
 DATA_DIR = Path(__file__).resolve().parent
 INPUT_FILE = DATA_DIR / "jira_first_20000_requested_fields_synthetic.json"
-OUTPUT_FILE = DATA_DIR / "jira_first_20000_priority_mod.csv"
+OUTPUT_FILE = Path(
+    os.getenv(
+        "OUTPUT_FILE", str(DATA_DIR / "jira_first_20000_priority_mod.csv")
+    )
+)
 
 # The rules table is indexed by urgency and then impact.
 PRIORITY_RULES = {
-    "critical": {
-        "major": "highest",
-        "significant": "highest",
-        "moderate": "high",
-        "minor": "medium",
-        "no direct impact": "medium",
+    "highest": {
+        "highest": "highest",
+        "high": "highest",
+        "medium": "high",
+        "low": "medium",
+        "lowest": "medium",
     },
     "high": {
-        "major": "highest",
-        "significant": "high",
-        "moderate": "high",
-        "minor": "medium",
-        "no direct impact": "low",
+        "highest": "highest",
+        "high": "high",
+        "medium": "high",
+        "low": "medium",
+        "lowest": "low",
     },
     "medium": {
-        "major": "high",
-        "significant": "high",
-        "moderate": "medium",
-        "minor": "low",
-        "no direct impact": "low",
+        "highest": "high",
+        "high": "high",
+        "medium": "medium",
+        "low": "low",
+        "lowest": "low",
     },
     "low": {
-        "major": "medium",
-        "significant": "medium",
-        "moderate": "low",
-        "minor": "low",
-        "no direct impact": "lowest",
+        "highest": "medium",
+        "high": "medium",
+        "medium": "low",
+        "low": "low",
+        "lowest": "lowest",
     },
     "lowest": {
-        "major": "medium",
-        "significant": "low",
-        "moderate": "low",
-        "minor": "lowest",
-        "no direct impact": "lowest",
+        "highest": "medium",
+        "high": "low",
+        "medium": "low",
+        "low": "lowest",
+        "lowest": "lowest",
     },
 }
 
 # The source JSON stores both dimensions as ordinal levels. Map those values
 # to the labels used by the rules table before looking them up.
 URGENCY_LEVELS = {
-    "highest": "critical",
+    "highest": "highest",
     "high": "high",
     "medium": "medium",
     "low": "low",
     "lowest": "lowest",
+    "critical": "highest",
 }
 IMPACT_LEVELS = {
-    "highest": "major",
-    "high": "significant",
-    "medium": "moderate",
-    "low": "minor",
-    "lowest": "no direct impact",
+    "highest": "highest",
+    "high": "high",
+    "medium": "medium",
+    "low": "low",
+    "lowest": "lowest",
+    "major": "highest",
+    "significant": "high",
+    "moderate": "medium",
+    "minor": "low",
+    "no direct impact": "lowest",
 }
 
 
@@ -111,6 +122,7 @@ def preprocess(
 ) -> pd.DataFrame:
     """Load, enrich, and save the preprocessed Jira data."""
     data = assign_priority_mod(load_data(input_file))
+    output_file.parent.mkdir(parents=True, exist_ok=True)
     data.to_csv(output_file, index=False)
     return data
 
