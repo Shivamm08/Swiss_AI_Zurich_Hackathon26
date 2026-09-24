@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirement.txt
 
 COPY . .
 
-CMD ["python", "main.py"]
+CMD ["python", "run_triage.py"]

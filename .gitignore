@@ -1,1 +1,6 @@
 .vscode
+.env
+triage_cache/
+output/
+__pycache__/
+*.pyc

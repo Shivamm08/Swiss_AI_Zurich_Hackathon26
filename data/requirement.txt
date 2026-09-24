@@ -1,2 +1,11 @@
+# Dependencies for the triage/ pipeline (see README_triage.md).
+# The Apertus client is stdlib urllib, so triage/ needs no openai/torch
+# requirement and downloads no model.
 pandas
 numpy
+scikit-learn
+
+# Only needed by the remaining FinBERT classifiers, classify_service.py and
+# classify_work_type.py. triage/ does not use them.
+torch
+transformers
