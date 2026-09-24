@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, ApiError, unwrap } from './client'
 import type {
   AssistantRequest,
+  BatchTriageRequest,
   EmailIngest,
   EvidenceKind,
   KbSearchRequest,
@@ -11,11 +12,13 @@ import type {
   TicketCreate,
   TicketListParams,
   TicketSource,
+  TriageRequest,
 } from './types'
 
 export const queryKeys = {
   health: ['health'] as const,
   reference: ['reference'] as const,
+  llmModels: ['llm-models'] as const,
   tickets: (params: TicketListParams) => ['tickets', params] as const,
   ticket: (id: string) => ['ticket', id] as const,
   kbDocuments: (kind?: EvidenceKind) => ['kb-documents', kind ?? 'all'] as const,
@@ -35,6 +38,13 @@ export const useReference = () =>
   useQuery({
     queryKey: queryKeys.reference,
     queryFn: () => unwrap(api.GET('/api/reference')),
+    staleTime: Infinity,
+  })
+
+export const useLlmModels = () =>
+  useQuery({
+    queryKey: queryKeys.llmModels,
+    queryFn: () => unwrap(api.GET('/api/llm/models')),
     staleTime: Infinity,
   })
 
@@ -114,8 +124,10 @@ export const useDeleteTicket = () => {
 export const useTriageTicket = () => {
   const invalidate = useInvalidateTickets()
   return useMutation({
-    mutationFn: (ticketId: string) =>
-      unwrap(api.POST('/api/tickets/{ticket_id}/triage', { params: { path: { ticket_id: ticketId } } })),
+    mutationFn: ({ ticketId, model }: { ticketId: string } & TriageRequest) =>
+      unwrap(
+        api.POST('/api/tickets/{ticket_id}/triage', { params: { path: { ticket_id: ticketId } }, body: { model } }),
+      ),
     onSuccess: invalidate,
   })
 }
@@ -123,7 +135,7 @@ export const useTriageTicket = () => {
 export const useBatchTriage = () => {
   const invalidate = useInvalidateTickets()
   return useMutation({
-    mutationFn: (body: { ticket_ids?: string[] | null; source?: TicketSource | null } = {}) =>
+    mutationFn: (body: BatchTriageRequest = {}) =>
       unwrap(api.POST('/api/triage/batch', { body })),
     onSuccess: invalidate,
   })

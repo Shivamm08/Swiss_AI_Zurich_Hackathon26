@@ -16,7 +16,8 @@ from app.domain import (
     WORK_TYPES,
     priority_for,
 )
-from app.schemas import Health, PriorityRequest, PriorityResponse, ReferenceData, ServiceInfo
+from app.pipeline import llm
+from app.schemas import Health, LlmModels, PriorityRequest, PriorityResponse, ReferenceData, ServiceInfo
 
 router = APIRouter(tags=["system"])
 
@@ -31,6 +32,8 @@ def get_health(db: Session = Depends(get_db)) -> Health:
     return Health(
         status="ok" if database else "degraded",
         database=database,
+        llm_provider=settings.llm_provider,
+        llm_model=settings.chat_model,
         llm_configured=settings.llm_configured,
         embeddings_configured=settings.embeddings_configured,
         version=__version__,
@@ -48,6 +51,15 @@ def get_reference() -> ReferenceData:
         urgency_labels=URGENCY_LABELS,
         impact_labels=IMPACT_LABELS,
         priority_matrix=PRIORITY_MATRIX,
+    )
+
+
+@router.get("/llm/models", response_model=LlmModels)
+def list_llm_models() -> LlmModels:
+    return LlmModels(
+        provider=settings.llm_provider,
+        default_model=settings.chat_model,
+        models=list(llm.available_models()),
     )
 
 

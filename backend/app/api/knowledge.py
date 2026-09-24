@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.deps import validate_model
 from app.db import get_db
 from app.ingest import ticket_text
 from app.kb.sync import sync_kb
@@ -57,6 +58,7 @@ def sync_knowledge_base(db: Session = Depends(get_db)) -> KbSyncResult:
 
 @router.post("/assistant/ask", response_model=AssistantAnswer)
 def ask_assistant(body: AssistantRequest, db: Session = Depends(get_db)) -> AssistantAnswer:
+    model = llm.resolve_model(validate_model(body.model))
     query = body.question
     context = ""
     if body.ticket_id and (ticket := db.get(Ticket, body.ticket_id)):
@@ -67,9 +69,9 @@ def ask_assistant(body: AssistantRequest, db: Session = Depends(get_db)) -> Assi
     knowledge = "\n\n".join(f"[{c.ref_id}] {c.title}\n{c.snippet}" for c in citations)
     user = f"QUESTION\n{body.question}\n\nTICKET\n{context or '(none)'}\n\nRETRIEVED KNOWLEDGE\n{knowledge}"
 
-    answer = llm.complete(ASSISTANT_PROMPT, user)
+    answer = llm.complete(ASSISTANT_PROMPT, user, model)
     if answer is None:
-        answer = "Azure OpenAI is not configured, so here are the most relevant sources:\n" + "\n".join(
+        answer = "No LLM model selected, so here are the most relevant sources:\n" + "\n".join(
             f"- [{c.ref_id}] {c.title}" for c in citations
         )
-    return AssistantAnswer(answer=answer, citations=citations, model=llm.model_name())
+    return AssistantAnswer(answer=answer, citations=citations, model=llm.model_name(model))

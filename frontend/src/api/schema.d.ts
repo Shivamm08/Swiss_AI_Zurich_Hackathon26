@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/llm/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Llm Models */
+        get: operations["list_llm_models"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reference/priority": {
         parameters: {
             query?: never;
@@ -322,6 +339,11 @@ export interface components {
              * @description Ground the answer in this ticket as well
              */
             ticket_id?: string | null;
+            /**
+             * Model
+             * @description LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM
+             */
+            model?: string | null;
         };
         /** BatchTriageRequest */
         BatchTriageRequest: {
@@ -332,6 +354,11 @@ export interface components {
             ticket_ids?: string[] | null;
             /** Source */
             source?: ("challenge" | "training" | "manual" | "email") | null;
+            /**
+             * Model
+             * @description LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM
+             */
+            model?: string | null;
         };
         /** BatchTriageResult */
         BatchTriageResult: {
@@ -461,6 +488,13 @@ export interface components {
             status: "ok" | "degraded";
             /** Database */
             database: boolean;
+            /**
+             * Llm Provider
+             * @enum {string}
+             */
+            llm_provider: "azure" | "openai" | "none";
+            /** Llm Model */
+            llm_model: string | null;
             /** Llm Configured */
             llm_configured: boolean;
             /** Embeddings Configured */
@@ -518,6 +552,21 @@ export interface components {
             synced: number;
             /** Embedded */
             embedded: number;
+        };
+        /** LlmModels */
+        LlmModels: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "azure" | "openai" | "none";
+            /** Default Model */
+            default_model: string | null;
+            /**
+             * Models
+             * @description Choices for the model picker ('heuristic' is always allowed too)
+             */
+            models: string[];
         };
         /** Metrics */
         Metrics: {
@@ -873,6 +922,14 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** TriageRequest */
+        TriageRequest: {
+            /**
+             * Model
+             * @description LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM
+             */
+            model?: string | null;
+        };
         /** TriageResultOut */
         TriageResultOut: {
             /**
@@ -1003,6 +1060,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReferenceData"];
+                };
+            };
+        };
+    };
+    list_llm_models: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmModels"];
                 };
             };
         };
@@ -1244,7 +1321,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["TriageRequest"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

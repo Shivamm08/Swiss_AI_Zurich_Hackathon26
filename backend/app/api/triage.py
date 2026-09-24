@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.deps import validate_model
 from app.api.tickets import get_ticket_or_404
 from app.db import get_db
 from app.domain import priority_for, team_for
@@ -15,6 +16,7 @@ from app.schemas import (
     Decision,
     ReviewCreate,
     ReviewOut,
+    TriageRequest,
     TriageResultOut,
 )
 
@@ -24,12 +26,16 @@ _STATE_FOR_ACTION = {"approve": "approved", "edit": "edited", "reject": "rejecte
 
 
 @router.post("/tickets/{ticket_id}/triage", response_model=TriageResultOut)
-def triage_ticket(ticket_id: uuid.UUID, db: Session = Depends(get_db)) -> TriageResult:
-    return run_triage(db, get_ticket_or_404(db, ticket_id))
+def triage_ticket(
+    ticket_id: uuid.UUID, body: TriageRequest | None = None, db: Session = Depends(get_db)
+) -> TriageResult:
+    model = validate_model(body.model if body else None)
+    return run_triage(db, get_ticket_or_404(db, ticket_id), model)
 
 
 @router.post("/triage/batch", response_model=BatchTriageResult)
 def triage_batch(body: BatchTriageRequest, db: Session = Depends(get_db)) -> BatchTriageResult:
+    model = validate_model(body.model)
     stmt = select(Ticket)
     if body.ticket_ids:
         stmt = stmt.where(Ticket.id.in_(body.ticket_ids))
@@ -40,7 +46,7 @@ def triage_batch(body: BatchTriageRequest, db: Session = Depends(get_db)) -> Bat
     triaged = failed = 0
     for ticket in db.scalars(stmt).all():
         try:
-            run_triage(db, ticket)
+            run_triage(db, ticket, model)
             triaged += 1
         except Exception:
             db.rollback()

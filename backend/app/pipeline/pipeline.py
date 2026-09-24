@@ -21,11 +21,13 @@ def _changed_fields(ticket: Ticket, result: TriageResult) -> list[str]:
     return [field for field, value in intake.items() if value != getattr(result, field)]
 
 
-def run_triage(db: Session, ticket: Ticket) -> TriageResult:
+def run_triage(db: Session, ticket: Ticket, model: str | None = None) -> TriageResult:
+    """`model` comes from the UI; None = configured default, "heuristic" = no LLM."""
     started = time.perf_counter()
+    model = llm.resolve_model(model)
 
     evidence = retrieve.search(db, ticket_text(ticket), k=6)                   # 2. retrieve
-    cls = classify.classify(ticket, evidence)                                   # 3. LLM judgement
+    cls = classify.classify(ticket, evidence, model)                            # 3. LLM judgement
     playbook_doc = retrieve.get_document(db, cls.playbook_ref) if cls.playbook_ref else None
 
     result = TriageResult(                                                      # 4. deterministic rules
@@ -38,11 +40,11 @@ def run_triage(db: Session, ticket: Ticket) -> TriageResult:
         impact=cls.impact,
         priority=rules.priority(cls.urgency, cls.impact),
         resolution=cls.resolution,
-        resolution_comment=draft.draft_comment(ticket, cls, playbook_doc),     # 5. LLM draft
+        resolution_comment=draft.draft_comment(ticket, cls, playbook_doc, model),  # 5. LLM draft
         confidence=cls.confidence,
         rationale=cls.rationale,
         evidence=[e.model_dump() for e in evidence],
-        model=llm.model_name(),
+        model=llm.model_name(model),
     )
     result.changed_fields = _changed_fields(ticket, result)
     result.latency_ms = int((time.perf_counter() - started) * 1000)

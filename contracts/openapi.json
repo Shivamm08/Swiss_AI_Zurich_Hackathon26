@@ -47,6 +47,27 @@
         }
       }
     },
+    "/api/llm/models": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "List Llm Models",
+        "operationId": "list_llm_models",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmModels"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/reference/priority": {
       "post": {
         "tags": [
@@ -424,6 +445,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/TriageRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -873,6 +911,18 @@
             ],
             "title": "Ticket Id",
             "description": "Ground the answer in this ticket as well"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM"
           }
         },
         "type": "object",
@@ -915,6 +965,18 @@
               }
             ],
             "title": "Source"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM"
           }
         },
         "type": "object",
@@ -1320,6 +1382,26 @@
             "type": "boolean",
             "title": "Database"
           },
+          "llm_provider": {
+            "type": "string",
+            "enum": [
+              "azure",
+              "openai",
+              "none"
+            ],
+            "title": "Llm Provider"
+          },
+          "llm_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm Model"
+          },
           "llm_configured": {
             "type": "boolean",
             "title": "Llm Configured"
@@ -1337,6 +1419,8 @@
         "required": [
           "status",
           "database",
+          "llm_provider",
+          "llm_model",
           "llm_configured",
           "embeddings_configured",
           "version"
@@ -1467,6 +1551,45 @@
           "embedded"
         ],
         "title": "KbSyncResult"
+      },
+      "LlmModels": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "azure",
+              "openai",
+              "none"
+            ],
+            "title": "Provider"
+          },
+          "default_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Model"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models",
+            "description": "Choices for the model picker ('heuristic' is always allowed too)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "default_model",
+          "models"
+        ],
+        "title": "LlmModels"
       },
       "Metrics": {
         "properties": {
@@ -2544,6 +2667,24 @@
           "total"
         ],
         "title": "TicketPage"
+      },
+      "TriageRequest": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM"
+          }
+        },
+        "type": "object",
+        "title": "TriageRequest"
       },
       "TriageResultOut": {
         "properties": {

@@ -11,6 +11,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.config import LlmProvider
 from app.domain import Criticality, Level, Resolution, ServiceName, TeamName, WorkType
 
 TicketSource = Literal["challenge", "training", "manual", "email"]
@@ -29,6 +30,8 @@ class ORM(BaseModel):
 class Health(BaseModel):
     status: Literal["ok", "degraded"]
     database: bool
+    llm_provider: LlmProvider
+    llm_model: str | None
     llm_configured: bool
     embeddings_configured: bool
     version: str
@@ -53,6 +56,12 @@ class ReferenceData(BaseModel):
     priority_matrix: dict[Level, dict[Level, Level]] = Field(
         description="priority_matrix[urgency][impact] -> priority"
     )
+
+
+class LlmModels(BaseModel):
+    provider: LlmProvider
+    default_model: str | None
+    models: list[str] = Field(description="Choices for the model picker ('heuristic' is always allowed too)")
 
 
 class PriorityRequest(BaseModel):
@@ -150,9 +159,14 @@ class TriageResultOut(Decision, ORM):
     created_at: datetime
 
 
+class TriageRequest(BaseModel):
+    model: str | None = Field(None, description="LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM")
+
+
 class BatchTriageRequest(BaseModel):
     ticket_ids: list[uuid.UUID] | None = Field(None, description="Omit to triage every ticket in state 'new'")
     source: TicketSource | None = None
+    model: str | None = Field(None, description="LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM")
 
 
 class BatchTriageResult(BaseModel):
@@ -226,6 +240,7 @@ class KbSyncResult(BaseModel):
 class AssistantRequest(BaseModel):
     question: str
     ticket_id: uuid.UUID | None = Field(None, description="Ground the answer in this ticket as well")
+    model: str | None = Field(None, description="LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM")
 
 
 class AssistantAnswer(BaseModel):

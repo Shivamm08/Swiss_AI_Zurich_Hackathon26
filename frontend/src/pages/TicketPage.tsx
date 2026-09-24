@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { useReference, useReviewTriage, useTicket, useTriageTicket } from '../api/hooks'
 import type { DecisionEdit, Level, ReviewCreate, TriageResult } from '../api/types'
 import { Button, Card, ErrorBox, Field, Loading, PriorityPill, StatePill } from '../components/ui'
+import { useSelectedModel } from '../model/context'
 
 function reviewerName() {
   try {
@@ -135,6 +136,7 @@ export default function TicketPage() {
   const { ticketId = '' } = useParams()
   const { data: ticket, isLoading, error } = useTicket(ticketId)
   const triage = useTriageTicket()
+  const { model } = useSelectedModel()
 
   if (isLoading) return <Loading />
   if (error || !ticket) return <ErrorBox error={error ?? new Error('Ticket not found')} />
@@ -149,7 +151,7 @@ export default function TicketPage() {
         </div>
         <div className="flex items-center gap-2">
           <StatePill state={ticket.triage_state} />
-          <Button onClick={() => triage.mutate(ticket.id)} disabled={triage.isPending}>
+          <Button onClick={() => triage.mutate({ ticketId: ticket.id, model })} disabled={triage.isPending}>
             {triage.isPending ? 'Running…' : result ? 'Re-run triage' : 'Run triage'}
           </Button>
         </div>

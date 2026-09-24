@@ -20,14 +20,14 @@ _FALLBACK = {
 }
 
 
-def draft_comment(ticket: Ticket, cls: Classification, playbook_doc: KbDocument | None) -> str:
+def draft_comment(ticket: Ticket, cls: Classification, playbook_doc: KbDocument | None, model: str | None) -> str:
     reference = playbook_doc.content if playbook_doc else "(no matching playbook entry)"
     user = (
         f"TICKET\n{ticket_text(ticket)}\n\n"
         f"DECISION\nservice={cls.service} work_type={cls.work_type} resolution={cls.resolution}\n\n"
         f"REFERENCE RESOLUTION\n{reference}"
     )
-    text = llm.complete(SYSTEM_PROMPT, user)
+    text = llm.complete(SYSTEM_PROMPT, user, model)
     if text:
         return text.strip()
     if playbook_doc and cls.resolution == "done":

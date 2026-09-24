@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAskAssistant } from '../api/hooks'
 import { Button, Card, ErrorBox } from '../components/ui'
+import { useSelectedModel } from '../model/context'
 
 export default function AssistantPage() {
   const [params] = useSearchParams()
   const ticketId = params.get('ticket')
   const [question, setQuestion] = useState('')
   const ask = useAskAssistant()
+  const { model } = useSelectedModel()
 
   return (
     <div className="flex max-w-3xl flex-col gap-4">
@@ -20,7 +22,7 @@ export default function AssistantPage() {
         className="flex flex-col gap-2"
         onSubmit={(e) => {
           e.preventDefault()
-          if (question.trim()) ask.mutate({ question, ticket_id: ticketId })
+          if (question.trim()) ask.mutate({ question, ticket_id: ticketId, model })
         }}
       >
         <label className="sr-only" htmlFor="assistant-question">Question</label>

@@ -79,12 +79,12 @@ def _heuristic(ticket: Ticket, evidence: list[Evidence]) -> Classification:
         resolution="clarification" if unclear else "done",
         playbook_ref=playbook.ref_id if playbook else None,
         confidence=0.3,
-        rationale="Heuristic fallback (Azure OpenAI not configured): kept intake values.",
+        rationale="Heuristic fallback (no LLM model selected): kept intake values.",
     )
 
 
-def classify(ticket: Ticket, evidence: list[Evidence]) -> Classification:
-    result = llm.parse(SYSTEM_PROMPT, _prompt(ticket, evidence), Classification)
+def classify(ticket: Ticket, evidence: list[Evidence], model: str | None) -> Classification:
+    result = llm.parse(SYSTEM_PROMPT, _prompt(ticket, evidence), Classification, model)
     if result is None:
         return _heuristic(ticket, evidence)
     result.confidence = min(max(result.confidence, 0.0), 1.0)

@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useHealth } from '../api/hooks'
+import ModelPicker from './ModelPicker'
 import { Pill } from './ui'
 
 const NAV = [
@@ -20,7 +21,7 @@ function HealthIndicator() {
         DB {data.database ? 'ok' : 'down'}
       </Pill>
       <Pill className={data.llm_configured ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}>
-        {data.llm_configured ? 'LLM on' : 'Heuristic mode'}
+        {data.llm_configured ? `LLM: ${data.llm_provider} · ${data.llm_model}` : 'Heuristic mode'}
       </Pill>
     </div>
   )
@@ -48,7 +49,8 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
-        <div className="md:mt-auto">
+        <div className="flex flex-col gap-3 md:mt-auto">
+          <ModelPicker />
           <HealthIndicator />
         </div>
       </aside>
