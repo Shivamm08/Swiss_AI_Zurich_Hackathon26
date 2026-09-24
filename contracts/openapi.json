@@ -1,0 +1,2773 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Swiss Life Triage Agent API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Get Health",
+        "operationId": "get_health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reference": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Get Reference",
+        "operationId": "get_reference",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reference/priority": {
+      "post": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Compute Priority",
+        "operationId": "compute_priority",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriorityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriorityResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tickets": {
+      "get": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "List Tickets",
+        "operationId": "list_tickets",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "new",
+                    "proposed",
+                    "approved",
+                    "edited",
+                    "rejected"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "State"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "challenge",
+                    "training",
+                    "manual",
+                    "email"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search summary and description",
+              "title": "Q"
+            },
+            "description": "Search summary and description"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "Create Ticket",
+        "operationId": "create_ticket",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tickets/from-email": {
+      "post": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "Ingest Email",
+        "operationId": "ingest_email",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailIngest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tickets/import": {
+      "post": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "Import Tickets",
+        "operationId": "import_tickets",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_tickets"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tickets/{ticket_id}": {
+      "get": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "Get Ticket",
+        "operationId": "get_ticket",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "Delete Ticket",
+        "operationId": "delete_ticket",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tickets/{ticket_id}/triage": {
+      "post": {
+        "tags": [
+          "triage"
+        ],
+        "summary": "Triage Ticket",
+        "operationId": "triage_ticket",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriageResultOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/triage/batch": {
+      "post": {
+        "tags": [
+          "triage"
+        ],
+        "summary": "Triage Batch",
+        "operationId": "triage_batch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchTriageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchTriageResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/triage/{result_id}": {
+      "get": {
+        "tags": [
+          "triage"
+        ],
+        "summary": "Get Triage Result",
+        "operationId": "get_triage_result",
+        "parameters": [
+          {
+            "name": "result_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Result Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriageResultOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/triage/{result_id}/review": {
+      "post": {
+        "tags": [
+          "triage"
+        ],
+        "summary": "Review Triage",
+        "operationId": "review_triage",
+        "parameters": [
+          {
+            "name": "result_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Result Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/kb/documents": {
+      "get": {
+        "tags": [
+          "knowledge"
+        ],
+        "summary": "List Kb Documents",
+        "operationId": "list_kb_documents",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "service_card",
+                    "playbook",
+                    "historical_ticket"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KbDocumentOut"
+                  },
+                  "title": "Response List Kb Documents"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/kb/search": {
+      "post": {
+        "tags": [
+          "knowledge"
+        ],
+        "summary": "Search Kb",
+        "operationId": "search_kb",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KbSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Evidence"
+                  },
+                  "type": "array",
+                  "title": "Response Search Kb"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/kb/sync": {
+      "post": {
+        "tags": [
+          "knowledge"
+        ],
+        "summary": "Sync Knowledge Base",
+        "operationId": "sync_knowledge_base",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KbSyncResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assistant/ask": {
+      "post": {
+        "tags": [
+          "knowledge"
+        ],
+        "summary": "Ask Assistant",
+        "operationId": "ask_assistant",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantAnswer"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/metrics": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Get Metrics",
+        "operationId": "get_metrics",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Metrics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/export/submission": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Export Submission",
+        "description": "Challenge-format records with our decisions filled in.\nUses the analyst-approved/edited decision when there is one, else the latest AI proposal.\nTODO: confirm the exact expected submission format with Swiss Life.",
+        "operationId": "export_submission",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "challenge",
+                "training",
+                "manual",
+                "email"
+              ],
+              "type": "string",
+              "default": "challenge",
+              "title": "Source"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Export Submission"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssistantAnswer": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer",
+          "citations",
+          "model"
+        ],
+        "title": "AssistantAnswer"
+      },
+      "AssistantRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "ticket_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Id",
+            "description": "Ground the answer in this ticket as well"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "AssistantRequest"
+      },
+      "BatchTriageRequest": {
+        "properties": {
+          "ticket_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Ids",
+            "description": "Omit to triage every ticket in state 'new'"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "challenge",
+                  "training",
+                  "manual",
+                  "email"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "title": "BatchTriageRequest"
+      },
+      "BatchTriageResult": {
+        "properties": {
+          "triaged": {
+            "type": "integer",
+            "title": "Triaged"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "triaged",
+          "failed"
+        ],
+        "title": "BatchTriageResult"
+      },
+      "Body_import_tickets": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "Jira export JSON (challenge or training format)"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "challenge",
+              "training",
+              "manual",
+              "email"
+            ],
+            "title": "Source",
+            "default": "challenge"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_import_tickets"
+      },
+      "Decision": {
+        "properties": {
+          "work_type": {
+            "type": "string",
+            "enum": [
+              "Incident",
+              "Service Request"
+            ],
+            "title": "Work Type"
+          },
+          "service": {
+            "type": "string",
+            "enum": [
+              "Trading Platform",
+              "Order Management",
+              "Trade Matching",
+              "Securities Settlement",
+              "Corporate Actions",
+              "Fund Pricing",
+              "NAV Calculation",
+              "Portfolio Accounting",
+              "Cash Management",
+              "Risk & Compliance Monitoring",
+              "Regulatory Reporting",
+              "SimCorp Dimension",
+              "Rimes Data Feed",
+              "Client Reporting",
+              "Tax Reporting",
+              "CRM & Client Portal",
+              "Identity & Access Management",
+              "SharePoint & File Storage",
+              "Outlook & Email",
+              "Emailed Support Tickets"
+            ],
+            "title": "Service"
+          },
+          "team": {
+            "type": "string",
+            "enum": [
+              "Service Desk",
+              "Enterprise Applications",
+              "Investment Operations",
+              "Securities Operations",
+              "Risk & Controls",
+              "Valuation & Pricing",
+              "Client Services",
+              "Market Data Services",
+              "Trading Support",
+              "Tax & Reporting",
+              "Treasury & Cash"
+            ],
+            "title": "Team"
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee"
+          },
+          "urgency": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Urgency"
+          },
+          "impact": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Impact"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Priority"
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "done",
+              "cancelled",
+              "clarification",
+              "cannot reproduce"
+            ],
+            "title": "Resolution"
+          },
+          "resolution_comment": {
+            "type": "string",
+            "title": "Resolution Comment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "work_type",
+          "service",
+          "team",
+          "assignee",
+          "urgency",
+          "impact",
+          "priority",
+          "resolution",
+          "resolution_comment"
+        ],
+        "title": "Decision",
+        "description": "The seven fields the challenge scores, plus Urgency/Impact."
+      },
+      "DecisionEdit": {
+        "properties": {
+          "work_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Incident",
+                  "Service Request"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Type"
+          },
+          "service": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Trading Platform",
+                  "Order Management",
+                  "Trade Matching",
+                  "Securities Settlement",
+                  "Corporate Actions",
+                  "Fund Pricing",
+                  "NAV Calculation",
+                  "Portfolio Accounting",
+                  "Cash Management",
+                  "Risk & Compliance Monitoring",
+                  "Regulatory Reporting",
+                  "SimCorp Dimension",
+                  "Rimes Data Feed",
+                  "Client Reporting",
+                  "Tax Reporting",
+                  "CRM & Client Portal",
+                  "Identity & Access Management",
+                  "SharePoint & File Storage",
+                  "Outlook & Email",
+                  "Emailed Support Tickets"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service"
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee"
+          },
+          "urgency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Highest",
+                  "High",
+                  "Medium",
+                  "Low",
+                  "Lowest"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgency"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Highest",
+                  "High",
+                  "Medium",
+                  "Low",
+                  "Lowest"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "done",
+                  "cancelled",
+                  "clarification",
+                  "cannot reproduce"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "resolution_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Comment"
+          }
+        },
+        "type": "object",
+        "title": "DecisionEdit",
+        "description": "Analyst overrides. Team and priority are always recomputed server-side\nfrom service and urgency/impact, so they can never be inconsistent."
+      },
+      "EmailIngest": {
+        "properties": {
+          "from_address": {
+            "type": "string",
+            "title": "From Address"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "business_entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Entity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_address",
+          "subject",
+          "body"
+        ],
+        "title": "EmailIngest"
+      },
+      "Evidence": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "service_card",
+              "playbook",
+              "historical_ticket"
+            ],
+            "title": "Kind"
+          },
+          "ref_id": {
+            "type": "string",
+            "title": "Ref Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "ref_id",
+          "title",
+          "snippet",
+          "score"
+        ],
+        "title": "Evidence"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ],
+            "title": "Status"
+          },
+          "database": {
+            "type": "boolean",
+            "title": "Database"
+          },
+          "llm_configured": {
+            "type": "boolean",
+            "title": "Llm Configured"
+          },
+          "embeddings_configured": {
+            "type": "boolean",
+            "title": "Embeddings Configured"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "database",
+          "llm_configured",
+          "embeddings_configured",
+          "version"
+        ],
+        "title": "Health"
+      },
+      "ImportResult": {
+        "properties": {
+          "imported": {
+            "type": "integer",
+            "title": "Imported"
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "Skipped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "imported",
+          "skipped"
+        ],
+        "title": "ImportResult"
+      },
+      "KbDocumentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "service_card",
+              "playbook",
+              "historical_ticket"
+            ],
+            "title": "Kind"
+          },
+          "ref_id": {
+            "type": "string",
+            "title": "Ref Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Meta"
+          },
+          "has_embedding": {
+            "type": "boolean",
+            "title": "Has Embedding"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "ref_id",
+          "title",
+          "content",
+          "meta",
+          "has_embedding"
+        ],
+        "title": "KbDocumentOut"
+      },
+      "KbSearchRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "k": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "K",
+            "default": 5
+          },
+          "kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "service_card",
+                    "playbook",
+                    "historical_ticket"
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kinds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "KbSearchRequest"
+      },
+      "KbSyncResult": {
+        "properties": {
+          "synced": {
+            "type": "integer",
+            "title": "Synced"
+          },
+          "embedded": {
+            "type": "integer",
+            "title": "Embedded"
+          }
+        },
+        "type": "object",
+        "required": [
+          "synced",
+          "embedded"
+        ],
+        "title": "KbSyncResult"
+      },
+      "Metrics": {
+        "properties": {
+          "tickets_total": {
+            "type": "integer",
+            "title": "Tickets Total"
+          },
+          "by_state": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "new",
+                "proposed",
+                "approved",
+                "edited",
+                "rejected"
+              ]
+            },
+            "type": "object",
+            "title": "By State"
+          },
+          "reviews_total": {
+            "type": "integer",
+            "title": "Reviews Total"
+          },
+          "acceptance_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acceptance Rate",
+            "description": "approved / reviewed"
+          },
+          "edit_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edit Rate"
+          },
+          "reject_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reject Rate"
+          },
+          "avg_review_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Review Seconds"
+          },
+          "avg_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Confidence"
+          },
+          "field_override_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Field Override Counts",
+            "description": "How often analysts changed each field"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tickets_total",
+          "by_state",
+          "reviews_total",
+          "acceptance_rate",
+          "edit_rate",
+          "reject_rate",
+          "avg_review_seconds",
+          "avg_confidence",
+          "field_override_counts"
+        ],
+        "title": "Metrics"
+      },
+      "PriorityRequest": {
+        "properties": {
+          "urgency": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Urgency"
+          },
+          "impact": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Impact"
+          }
+        },
+        "type": "object",
+        "required": [
+          "urgency",
+          "impact"
+        ],
+        "title": "PriorityRequest"
+      },
+      "PriorityResponse": {
+        "properties": {
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Priority"
+          }
+        },
+        "type": "object",
+        "required": [
+          "priority"
+        ],
+        "title": "PriorityResponse"
+      },
+      "ReferenceData": {
+        "properties": {
+          "services": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceInfo"
+            },
+            "type": "array",
+            "title": "Services"
+          },
+          "teams": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "Service Desk",
+                "Enterprise Applications",
+                "Investment Operations",
+                "Securities Operations",
+                "Risk & Controls",
+                "Valuation & Pricing",
+                "Client Services",
+                "Market Data Services",
+                "Trading Support",
+                "Tax & Reporting",
+                "Treasury & Cash"
+              ]
+            },
+            "type": "array",
+            "title": "Teams"
+          },
+          "levels": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "Highest",
+                "High",
+                "Medium",
+                "Low",
+                "Lowest"
+              ]
+            },
+            "type": "array",
+            "title": "Levels"
+          },
+          "work_types": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "Incident",
+                "Service Request"
+              ]
+            },
+            "type": "array",
+            "title": "Work Types"
+          },
+          "resolutions": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "done",
+                "cancelled",
+                "clarification",
+                "cannot reproduce"
+              ]
+            },
+            "type": "array",
+            "title": "Resolutions"
+          },
+          "urgency_labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "enum": [
+                "Highest",
+                "High",
+                "Medium",
+                "Low",
+                "Lowest"
+              ]
+            },
+            "type": "object",
+            "title": "Urgency Labels"
+          },
+          "impact_labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "enum": [
+                "Highest",
+                "High",
+                "Medium",
+                "Low",
+                "Lowest"
+              ]
+            },
+            "type": "object",
+            "title": "Impact Labels"
+          },
+          "priority_matrix": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "string",
+                "enum": [
+                  "Highest",
+                  "High",
+                  "Medium",
+                  "Low",
+                  "Lowest"
+                ]
+              },
+              "propertyNames": {
+                "enum": [
+                  "Highest",
+                  "High",
+                  "Medium",
+                  "Low",
+                  "Lowest"
+                ]
+              },
+              "type": "object"
+            },
+            "propertyNames": {
+              "enum": [
+                "Highest",
+                "High",
+                "Medium",
+                "Low",
+                "Lowest"
+              ]
+            },
+            "type": "object",
+            "title": "Priority Matrix",
+            "description": "priority_matrix[urgency][impact] -> priority"
+          }
+        },
+        "type": "object",
+        "required": [
+          "services",
+          "teams",
+          "levels",
+          "work_types",
+          "resolutions",
+          "urgency_labels",
+          "impact_labels",
+          "priority_matrix"
+        ],
+        "title": "ReferenceData",
+        "description": "Everything the UI needs for dropdowns, labels and the priority matrix."
+      },
+      "ReviewCreate": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "edit",
+              "reject"
+            ],
+            "title": "Action"
+          },
+          "edits": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DecisionEdit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviewer": {
+            "type": "string",
+            "title": "Reviewer"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "review_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Seconds",
+            "description": "Time the analyst spent, measured by the UI"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "reviewer"
+        ],
+        "title": "ReviewCreate"
+      },
+      "ReviewOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "ticket_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ticket Id"
+          },
+          "triage_result_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Triage Result Id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "edit",
+              "reject"
+            ],
+            "title": "Action"
+          },
+          "final": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Decision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "overridden_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Overridden Fields"
+          },
+          "reviewer": {
+            "type": "string",
+            "title": "Reviewer"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "review_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Seconds"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "ticket_id",
+          "triage_result_id",
+          "action",
+          "final",
+          "overridden_fields",
+          "reviewer",
+          "notes",
+          "review_seconds",
+          "created_at"
+        ],
+        "title": "ReviewOut"
+      },
+      "ServiceInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "Trading Platform",
+              "Order Management",
+              "Trade Matching",
+              "Securities Settlement",
+              "Corporate Actions",
+              "Fund Pricing",
+              "NAV Calculation",
+              "Portfolio Accounting",
+              "Cash Management",
+              "Risk & Compliance Monitoring",
+              "Regulatory Reporting",
+              "SimCorp Dimension",
+              "Rimes Data Feed",
+              "Client Reporting",
+              "Tax Reporting",
+              "CRM & Client Portal",
+              "Identity & Access Management",
+              "SharePoint & File Storage",
+              "Outlook & Email",
+              "Emailed Support Tickets"
+            ],
+            "title": "Name"
+          },
+          "team": {
+            "type": "string",
+            "enum": [
+              "Service Desk",
+              "Enterprise Applications",
+              "Investment Operations",
+              "Securities Operations",
+              "Risk & Controls",
+              "Valuation & Pricing",
+              "Client Services",
+              "Market Data Services",
+              "Trading Support",
+              "Tax & Reporting",
+              "Treasury & Cash"
+            ],
+            "title": "Team"
+          },
+          "criticality": {
+            "type": "string",
+            "enum": [
+              "Critical",
+              "Non-Critical"
+            ],
+            "title": "Criticality"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "team",
+          "criticality"
+        ],
+        "title": "ServiceInfo"
+      },
+      "TicketCreate": {
+        "properties": {
+          "work_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Type"
+          },
+          "request_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Type"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "affected_service": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affected Service",
+            "description": "Intake value; may be wrong"
+          },
+          "business_entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Entity"
+          },
+          "reporter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reporter"
+          },
+          "urgency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgency"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status",
+            "default": "open"
+          },
+          "linked_issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Linked Issues",
+            "default": []
+          },
+          "comments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Comments",
+            "default": []
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "challenge",
+              "training",
+              "manual",
+              "email"
+            ],
+            "title": "Source",
+            "default": "manual"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary"
+        ],
+        "title": "TicketCreate"
+      },
+      "TicketDetail": {
+        "properties": {
+          "work_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Type"
+          },
+          "request_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Type"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "affected_service": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affected Service",
+            "description": "Intake value; may be wrong"
+          },
+          "business_entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Entity"
+          },
+          "reporter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reporter"
+          },
+          "urgency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgency"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status",
+            "default": "open"
+          },
+          "linked_issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Linked Issues",
+            "default": []
+          },
+          "comments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Comments",
+            "default": []
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "challenge",
+              "training",
+              "manual",
+              "email"
+            ],
+            "title": "Source"
+          },
+          "triage_state": {
+            "type": "string",
+            "enum": [
+              "new",
+              "proposed",
+              "approved",
+              "edited",
+              "rejected"
+            ],
+            "title": "Triage State"
+          },
+          "source_created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Created At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "latest_triage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TriageResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewOut"
+            },
+            "type": "array",
+            "title": "Reviews"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "id",
+          "number",
+          "source",
+          "triage_state",
+          "source_created_at",
+          "created_at",
+          "latest_triage",
+          "reviews"
+        ],
+        "title": "TicketDetail"
+      },
+      "TicketOut": {
+        "properties": {
+          "work_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Type"
+          },
+          "request_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Type"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "affected_service": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affected Service",
+            "description": "Intake value; may be wrong"
+          },
+          "business_entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Entity"
+          },
+          "reporter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reporter"
+          },
+          "urgency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgency"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status",
+            "default": "open"
+          },
+          "linked_issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Linked Issues",
+            "default": []
+          },
+          "comments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Comments",
+            "default": []
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "challenge",
+              "training",
+              "manual",
+              "email"
+            ],
+            "title": "Source"
+          },
+          "triage_state": {
+            "type": "string",
+            "enum": [
+              "new",
+              "proposed",
+              "approved",
+              "edited",
+              "rejected"
+            ],
+            "title": "Triage State"
+          },
+          "source_created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Created At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "id",
+          "number",
+          "source",
+          "triage_state",
+          "source_created_at",
+          "created_at"
+        ],
+        "title": "TicketOut"
+      },
+      "TicketPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TicketOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "TicketPage"
+      },
+      "TriageResultOut": {
+        "properties": {
+          "work_type": {
+            "type": "string",
+            "enum": [
+              "Incident",
+              "Service Request"
+            ],
+            "title": "Work Type"
+          },
+          "service": {
+            "type": "string",
+            "enum": [
+              "Trading Platform",
+              "Order Management",
+              "Trade Matching",
+              "Securities Settlement",
+              "Corporate Actions",
+              "Fund Pricing",
+              "NAV Calculation",
+              "Portfolio Accounting",
+              "Cash Management",
+              "Risk & Compliance Monitoring",
+              "Regulatory Reporting",
+              "SimCorp Dimension",
+              "Rimes Data Feed",
+              "Client Reporting",
+              "Tax Reporting",
+              "CRM & Client Portal",
+              "Identity & Access Management",
+              "SharePoint & File Storage",
+              "Outlook & Email",
+              "Emailed Support Tickets"
+            ],
+            "title": "Service"
+          },
+          "team": {
+            "type": "string",
+            "enum": [
+              "Service Desk",
+              "Enterprise Applications",
+              "Investment Operations",
+              "Securities Operations",
+              "Risk & Controls",
+              "Valuation & Pricing",
+              "Client Services",
+              "Market Data Services",
+              "Trading Support",
+              "Tax & Reporting",
+              "Treasury & Cash"
+            ],
+            "title": "Team"
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee"
+          },
+          "urgency": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Urgency"
+          },
+          "impact": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Impact"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Priority"
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "done",
+              "cancelled",
+              "clarification",
+              "cannot reproduce"
+            ],
+            "title": "Resolution"
+          },
+          "resolution_comment": {
+            "type": "string",
+            "title": "Resolution Comment"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "ticket_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ticket Id"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "changed_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changed Fields",
+            "description": "Fields that differ from the intake values"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "work_type",
+          "service",
+          "team",
+          "assignee",
+          "urgency",
+          "impact",
+          "priority",
+          "resolution",
+          "resolution_comment",
+          "id",
+          "ticket_id",
+          "confidence",
+          "rationale",
+          "evidence",
+          "changed_fields",
+          "model",
+          "latency_ms",
+          "created_at"
+        ],
+        "title": "TriageResultOut"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

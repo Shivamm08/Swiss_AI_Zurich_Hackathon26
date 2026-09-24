@@ -1,0 +1,169 @@
+// One React Query hook per backend endpoint. Pages only talk to the backend
+// through these, so an API change surfaces here as a type error.
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { api, ApiError, unwrap } from './client'
+import type {
+  AssistantRequest,
+  EmailIngest,
+  EvidenceKind,
+  KbSearchRequest,
+  ReviewCreate,
+  TicketCreate,
+  TicketListParams,
+  TicketSource,
+} from './types'
+
+export const queryKeys = {
+  health: ['health'] as const,
+  reference: ['reference'] as const,
+  tickets: (params: TicketListParams) => ['tickets', params] as const,
+  ticket: (id: string) => ['ticket', id] as const,
+  kbDocuments: (kind?: EvidenceKind) => ['kb-documents', kind ?? 'all'] as const,
+  metrics: ['metrics'] as const,
+}
+
+// ------------------------------------------------------------------ system
+
+export const useHealth = () =>
+  useQuery({
+    queryKey: queryKeys.health,
+    queryFn: () => unwrap(api.GET('/api/health')),
+    refetchInterval: 30_000,
+  })
+
+export const useReference = () =>
+  useQuery({
+    queryKey: queryKeys.reference,
+    queryFn: () => unwrap(api.GET('/api/reference')),
+    staleTime: Infinity,
+  })
+
+// ------------------------------------------------------------------ tickets
+
+export const useTickets = (params: TicketListParams = {}) =>
+  useQuery({
+    queryKey: queryKeys.tickets(params),
+    queryFn: () => unwrap(api.GET('/api/tickets', { params: { query: params } })),
+  })
+
+export const useTicket = (ticketId: string) =>
+  useQuery({
+    queryKey: queryKeys.ticket(ticketId),
+    queryFn: () => unwrap(api.GET('/api/tickets/{ticket_id}', { params: { path: { ticket_id: ticketId } } })),
+  })
+
+function useInvalidateTickets() {
+  const qc = useQueryClient()
+  return () => {
+    qc.invalidateQueries({ queryKey: ['tickets'] })
+    qc.invalidateQueries({ queryKey: ['ticket'] })
+    qc.invalidateQueries({ queryKey: queryKeys.metrics })
+  }
+}
+
+export const useCreateTicket = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: (body: TicketCreate) => unwrap(api.POST('/api/tickets', { body })),
+    onSuccess: invalidate,
+  })
+}
+
+export const useIngestEmail = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: (body: EmailIngest) => unwrap(api.POST('/api/tickets/from-email', { body })),
+    onSuccess: invalidate,
+  })
+}
+
+export const useImportTickets = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: ({ file, source }: { file: File; source: TicketSource }) =>
+      unwrap(
+        api.POST('/api/tickets/import', {
+          body: { file: file as unknown as string, source },
+          bodySerializer: () => {
+            const form = new FormData()
+            form.append('file', file)
+            form.append('source', source)
+            return form
+          },
+        }),
+      ),
+    onSuccess: invalidate,
+  })
+}
+
+export const useDeleteTicket = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: async (ticketId: string) => {
+      const { response, error } = await api.DELETE('/api/tickets/{ticket_id}', {
+        params: { path: { ticket_id: ticketId } },
+      })
+      if (!response.ok) throw new ApiError(response.status, error)
+    },
+    onSuccess: invalidate,
+  })
+}
+
+// ------------------------------------------------------------------ triage + review
+
+export const useTriageTicket = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: (ticketId: string) =>
+      unwrap(api.POST('/api/tickets/{ticket_id}/triage', { params: { path: { ticket_id: ticketId } } })),
+    onSuccess: invalidate,
+  })
+}
+
+export const useBatchTriage = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: (body: { ticket_ids?: string[] | null; source?: TicketSource | null } = {}) =>
+      unwrap(api.POST('/api/triage/batch', { body })),
+    onSuccess: invalidate,
+  })
+}
+
+export const useReviewTriage = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: ({ resultId, body }: { resultId: string; body: ReviewCreate }) =>
+      unwrap(api.POST('/api/triage/{result_id}/review', { params: { path: { result_id: resultId } }, body })),
+    onSuccess: invalidate,
+  })
+}
+
+// ------------------------------------------------------------------ knowledge base / RAG
+
+export const useKbDocuments = (kind?: EvidenceKind) =>
+  useQuery({
+    queryKey: queryKeys.kbDocuments(kind),
+    queryFn: () => unwrap(api.GET('/api/kb/documents', { params: { query: kind ? { kind } : {} } })),
+  })
+
+export const useKbSearch = () =>
+  useMutation({ mutationFn: (body: KbSearchRequest) => unwrap(api.POST('/api/kb/search', { body })) })
+
+export const useSyncKb = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/api/kb/sync')),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['kb-documents'] }),
+  })
+}
+
+export const useAskAssistant = () =>
+  useMutation({ mutationFn: (body: AssistantRequest) => unwrap(api.POST('/api/assistant/ask', { body })) })
+
+// ------------------------------------------------------------------ insights
+
+export const useMetrics = () =>
+  useQuery({ queryKey: queryKeys.metrics, queryFn: () => unwrap(api.GET('/api/metrics')) })
+
+export const fetchSubmission = (source: TicketSource = 'challenge') =>
+  unwrap(api.GET('/api/export/submission', { params: { query: { source } } }))

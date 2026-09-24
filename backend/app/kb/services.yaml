@@ -1,0 +1,91 @@
+# Service cards: one profile per service, used for retrieval and in prompts.
+# Team and criticality are fixed in app/domain.py. Descriptions and keywords
+# are first drafts; refine them, especially the `not_this` boundaries, which
+# is where the challenge tickets try to trick us.
+
+- name: Trading Platform
+  description: Front-office platform where portfolio managers and traders create and execute trades.
+  keywords: [trader, execution, front office, blotter, trade booking, platform outage]
+  not_this: Order routing to brokers or approvals belongs to Order Management.
+
+- name: Order Management
+  description: OMS that routes orders to brokers, handles approvals and broker/clearing account setup.
+  keywords: [OMS, order, pending approval, broker routing, clearing account, FIX, held orders]
+  not_this: Post-execution allocation matching belongs to Trade Matching.
+
+- name: Trade Matching
+  description: Matching executed trades and allocations with brokers before settlement.
+  keywords: [allocation, broker, SSI, confirmation, unmatched, rejected, matching adapter, CTM]
+  not_this: Once trades are matched and custody status is late, it is Securities Settlement.
+
+- name: Securities Settlement
+  description: Settlement of matched trades with custodians, settlement status messages and fails.
+  keywords: [custodian, settlement, MT536, MT548, SWIFT, fail, custody status, settlement queue, confirmation queue]
+  not_this: Allocation rejections before matching belong to Trade Matching.
+
+- name: Corporate Actions
+  description: Ingestion and processing of corporate action events and elections.
+  keywords: [corporate action, CAEV, dividend, option code, election, event ingestion, mandatory]
+
+- name: Fund Pricing
+  description: Security and fund price collection, validation and publication.
+  keywords: [price, pricing, stale price, price validation, vendor price]
+  not_this: NAV run failures and tolerance breaches belong to NAV Calculation.
+
+- name: NAV Calculation
+  description: Daily NAV computation per fund, including tolerance checks and NAV publication.
+  keywords: [NAV, valuation, tolerance breach, NAV_EOD, fund NAV, end of day]
+
+- name: Portfolio Accounting
+  description: Books and records of positions, month-end reconciliation and accounting processing.
+  keywords: [accounting, reconciliation, month-end, positions, books, ledger, exception review]
+
+- name: Cash Management
+  description: Cash positions, sweeps, margin and bank account balances.
+  keywords: [cash, sweep, margin, balance, bank statement, cutoff, treasury, shortfall]
+
+- name: Risk & Compliance Monitoring
+  description: Investment compliance rules, sanctions screening and breach monitoring dashboards.
+  keywords: [compliance, breach, rule, sanctions, screening, limit, monitoring dashboard, alert]
+  not_this: Submissions to regulators belong to Regulatory Reporting.
+
+- name: Regulatory Reporting
+  description: Preparation and submission of regulatory reports and files to regulator gateways.
+  keywords: [regulator, regulatory, submission, gateway, LEI, EMIR, MiFID, rejection, classification]
+
+- name: SimCorp Dimension
+  description: Core investment management system; position sync and replication jobs.
+  keywords: [SimCorp, SCD, replication, position sync, staging table, job, host]
+
+- name: Rimes Data Feed
+  description: Benchmark and index data delivered by Rimes into downstream systems.
+  keywords: [Rimes, benchmark, index, feed, file arrived late, cutoff, EOD file, publication delayed]
+
+- name: Client Reporting
+  description: Periodic client statements and report PDFs generated from report templates.
+  keywords: [client report, statement, PDF, template, fee section, report batch]
+
+- name: Tax Reporting
+  description: Tax calculations and outputs such as withholding tax extracts and tax packs.
+  keywords: [tax, withholding, tax pack, quarterly filing, extract]
+  not_this: Regulator submissions belong to Regulatory Reporting.
+
+- name: CRM & Client Portal
+  description: Client relationship management system and the external client portal.
+  keywords: [CRM, client portal, relationship manager, client contact, portal login]
+
+- name: Identity & Access Management
+  description: User accounts, entitlements, joiners/leavers and access removal across systems.
+  keywords: [access, IAM, deactivated users, entitlement, joiner, leaver, account, SSO]
+
+- name: SharePoint & File Storage
+  description: Document management, SharePoint sites and shared file storage.
+  keywords: [SharePoint, file share, document, folder, site, contractor offboarding]
+
+- name: Outlook & Email
+  description: Mailboxes, shared mailboxes and distribution lists.
+  keywords: [Outlook, email, shared mailbox, distribution list, DL, calendar]
+
+- name: Emailed Support Tickets
+  description: Generic intake bucket for tickets raised by email before triage. Rarely the true service.
+  keywords: [email, notification, warning, generic]

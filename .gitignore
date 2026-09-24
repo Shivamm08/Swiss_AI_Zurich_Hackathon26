@@ -1,1 +1,23 @@
-.vscode
+# secrets
+.env
+.env.*
+!.env.example
+
+# local-only data drop zone (see data/README.md)
+data/raw/*
+!data/raw/.gitkeep
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# node
+node_modules/
+dist/
+
+# os / editors
+.DS_Store
+.idea/
+.vscode/

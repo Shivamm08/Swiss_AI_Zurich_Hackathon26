@@ -1,0 +1,55 @@
+# Dev stack. Source folders are bind-mounted, so code changes hot-reload.
+#   Shared Supabase DB:   make up        (DATABASE_URL from .env)
+#   Local Postgres:       make up-local  (starts the `db` service below)
+services:
+  backend:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://postgres:postgres@db:5432/triage}
+      UVICORN_RELOAD: "1"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./contracts:/contracts
+      - ./data:/data:ro
+    depends_on:
+      db:
+        condition: service_healthy
+        required: false
+
+  frontend:
+    build: ./frontend
+    environment:
+      VITE_PROXY_TARGET: http://backend:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - ./contracts:/contracts
+    depends_on:
+      - backend
+
+  db:
+    image: pgvector/pgvector:pg16
+    profiles: ["local-db"]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: triage
+    ports:
+      - "54322:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d triage"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
