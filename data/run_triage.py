@@ -24,6 +24,12 @@ def main() -> None:
     parser.add_argument("--refresh", action="store_true", help="ignore the evidence cache")
     parser.add_argument("--dry-run", action="store_true", help="use cached evidence only")
     parser.add_argument("--top-k", type=int, default=similarity.TOP_K)
+    parser.add_argument(
+        "--json-indent",
+        type=int,
+        default=None,
+        help="pretty-print the JSON output (omit for compact; 2 for a small set)",
+    )
     args = parser.parse_args()
 
     config.load_dotenv()
@@ -82,6 +88,12 @@ def main() -> None:
     )
 
     paths = apply.write_outputs(frame, neighbours, signatures)
+    json_path, n_records = apply.write_json_output(
+        frame, neighbours, indent=args.json_indent
+    )
+    paths["triaged_json"] = json_path
+    print(f"  wrote {n_records:,} records in the source export's own schema")
+
     print(f"\nDone in {time.time() - started:.1f}s")
     for name, path in paths.items():
         print(f"  {name:12s} {path}")

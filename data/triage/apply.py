@@ -32,11 +32,27 @@ def _has_resolution_text(comments) -> bool:
     return any(_RESOLUTION_MARKER in _AUTHOR.sub("", c) for c in comments)
 
 
+# Field order of the source export, captured on load so the JSON output can be
+# written back in exactly the same shape (a drop-in replacement for the input).
+SOURCE_FIELDS: list[str] = []
+
+# Fields the pipeline predicts, which therefore get overwritten in the output.
+PREDICTED_FIELDS = {
+    "Work type": "work_type_pred",
+    "Impact": "impact_pred",
+    "Urgency": "urgency_pred",
+    "Priority": "priority_pred",
+}
+
+
 def load_corpus(path=None) -> pd.DataFrame:
     """Read the synthetic Jira export into a frame with triage-ready facets."""
     source = path or config.INPUT_JSON
     with open(source, "r", encoding="utf-8") as handle:
         records = json.load(handle)
+
+    global SOURCE_FIELDS
+    SOURCE_FIELDS = list(records[0].keys()) if records else []
 
     frame = pd.DataFrame(records)
     # The export carries no issue key, so the row index is the stable id.
@@ -271,8 +287,106 @@ def write_outputs(frame: pd.DataFrame, neighbours: pd.DataFrame, signatures: pd.
     signatures.drop(columns=["text"]).to_csv(signatures_path, index=False)
 
     return {
-        "triaged": triaged_path,
+        "triaged_csv": triaged_path,
         "neighbours": neighbours_path,
         "audit": audit_path,
         "signatures": signatures_path,
     }
+
+
+def _clean(value):
+    """Convert numpy/pandas scalars to JSON-native types, NaN/NaT to None."""
+    if value is None:
+        return None
+    if isinstance(value, (list, tuple)):
+        return [_clean(v) for v in value]
+    if isinstance(value, (np.bool_, bool)):
+        return bool(value)
+    if isinstance(value, (np.integer,)):
+        return int(value)
+    if isinstance(value, (np.floating, float)):
+        return None if pd.isna(value) else float(value)
+    if value is pd.NaT:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except (TypeError, ValueError):
+        pass
+    return value
+
+
+def write_json_output(
+    frame: pd.DataFrame,
+    neighbours: pd.DataFrame,
+    path=None,
+    indent: int | None = None,
+) -> tuple:
+    """Write the triaged corpus back in the source export's own JSON shape.
+
+    Every original field is preserved in its original order, with the four
+    predicted fields overwritten, so the file is a drop-in replacement for the
+    input. Everything the pipeline adds lives under a single ``triage`` key,
+    which keeps the original schema clean for anything that consumes it.
+    """
+    target = path or (config.OUTPUT_DIR / "jira_triaged.json")
+    config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    fields = SOURCE_FIELDS or [c for c in frame.columns if c in PREDICTED_FIELDS]
+
+    # Pre-group neighbours once; grouping inside the row loop would be O(n^2).
+    by_ticket: dict[str, list] = {}
+    for row in neighbours.itertuples(index=False):
+        by_ticket.setdefault(row.ticket_id, []).append(
+            {
+                "rank": int(row.rank),
+                "ticket_id": row.neighbour_ticket_id,
+                # float32 -> float leaks artefacts like 0.9499999880; round it.
+                "similarity": round(float(row.similarity), 4),
+                "tie_group_size": int(row.neighbour_tie_group_size),
+                "n_with_resolution": int(row.neighbour_n_with_resolution),
+            }
+        )
+
+    records = []
+    for row in frame.to_dict(orient="records"):
+        record = {}
+        for field in fields:
+            source_column = PREDICTED_FIELDS.get(field)
+            record[field] = _clean(
+                row[source_column] if source_column else row.get(field)
+            )
+
+        record["triage"] = {
+            "ticket_id": row["ticket_id"],
+            "priority_score": _clean(row["priority_score"]),
+            "severity_offset": _clean(row["severity_offset"]),
+            "age_factor": _clean(row["age_factor"]),
+            "difficulty_factor": _clean(row["difficulty_factor"]),
+            "combined_offset": _clean(row["combined_offset"]),
+            "confidence": _clean(row["confidence"]),
+            "service_is_critical": _clean(row["service_is_critical"]),
+            "service_unresolvable": _clean(row["service_unresolvable"]),
+            "is_resolved": _clean(row["is_resolved"]),
+            "age_days": None if pd.isna(row["age_days"]) else round(float(row["age_days"]), 2),
+            "evidence": {
+                "work_type": _clean(row["ev_work_type"]),
+                "scope": _clean(row["ev_scope"]),
+                "outage_extent": _clean(row["ev_outage_extent"]),
+                "workaround": _clean(row["ev_workaround"]),
+                "regulatory_or_security": _clean(row["ev_regulatory_or_security"]),
+                "deadline_pressure": _clean(row["ev_deadline_pressure"]),
+            },
+            "original": {
+                # The randomised source values, kept for reference so nothing
+                # is lost by the overwrite above.
+                field: _clean(row.get(field)) for field in PREDICTED_FIELDS
+            },
+            "similar_tickets": by_ticket.get(row["ticket_id"], []),
+        }
+        records.append(record)
+
+    with open(target, "w", encoding="utf-8") as handle:
+        json.dump(records, handle, ensure_ascii=False, indent=indent)
+
+    return target, len(records)
