@@ -5,7 +5,7 @@ pandas
 numpy
 scikit-learn
 
-# Only needed by the remaining FinBERT classifiers, classify_service.py and
-# classify_work_type.py. triage/ does not use them.
+# Only needed by classify_service.py, the remaining FinBERT classifier.
+# triage/ does not use them.
 torch
 transformers
