@@ -5,3 +5,5 @@ services:
       dockerfile: Dockerfile
     container_name: swiss-ai-backend
     restart: unless-stopped
+    volumes:
+      - .:/app
