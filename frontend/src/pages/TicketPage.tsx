@@ -204,8 +204,8 @@ function ProposalPanels({ ticket, result, editing, edits, setEdit }: {
         </div>
       </Card>
 
-      <Card title={<span className="inline-flex items-center gap-1">Suggested resolution<MethodTag field="resolution_comment" compact />{staff('resolution_comment') && <StaffBadge />}</span>} icon={<Pencil size={15} />}
-        actions={<span className="text-xs text-muted">AI draft</span>}>
+      <Card title={<span className="inline-flex items-center gap-1">{result.playbook_ref ? 'Suggested resolution' : 'Suggested first steps'}<MethodTag field="resolution_comment" compact />{staff('resolution_comment') && <StaffBadge />}</span>} icon={<Pencil size={15} />}
+        actions={<span className="text-xs text-muted">{result.playbook_ref ? 'AI draft from the matched past fix' : 'no past fix matches: a plan, not a resolution'}</span>}>
         {editing ? (
           <>
             <label className="sr-only" htmlFor="edit-comment">Resolution comment</label>
@@ -307,7 +307,8 @@ function WorkBar({ ticket, result }: { ticket: TicketDetail; result: TriageResul
   const [mode, setMode] = useState<'idle' | 'wait' | 'resolve' | 'handback'>('idle')
   const [note, setNote] = useState('')
   const [resolution, setResolution] = useState<string>(result?.resolution ?? 'done')
-  const [comment, setComment] = useState(result?.resolution_comment ?? '')
+  // Prefill the closing note with the AI draft only when it came from a real past fix (a first-steps plan isn't a closing note).
+  const [comment, setComment] = useState(result?.playbook_ref ? result.resolution_comment : '')
   const send = (body: Omit<WorkUpdate, 'by'>) =>
     work.mutate({ ticketId: ticket.id, body: { ...body, by: user?.email ?? '' } }, { onSuccess: () => setMode('idle') })
   const status = ticket.work_status
@@ -322,7 +323,7 @@ function WorkBar({ ticket, result }: { ticket: TicketDetail; result: TriageResul
               className="rounded-md border border-line bg-surface px-2 py-1 text-sm">
               {(ref?.resolutions ?? ['done']).map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
-            <span className="text-xs text-muted">Prefilled with the AI's suggestion: change it to what you actually did.</span>
+            <span className="text-xs text-muted">{result?.playbook_ref ? "Prefilled with the AI's suggestion: change it to what you actually did." : 'No past fix matched: describe the root cause, what you did and how you verified it.'}</span>
           </div>
           <label className="sr-only" htmlFor="work-comment">Closing note</label>
           <textarea id="work-comment" rows={3} value={comment} onChange={(e) => setComment(e.target.value)} className={inputClass}

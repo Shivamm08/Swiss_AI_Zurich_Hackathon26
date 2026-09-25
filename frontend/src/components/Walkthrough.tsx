@@ -128,7 +128,13 @@ export default function Walkthrough({ events, running, reference, votesTotal }: 
   const retrieve = get('retrieve')
   if (retrieve) {
     const evidence = retrieve.data.evidence as Evidence[]
+    const floor = Number(retrieve.data.min_similarity ?? 0.3)
     details.retrieve = (
+      <>
+      <p className="mb-1.5 text-xs text-muted">
+        Only documents at least {Math.round(floor * 100)}% similar to the ticket, and close to the best match, are kept (up to 6).
+        {Boolean(retrieve.data.no_precedent) && <b className="ml-1 text-amber-700">No similar past fix: the draft will be first steps, not a resolution.</b>}
+      </p>
       <ul className="grid gap-1.5 sm:grid-cols-2">
         {evidence.map((e) => (
           <li key={e.ref_id} className="animate-rise flex items-center gap-2 rounded-lg border border-line px-2.5 py-1.5 text-xs">
@@ -136,10 +142,11 @@ export default function Walkthrough({ events, running, reference, votesTotal }: 
               {e.kind === 'historical_ticket' ? 'learned' : e.kind === 'service_card' ? 'service' : 'playbook'}
             </Pill>
             <span className="min-w-0 flex-1 truncate" title={e.title}>{e.title}</span>
-            <span className="font-mono text-muted">{e.score.toFixed(2)}</span>
+            <span className="font-mono text-muted">{e.similarity != null ? `${Math.round(e.similarity * 100)}%` : e.score.toFixed(2)}</span>
           </li>
         ))}
       </ul>
+      </>
     )
   }
   const voteEvents = events.filter((e) => e.stage === 'vote')

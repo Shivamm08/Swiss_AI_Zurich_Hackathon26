@@ -205,7 +205,9 @@ export function EvidenceList({ evidence, highlight }: { evidence: Evidence[]; hi
             <button type="button" className="w-full text-left" onClick={() => setOpen(open === e.ref_id ? null : e.ref_id)}>
               <span className="flex items-center gap-2">
                 <Pill className={cls}>{label}</Pill>
-                <span className="font-mono text-xs text-slate-500">{e.score.toFixed(2)}</span>
+                <span className="font-mono text-xs text-slate-500" title={e.similarity != null ? 'Cosine similarity to this ticket' : 'Keyword rank score'}>
+                  {e.similarity != null ? `${Math.round(e.similarity * 100)}% match` : e.score.toFixed(2)}
+                </span>
                 {e.ref_id === highlight && <span className="text-xs font-medium text-accent">used for this proposal</span>}
               </span>
               <span className="mt-0.5 block">{e.title}</span>
