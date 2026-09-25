@@ -4,9 +4,9 @@ matched playbook entry and the ticket's own specifics."""
 from app.ingest import ticket_text
 from app.models import KbDocument, Ticket
 from app.pipeline import llm
-from app.pipeline.classify import Classification
+from app.pipeline.classify import Extraction
 
-SYSTEM_PROMPT = """You are the assigned L2 agent writing the closing comment on a Jira ticket.
+SYSTEM_PROMPT = """You are the assigned L2 agent writing the closing comment on a Jira ticket, in the first person.
 Write 1-3 sentences starting with "Resolution:". Follow root cause -> action -> verification.
 Reuse the reference resolution's approach but use this ticket's specifics (IDs, entity, counts, systems).
 If the resolution status is "clarification", instead state exactly what information is missing.
@@ -20,11 +20,15 @@ _FALLBACK = {
 }
 
 
-def draft_comment(ticket: Ticket, cls: Classification, playbook_doc: KbDocument | None, model: str | None) -> str:
-    reference = playbook_doc.content if playbook_doc else "(no matching playbook entry)"
+def draft_comment(
+    ticket: Ticket, cls: Extraction, reference_doc: KbDocument | None, model: str | None, assignee: str | None = None
+) -> str:
+    """`reference_doc` is the matched playbook entry, or an approved past ticket (learning loop)."""
+    reference = reference_doc.content if reference_doc else "(no matching past resolution)"
     user = (
         f"TICKET\n{ticket_text(ticket)}\n\n"
-        f"DECISION\nservice={cls.service} work_type={cls.work_type} resolution={cls.resolution}\n\n"
+        f"DECISION\nservice={cls.service} work_type={cls.work_type} resolution={cls.resolution} "
+        f"assigned_agent={assignee or 'unassigned'}\n\n"
         f"REFERENCE RESOLUTION\n{reference}"
     )
     try:
@@ -33,6 +37,6 @@ def draft_comment(ticket: Ticket, cls: Classification, playbook_doc: KbDocument 
         text = None
     if text:
         return text.strip()
-    if playbook_doc and cls.resolution == "done":
-        return playbook_doc.meta.get("note", playbook_doc.content)
+    if reference_doc and cls.resolution == "done":
+        return reference_doc.meta.get("note", reference_doc.content)
     return _FALLBACK[cls.resolution].format(service=cls.service)

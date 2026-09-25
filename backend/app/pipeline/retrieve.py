@@ -46,25 +46,46 @@ def _bm25(docs: list[KbDocument], query: str, k1: float = 1.5, b: float = 0.75) 
     return sorted(scored, key=lambda x: x[1], reverse=True)
 
 
-def _vector(db: Session, query: str, kinds: list[EvidenceKind] | None, k: int) -> list[KbDocument]:
+def embed_query(query: str) -> list[float] | None:
     vectors = llm.embed([query])
-    if not vectors:
+    return vectors[0] if vectors else None
+
+
+def _vector(db: Session, vector: list[float] | None, kinds: list[EvidenceKind] | None, k: int) -> list[KbDocument]:
+    if vector is None:
         return []
     stmt = select(KbDocument).where(KbDocument.embedding.is_not(None))
     if kinds:
         stmt = stmt.where(KbDocument.kind.in_(kinds))
-    stmt = stmt.order_by(KbDocument.embedding.cosine_distance(vectors[0])).limit(k)
+    stmt = stmt.order_by(KbDocument.embedding.cosine_distance(vector)).limit(k)
     return list(db.scalars(stmt))
 
 
-def search(db: Session, query: str, k: int = 5, kinds: list[EvidenceKind] | None = None) -> list[Evidence]:
+def cosine_similarity(db: Session, vector: list[float] | None, ref_ids: list[str]) -> dict[str, float]:
+    """Cosine similarity between the query and the given documents (for retrieval confidence)."""
+    if vector is None or not ref_ids:
+        return {}
+    rows = db.execute(
+        select(KbDocument.ref_id, 1 - KbDocument.embedding.cosine_distance(vector))
+        .where(KbDocument.ref_id.in_(ref_ids), KbDocument.embedding.is_not(None))
+    )
+    return {ref: float(sim) for ref, sim in rows}
+
+
+def search(
+    db: Session,
+    query: str,
+    k: int = 5,
+    kinds: list[EvidenceKind] | None = None,
+    query_vector: list[float] | None = None,
+) -> list[Evidence]:
     stmt = select(KbDocument)
     if kinds:
         stmt = stmt.where(KbDocument.kind.in_(kinds))
     docs = list(db.scalars(stmt))
 
     keyword_ranked = [d for d, _ in _bm25(docs, query)][: k * 3]
-    vector_ranked = _vector(db, query, kinds, k * 3)
+    vector_ranked = _vector(db, query_vector if query_vector is not None else embed_query(query), kinds, k * 3)
 
     fused: dict[str, float] = {}
     by_ref: dict[str, KbDocument] = {}
