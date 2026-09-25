@@ -56,10 +56,10 @@ export default function QueuePage() {
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="inline-flex rounded-lg border border-line bg-surface p-0.5 shadow-card">
+        <div className="inline-flex max-w-full overflow-x-auto rounded-lg border border-line bg-surface p-0.5 shadow-card">
           {tabs.map((t) => (
             <button key={t.view} type="button" onClick={() => setView(t.view)}
-              className={`rounded-md px-3 py-1.5 text-sm transition ${view === t.view ? 'bg-ink text-white shadow-sm' : 'text-muted hover:text-ink'}`}>
+              className={`rounded-md px-3 py-1.5 text-sm whitespace-nowrap transition ${view === t.view ? 'bg-ink text-white shadow-sm' : 'text-muted hover:text-ink'}`}>
               {t.label}
               <TabCount view={t.view} asUser={user?.email} />
             </button>
@@ -105,7 +105,7 @@ export default function QueuePage() {
       {data && data.items.length > 0 && (
         <div className="overflow-hidden rounded-xl border border-line bg-surface shadow-card">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full min-w-[960px] text-left text-sm">
               <thead className="border-b border-line bg-canvas/60 text-[11px] font-semibold tracking-wider text-muted uppercase">
                 <tr>
                   <th className="py-2.5 pr-3 pl-5">Priority</th>

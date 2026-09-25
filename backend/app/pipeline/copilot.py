@@ -1,9 +1,9 @@
 """Copilot grounding: what the chat assistant may answer from, and what it refuses.
 
 1. Retrieve only RELEVANT knowledge (retrieve.search drops anything below the similarity floor).
-2. Relevant knowledge found, or a ticket is open  -> answer from it, citing [ref_id]s.
-3. Nothing relevant and no ticket                 -> a small structured AI call decides whether the
-   question is about service-desk work or this app at all:
+2. Relevant knowledge found                       -> answer from it, citing [ref_id]s.
+3. Nothing relevant for the question itself        -> a small structured AI call decides whether the
+   question is about service-desk work or this app at all (also when a ticket is open):
      - off-topic (weather, recipes, general coding…) -> fixed refusal, no answer is generated;
      - on-topic but not in the knowledge base       -> the model must say so and may only explain
                                                        how the app works (APP_GUIDE), never invent fixes.
@@ -80,23 +80,26 @@ def ground(db: Session, turns: list[ChatTurn], ticket: Ticket | None, model: str
     # question on its own, so an earlier topic can't leak its sources into an unrelated answer.
     previous = next((t.content for t in reversed(turns[:-1]) if t.role == "user"), "")
     query = f"{previous}\n{question}".strip() if previous and is_follow_up(question) else question
-    context = ""
+    exclude = {f"tkt-{ticket.number}"} if ticket else None  # the open ticket is context, never its own source
+    citations = retrieve.search(db, query, k=5, exclude=exclude)
+    if not citations and not _in_scope(turns, model):
+        # Checked on the question itself, so an open ticket can't smuggle an off-topic question through.
+        return Grounded([], ticket_text(ticket) if ticket else "", "off_topic")
     if ticket:
         context = ticket_text(ticket)
-        query = f"{query}\n{ticket.summary}\n{ticket.description}"
-    citations = retrieve.search(db, query, k=5)
-    if citations:
-        return Grounded(citations, context, "sources")
-    if ticket:
-        return Grounded([], context, "ticket")
+        citations = citations or retrieve.search(db, f"{query}\n{ticket.summary}\n{ticket.description}", k=5, exclude=exclude)
+        return Grounded(citations, context, "sources" if citations else "ticket")
+    return Grounded(citations, "", "sources" if citations else "no_knowledge")
+
+
+def _in_scope(turns: list[ChatTurn], model: str | None) -> bool:
+    """Small structured AI call; if it can't run, the question is treated as in scope (never refuse by accident)."""
     try:
         conversation = "\n".join(f"{t.role}: {t.content}" for t in turns[-4:])
         verdict = llm.parse(SCOPE_PROMPT, conversation, Scope, model)
     except Exception:
-        verdict = None
-    if verdict is not None and not verdict.in_scope:
-        return Grounded([], context, "off_topic")
-    return Grounded([], context, "no_knowledge")
+        return True
+    return verdict is None or verdict.in_scope
 
 
 def user_message(question: str, g: Grounded) -> str:

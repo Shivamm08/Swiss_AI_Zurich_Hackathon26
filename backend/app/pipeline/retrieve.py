@@ -59,12 +59,15 @@ def embed_query(query: str) -> list[float] | None:
     return vectors[0] if vectors else None
 
 
-def _vector(db: Session, vector: list[float] | None, kinds: list[EvidenceKind] | None, k: int) -> list[KbDocument]:
+def _vector(db: Session, vector: list[float] | None, kinds: list[EvidenceKind] | None, k: int,
+            exclude: set[str] | None = None) -> list[KbDocument]:
     if vector is None:
         return []
     stmt = select(KbDocument).where(KbDocument.embedding.is_not(None))
     if kinds:
         stmt = stmt.where(KbDocument.kind.in_(kinds))
+    if exclude:
+        stmt = stmt.where(KbDocument.ref_id.not_in(exclude))
     stmt = stmt.order_by(KbDocument.embedding.cosine_distance(vector)).limit(k)
     return list(db.scalars(stmt))
 
@@ -94,16 +97,20 @@ def search(
     kinds: list[EvidenceKind] | None = None,
     query_vector: list[float] | None = None,
     min_similarity: float = RELEVANCE_MIN,
+    exclude: set[str] | None = None,
 ) -> list[Evidence]:
-    """Up to `k` relevant documents (possibly none). Without embeddings: keyword ranking only, top k."""
+    """Up to `k` relevant documents (possibly none). Without embeddings: keyword ranking only, top k.
+    `exclude`: ref_ids that must not come back, e.g. a ticket's own learned document."""
     stmt = select(KbDocument)
     if kinds:
         stmt = stmt.where(KbDocument.kind.in_(kinds))
+    if exclude:
+        stmt = stmt.where(KbDocument.ref_id.not_in(exclude))
     docs = list(db.scalars(stmt))
 
     keyword_ranked = [d for d, _ in _bm25(docs, query)][: k * 3]
     vector = query_vector if query_vector is not None else embed_query(query)
-    vector_ranked = _vector(db, vector, kinds, k * 3)
+    vector_ranked = _vector(db, vector, kinds, k * 3, exclude)
 
     fused: dict[str, float] = {}
     by_ref: dict[str, KbDocument] = {}

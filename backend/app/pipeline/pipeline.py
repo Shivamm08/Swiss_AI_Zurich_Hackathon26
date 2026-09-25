@@ -75,7 +75,8 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
     text = ticket_text(ticket)
     query_vector = retrieve.embed_query(text)
     # Up to 6, but only documents that are actually relevant (see retrieve.RELEVANCE_MIN / _BAND).
-    evidence = retrieve.search(db, text, k=6, query_vector=query_vector)
+    # A ticket never counts as its own precedent (a re-run on a done ticket would match itself 100%).
+    evidence = retrieve.search(db, text, k=6, query_vector=query_vector, exclude={f"tkt-{ticket.number}"})
     precedents = [e for e in evidence if e.kind != "service_card"]
     found = (f"Found {len(evidence)} relevant document{'s' if len(evidence) != 1 else ''}"
              + ("" if precedents else ": no similar past fix, this looks like a new kind of problem") if evidence

@@ -312,5 +312,7 @@ def deescalate(ticket_id: uuid.UUID, body: TicketNote, db: Session = Depends(get
 def delete_ticket(ticket_id: uuid.UUID, by: str = Query(..., description="Admin email"), db: Session = Depends(get_db)) -> None:
     if get_actor(db, by).role != "admin":
         raise HTTPException(status_code=403, detail="Only an admin can delete tickets")
-    db.delete(get_ticket_or_404(db, ticket_id))
+    ticket = get_ticket_or_404(db, ticket_id)
+    forget_resolution(db, ticket)  # its fix must not outlive it in the knowledge base
+    db.delete(ticket)
     db.commit()
