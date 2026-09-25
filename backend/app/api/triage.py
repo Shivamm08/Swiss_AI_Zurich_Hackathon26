@@ -8,8 +8,10 @@ from app.api.deps import validate_model
 from app.api.tickets import get_ticket_or_404
 from app.db import get_db
 from app.domain import priority_for, team_for
+from app.kb.learn import learn_from_review
 from app.models import Review, Ticket, TriageResult
 from app.pipeline.pipeline import run_triage
+from app.pipeline.rubric import is_critical, rescore
 from app.schemas import (
     BatchTriageRequest,
     BatchTriageResult,
@@ -92,7 +94,19 @@ def review_triage(result_id: uuid.UUID, body: ReviewCreate, db: Session = Depend
         review_seconds=body.review_seconds,
     )
     db.add(review)
-    result.ticket.triage_state = _STATE_FOR_ACTION[body.action]
+    ticket = result.ticket
+    ticket.triage_state = _STATE_FOR_ACTION[body.action]
+    if final is not None:
+        # Keep the queue in sync with the human decision, then feed the learning loop.
+        ticket.ai_service, ticket.ai_team = final.service, final.team
+        ticket.priority_score = rescore(result.priority, ticket.priority_score, final.priority)
+        ticket.ai_priority = final.priority
+        ticket.escalated = final.priority == "Highest" and is_critical(final.service)
+        if ticket.route == "triage":
+            ticket.route = "review"
+        learn_from_review(db, ticket, final.model_dump(), quality=body.action, reviewer=body.reviewer)
+    else:  # rejected: back to the Service Desk triage queue for a human to classify
+        ticket.route, ticket.assignee = "triage", None
     db.commit()
     db.refresh(review)
     return review
