@@ -1,10 +1,29 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchSubmission, useImportTickets, useIngestEmail } from '../api/hooks'
+import { fetchSubmission, useBatchTriage, useImportTickets, useIngestEmail, useTickets } from '../api/hooks'
 import type { TicketSource } from '../api/types'
-import { Button, Card, ErrorBox } from '../components/ui'
+import { Button, Card, ErrorBox, PageHeader } from '../components/ui'
+import { useSelectedModel } from '../model/context'
 
-const input = 'rounded-md border border-slate-300 px-2 py-1 text-sm'
+const input = 'rounded-md border border-line px-2 py-1 text-sm'
+
+function BatchTriageCard() {
+  const { model } = useSelectedModel()
+  const batch = useBatchTriage()
+  const { data: pending } = useTickets({ state: 'new', limit: 1 })
+  return (
+    <Card title="Batch triage (silent)">
+      <p className="mb-3 text-sm text-muted">
+        Triages every new ticket in the background, without the live walkthrough. For the demo, open tickets one by one from the Queue instead.
+      </p>
+      <Button onClick={() => batch.mutate({ model })} disabled={batch.isPending || !pending?.total}>
+        {batch.isPending ? 'Triaging…' : `Triage ${pending?.total ?? 0} new tickets`}
+      </Button>
+      {batch.data && <p className="mt-2 text-sm text-muted">Triaged {batch.data.triaged}{batch.data.failed ? `, ${batch.data.failed} failed` : ''}.</p>}
+      <ErrorBox error={batch.error} />
+    </Card>
+  )
+}
 
 export default function ImportPage() {
   const navigate = useNavigate()
@@ -29,8 +48,9 @@ export default function ImportPage() {
   }
 
   return (
-    <div className="flex max-w-3xl flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Import & export</h1>
+    <div className="flex max-w-3xl flex-col gap-5">
+      <PageHeader title="Intake & export" subtitle="Bring tickets in, run silent batch triage, and export the challenge submission." />
+      <BatchTriageCard />
 
       <Card title="Import a Jira export (JSON)">
         <form
@@ -54,7 +74,7 @@ export default function ImportPage() {
           <Button type="submit" disabled={!file || importTickets.isPending}>Import</Button>
         </form>
         {importTickets.data && (
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-muted">
             Imported {importTickets.data.imported}, skipped {importTickets.data.skipped}.
           </p>
         )}
@@ -89,7 +109,7 @@ export default function ImportPage() {
       </Card>
 
       <Card title="Export challenge submission">
-        <p className="mb-2 text-sm text-slate-600">
+        <p className="mb-2 text-sm text-muted">
           Challenge-format JSON using the analyst's decision where reviewed, otherwise the latest AI proposal.
         </p>
         <Button onClick={downloadSubmission}>Download submission.json</Button>

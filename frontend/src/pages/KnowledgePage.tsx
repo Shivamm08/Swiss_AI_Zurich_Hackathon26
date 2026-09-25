@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useKbDocuments, useKbSearch, useSyncKb } from '../api/hooks'
 import type { EvidenceKind } from '../api/types'
-import { Button, Card, ErrorBox, Loading, Pill } from '../components/ui'
+import { RefreshCw } from 'lucide-react'
+import { Button, Card, ErrorBox, Loading, PageHeader, Pill } from '../components/ui'
 
 const KINDS: { value: EvidenceKind | undefined; label: string }[] = [
   { value: undefined, label: 'All' },
@@ -18,14 +19,13 @@ export default function KnowledgePage() {
   const sync = useSyncKb()
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Knowledge base</h1>
-        <Button variant="secondary" onClick={() => sync.mutate()} disabled={sync.isPending}>
+    <div className="flex flex-col gap-5">
+      <PageHeader title="Knowledge base"
+        subtitle="What the AI retrieves from: service cards, the resolution playbook, and tickets analysts approved (it learns from every review)."
+        actions={<Button variant="secondary" icon={<RefreshCw size={14} />} onClick={() => sync.mutate()} disabled={sync.isPending}>
           {sync.isPending ? 'Syncing…' : 'Re-sync from files'}
-        </Button>
-      </header>
-      {sync.data && <p className="text-sm text-slate-600">Synced {sync.data.synced} documents, embedded {sync.data.embedded}.</p>}
+        </Button>} />
+      {sync.data && <p className="text-sm text-muted">Synced {sync.data.synced} documents, embedded {sync.data.embedded}.</p>}
 
       <Card title="Test retrieval">
         <form
@@ -41,7 +41,7 @@ export default function KnowledgePage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="e.g. allocations rejected by broker"
-            className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="min-w-0 flex-1 rounded-md border border-line px-3 py-1.5 text-sm"
           />
           <Button type="submit" disabled={search.isPending}>Search</Button>
         </form>
@@ -50,7 +50,7 @@ export default function KnowledgePage() {
           <ol className="mt-3 flex flex-col gap-2 text-sm">
             {search.data.map((hit) => (
               <li key={hit.ref_id}>
-                <span className="font-mono text-xs text-slate-500">{hit.kind} · {hit.ref_id} · {hit.score.toFixed(2)}</span>
+                <span className="font-mono text-xs text-muted">{hit.kind} · {hit.ref_id} · {hit.score.toFixed(2)}</span>
                 <p>{hit.snippet}</p>
               </li>
             ))}
@@ -75,7 +75,7 @@ export default function KnowledgePage() {
               {d.has_embedding && <Pill className="bg-violet-100 text-violet-800">embedded</Pill>}
             </div>
             <h3 className="text-sm font-semibold">{d.title}</h3>
-            <p className="mt-1 text-sm text-slate-600">{d.content}</p>
+            <p className="mt-1 text-sm text-muted">{d.content}</p>
           </Card>
         ))}
       </div>
