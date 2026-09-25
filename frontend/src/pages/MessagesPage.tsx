@@ -1,4 +1,4 @@
-import { ArrowRightLeft, Hash, MessageSquarePlus, Search, Send, Siren, Ticket as TicketIcon } from 'lucide-react'
+import { ArrowRightLeft, CircleCheck, Hash, MessageSquarePlus, Search, Send, Siren, Ticket as TicketIcon } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useChannels, useMessages, useSendMessage, useUsers } from '../api/hooks'
@@ -59,7 +59,8 @@ function MessageItem({ m, mine }: { m: Message; mine: boolean }) {
   }
   const tag = m.kind === 'escalation'
     ? <Pill className="bg-red-50 text-red-700 ring-1 ring-red-200"><Siren size={11} />escalation</Pill>
-    : m.kind === 'handoff' ? <Pill className="bg-ai-soft text-ai"><ArrowRightLeft size={11} />handed back</Pill> : null
+    : m.kind === 'handoff' ? <Pill className="bg-ai-soft text-ai"><ArrowRightLeft size={11} />handed back</Pill>
+    : m.kind === 'resolved' ? <Pill className="bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"><CircleCheck size={11} />ticket done</Pill> : null
   return (
     <div className={`animate-rise flex gap-2.5 ${mine ? 'flex-row-reverse' : ''}`}>
       <Avatar name={m.sender_name} email={m.sender} size="sm" />

@@ -76,6 +76,8 @@ cannot reproduce, cancelled) and write the **closing note**. It is prefilled wit
 resolution, and they change it to what they actually did. Then:
 
 - the ticket leaves every open queue and stops counting towards their workload;
+- the department's **Team Lead / Analyst is notified**: a direct message from the specialist
+  ("Done: #N … (resolution). closing note") with a link to the ticket appears in their Messages;
 - it's **added to the knowledge base** as a learned ticket, with the specialist's own note and the
   specialist as its resolver (see [Knowledge base and RAG](07-Knowledge-Base-and-RAG.md#the-learning-loop));
 - the specialist gains expertise on that service, which future assignments use;

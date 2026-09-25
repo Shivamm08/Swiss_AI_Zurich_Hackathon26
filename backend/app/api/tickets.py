@@ -205,6 +205,17 @@ def assign_ticket(ticket_id: uuid.UUID, body: AssignRequest, db: Session = Depen
     return ticket
 
 
+def notify_done(db: Session, ticket: Ticket) -> None:
+    """Tell the department's Team Lead / Analyst that the work is finished: a direct message from the
+    specialist with the resolution and closing note, linked to the ticket."""
+    analysts = [u for u in db.scalars(select(User).where(User.role == "analyst")) if ticket.ai_team in (u.teams or [])]
+    for analyst in analysts:
+        if analyst.email != ticket.resolved_by:
+            chat.post(db, chat.dm_channel(ticket.resolved_by, analyst.email), ticket.resolved_by,
+                      f"Done: #{ticket.number} \"{ticket.summary}\" ({ticket.resolution}). {ticket.resolution_comment}",
+                      kind="resolved", ticket_id=ticket.id)
+
+
 # Allowed work transitions: action -> (from statuses, to status)
 TRANSITIONS: dict[str, tuple[tuple[str, ...], str]] = {
     "start": (("assigned",), "in_progress"),
@@ -241,8 +252,10 @@ def update_work(ticket_id: uuid.UUID, body: WorkUpdate, db: Session = Depends(ge
         ticket.assignee = None
     ticket.work_status = target
     ticket.add_activity(body.by, body.action, note)
-    if target == "done" and ticket.triage_results:
-        learn_from_resolution(db, ticket)  # only finished work becomes knowledge
+    if target == "done":
+        if ticket.triage_results:
+            learn_from_resolution(db, ticket)  # only finished work becomes knowledge
+        notify_done(db, ticket)
     db.commit()
     db.refresh(ticket)
     return ticket

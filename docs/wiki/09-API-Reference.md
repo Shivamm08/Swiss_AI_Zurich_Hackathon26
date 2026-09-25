@@ -27,7 +27,7 @@ endpoint with its exact request and response shapes, and lets you try them. The 
 | DELETE | `/api/tickets/{id}?by=` | Delete a ticket (and its proposals/reviews). Admin only |
 | POST | `/api/tickets/{id}/deescalate` | `{by, note?}`: clear the escalation. The department's analyst or an admin |
 | POST | `/api/tickets/{id}/assign` | `{assignee, by}`: dispatch (open → assigned) or reassign. `by` must be the department's analyst (any analyst for Needs review) or an admin (`403`); `assignee` must be a specialist in the ticket's department (`400`); `409` once done |
-| POST | `/api/tickets/{id}/work` | Specialist: `{action: start · wait · resume · resolve · handback, by, note?, resolution?, resolution_comment?}`. `handback` needs a `note` and returns the ticket to the analyst. Only the assignee or an admin (`403`); invalid step `409`; `resolve` needs resolution + comment (`422`) and adds the ticket to the knowledge base |
+| POST | `/api/tickets/{id}/work` | Specialist: `{action: start · wait · resume · resolve · handback, by, note?, resolution?, resolution_comment?}`. `handback` needs a `note` and returns the ticket to the analyst. Only the assignee or an admin (`403`); invalid step `409`; `resolve` needs resolution + comment (`422`), adds the ticket to the knowledge base and sends the department's Team Lead / Analyst a "ticket done" direct message |
 
 ## Triage and review
 

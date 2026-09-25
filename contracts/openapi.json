@@ -2716,7 +2716,8 @@
               "message",
               "system",
               "escalation",
-              "handoff"
+              "handoff",
+              "resolved"
             ],
             "title": "Kind"
           },
@@ -3470,7 +3471,8 @@
               "message",
               "system",
               "escalation",
-              "handoff"
+              "handoff",
+              "resolved"
             ],
             "title": "Kind",
             "default": "message"
@@ -3526,7 +3528,8 @@
               "message",
               "system",
               "escalation",
-              "handoff"
+              "handoff",
+              "resolved"
             ],
             "title": "Kind"
           },

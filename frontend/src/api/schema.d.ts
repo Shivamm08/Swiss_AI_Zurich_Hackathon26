@@ -971,7 +971,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "message" | "system" | "escalation" | "handoff";
+            kind: "message" | "system" | "escalation" | "handoff" | "resolved";
             /** Model */
             model: string;
         };
@@ -1244,7 +1244,7 @@ export interface components {
              * @default message
              * @enum {string}
              */
-            kind: "message" | "system" | "escalation" | "handoff";
+            kind: "message" | "system" | "escalation" | "handoff" | "resolved";
             /**
              * Ticket Id
              * @description Attach a ticket; kind 'escalation' also marks it escalated
@@ -1270,7 +1270,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "message" | "system" | "escalation" | "handoff";
+            kind: "message" | "system" | "escalation" | "handoff" | "resolved";
             /** Ticket Id */
             ticket_id: string | null;
             /** Ticket Number */

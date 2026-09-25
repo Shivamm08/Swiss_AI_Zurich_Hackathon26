@@ -486,7 +486,8 @@ class SettingsOut(BaseModel):
 # ---------------------------------------------------------------- messaging / directory
 
 ChannelKind = Literal["team", "dm"]
-MessageKind = Literal["message", "system", "escalation", "handoff"]
+# resolved: the automatic "ticket done" note a specialist's Team Lead / Analyst receives
+MessageKind = Literal["message", "system", "escalation", "handoff", "resolved"]
 # Hand-offs are not a message any more: a specialist hands a ticket back (POST /tickets/{id}/work).
 DraftPurpose = Literal["escalate", "question"]
 

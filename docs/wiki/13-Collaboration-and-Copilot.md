@@ -37,6 +37,7 @@ Messages have a **kind** that changes how they look:
 | Kind | Looks like | Created by |
 |---|---|---|
 | `message` | Normal chat bubble | Anyone |
+| `resolved` | Bubble with a green "ticket done" tag and the ticket card | Sent automatically from the specialist to their department's **Team Lead / Analyst** when they mark a ticket done: resolution + closing note |
 | `handoff` | Bubble with a violet "handed back" tag | Posted automatically in the department channel when a specialist **hands a ticket back** |
 | `escalation` | Bubble with a red "escalation" tag. **Sets the ticket's `escalated` flag** and logs it on the ticket | "Escalate" on a ticket (only the specialist on it, its Team Lead / Analyst, or an admin: `403` otherwise) |
 | automatic escalation | Red card "Automatic escalation" | The pipeline, when a ticket becomes Highest on a critical service |
