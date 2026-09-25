@@ -72,6 +72,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/rubric/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Rubric
+         * @description What impact/urgency/priority would these facts produce? (live preview while editing)
+         */
+        post: operations["preview_rubric"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings View */
+        get: operations["get_settings_view"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tickets": {
         parameters: {
             query?: never;
@@ -137,6 +174,23 @@ export interface paths {
         post?: never;
         /** Delete Ticket */
         delete: operations["delete_ticket"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tickets/{ticket_id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assign Ticket */
+        post: operations["assign_ticket"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -295,6 +349,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/metrics/calibration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Calibration
+         * @description Does confidence mean something? Per confidence bucket, the share of reviewed proposals
+         *     that analysts accepted without changing service or priority.
+         */
+        get: operations["get_calibration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/export/submission": {
         parameters: {
             query?: never;
@@ -317,10 +392,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Users */
+        get: operations["list_users"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Workload */
+        get: operations["get_workload"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AssignRequest */
+        AssignRequest: {
+            /** Assignee */
+            assignee: string;
+        };
+        /** AssigneeCandidate */
+        AssigneeCandidate: {
+            /** User */
+            user: string;
+            /** Name */
+            name: string;
+            /** Score */
+            score: number;
+            /** Open */
+            open: number;
+            /** Capacity */
+            capacity: number;
+            /** Expertise */
+            expertise: number;
+        };
+        /** AssigneeSuggestion */
+        AssigneeSuggestion: {
+            /**
+             * Expert
+             * @description Resolver of the matched playbook entry (used for the export)
+             */
+            expert: string | null;
+            /**
+             * Recommended
+             * @description Best candidate after workload balancing
+             */
+            recommended: string | null;
+            /** Reason */
+            reason: string;
+            /** Candidates */
+            candidates: components["schemas"]["AssigneeCandidate"][];
+        };
         /** AssistantAnswer */
         AssistantAnswer: {
             /** Answer */
@@ -380,6 +526,50 @@ export interface components {
              * @enum {string}
              */
             source: "challenge" | "training" | "manual" | "email";
+        };
+        /** Calibration */
+        Calibration: {
+            /** Buckets */
+            buckets: components["schemas"]["CalibrationBucket"][];
+            /** Note */
+            note: string;
+        };
+        /** CalibrationBucket */
+        CalibrationBucket: {
+            /** Low */
+            low: number;
+            /** High */
+            high: number;
+            /** Reviewed */
+            reviewed: number;
+            /**
+             * Agreement
+             * @description Share approved without changing service or priority
+             */
+            agreement: number | null;
+        };
+        /** ConfidenceOut */
+        ConfidenceOut: {
+            /**
+             * Overall
+             * @description min(votes, retrieval) x flag multipliers
+             */
+            overall: number;
+            /**
+             * Votes
+             * @description How consistently the model answered across votes
+             */
+            votes: number;
+            /**
+             * Retrieval
+             * @description How closely the matched past solution fits
+             */
+            retrieval: number;
+            /**
+             * Flags
+             * @description Reasons for caution, e.g. generic_service, unclear_input
+             */
+            flags: string[];
         };
         /**
          * Decision
@@ -473,6 +663,35 @@ export interface components {
             snippet: string;
             /** Score */
             score: number;
+        };
+        /** Facts */
+        Facts: {
+            /**
+             * Scope
+             * @description Who is affected: one person up to external counterparties
+             * @enum {string}
+             */
+            scope: "individual" | "team" | "one_entity" | "multi_entity" | "external_counterparty";
+            /**
+             * Outage Extent
+             * @enum {string}
+             */
+            outage_extent: "none" | "partial_degradation" | "full_unavailability";
+            /**
+             * Workaround
+             * @enum {string}
+             */
+            workaround: "none" | "difficult" | "easy" | "not_applicable";
+            /**
+             * Regulatory Or Security
+             * @description Actual regulatory breach or security compromise
+             */
+            regulatory_or_security: boolean;
+            /**
+             * Deadline Pressure
+             * @enum {string}
+             */
+            deadline_pressure: "none" | "soft" | "hard";
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -597,6 +816,34 @@ export interface components {
              * @description How often analysts changed each field
              */
             field_override_counts: {
+                [key: string]: number;
+            };
+            /**
+             * By Route
+             * @description Latest proposals per route (auto/review/triage)
+             */
+            by_route: {
+                [key: string]: number;
+            };
+            /** Escalations Open */
+            escalations_open: number;
+            /**
+             * Sla Breaches
+             * @description Open tickets past their SLA deadline
+             */
+            sla_breaches: number;
+            /**
+             * Priority Intake
+             * @description Priority as submitted
+             */
+            priority_intake: {
+                [key: string]: number;
+            };
+            /**
+             * Priority Ai
+             * @description Priority after triage
+             */
+            priority_ai: {
                 [key: string]: number;
             };
         };
@@ -724,6 +971,42 @@ export interface components {
              */
             created_at: string;
         };
+        /** RubricPreview */
+        RubricPreview: {
+            /**
+             * Impact
+             * @enum {string}
+             */
+            impact: "Highest" | "High" | "Medium" | "Low" | "Lowest";
+            /**
+             * Urgency
+             * @enum {string}
+             */
+            urgency: "Highest" | "High" | "Medium" | "Low" | "Lowest";
+            /**
+             * Priority
+             * @enum {string}
+             */
+            priority: "Highest" | "High" | "Medium" | "Low" | "Lowest";
+            /** Priority Score */
+            priority_score: number;
+            /** Rubric Trace */
+            rubric_trace: string[];
+        };
+        /** RubricPreviewRequest */
+        RubricPreviewRequest: {
+            facts: components["schemas"]["Facts"];
+            /**
+             * Service
+             * @enum {string}
+             */
+            service: "Trading Platform" | "Order Management" | "Trade Matching" | "Securities Settlement" | "Corporate Actions" | "Fund Pricing" | "NAV Calculation" | "Portfolio Accounting" | "Cash Management" | "Risk & Compliance Monitoring" | "Regulatory Reporting" | "SimCorp Dimension" | "Rimes Data Feed" | "Client Reporting" | "Tax Reporting" | "CRM & Client Portal" | "Identity & Access Management" | "SharePoint & File Storage" | "Outlook & Email" | "Emailed Support Tickets";
+            /**
+             * Work Type
+             * @enum {string}
+             */
+            work_type: "Incident" | "Service Request";
+        };
         /** ServiceInfo */
         ServiceInfo: {
             /**
@@ -742,7 +1025,28 @@ export interface components {
              */
             criticality: "Critical" | "Non-Critical";
         };
-        /** TicketCreate */
+        /** SettingsOut */
+        SettingsOut: {
+            /** Auto Threshold */
+            auto_threshold: number;
+            /** Triage Threshold */
+            triage_threshold: number;
+            /** Sla Hours */
+            sla_hours: {
+                [key: string]: number;
+            };
+            /** Votes */
+            votes: number;
+            /** Max Share */
+            max_share: number;
+            /** Default Capacity */
+            default_capacity: number;
+        };
+        /**
+         * TicketCreate
+         * @description Admin "New ticket" form: only summary, description and reporter are required;
+         *     the pipeline derives everything else.
+         */
         TicketCreate: {
             /** Work Type */
             work_type?: string | null;
@@ -750,10 +1054,7 @@ export interface components {
             request_type?: string | null;
             /** Summary */
             summary: string;
-            /**
-             * Description
-             * @default
-             */
+            /** Description */
             description: string;
             /**
              * Affected Service
@@ -859,6 +1160,27 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Assignee */
+            assignee?: string | null;
+            /** Ai Service */
+            ai_service?: string | null;
+            /** Ai Team */
+            ai_team?: string | null;
+            /** Ai Priority */
+            ai_priority?: string | null;
+            /** Priority Score */
+            priority_score?: number | null;
+            /** Confidence */
+            confidence?: number | null;
+            /** Route */
+            route?: ("auto" | "review" | "triage") | null;
+            /**
+             * Escalated
+             * @default false
+             */
+            escalated: boolean;
+            /** Sla Due At */
+            sla_due_at?: string | null;
             latest_triage: components["schemas"]["TriageResultOut"] | null;
             /** Reviews */
             reviews: components["schemas"]["ReviewOut"][];
@@ -930,6 +1252,27 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Assignee */
+            assignee?: string | null;
+            /** Ai Service */
+            ai_service?: string | null;
+            /** Ai Team */
+            ai_team?: string | null;
+            /** Ai Priority */
+            ai_priority?: string | null;
+            /** Priority Score */
+            priority_score?: number | null;
+            /** Confidence */
+            confidence?: number | null;
+            /** Route */
+            route?: ("auto" | "review" | "triage") | null;
+            /**
+             * Escalated
+             * @default false
+             */
+            escalated: boolean;
+            /** Sla Due At */
+            sla_due_at?: string | null;
         };
         /** TicketPage */
         TicketPage: {
@@ -997,8 +1340,39 @@ export interface components {
              * Format: uuid
              */
             ticket_id: string;
-            /** Confidence */
+            /**
+             * Confidence
+             * @description Overall confidence (same as confidence_detail.overall)
+             */
             confidence: number;
+            confidence_detail?: components["schemas"]["ConfidenceOut"] | null;
+            facts?: components["schemas"]["Facts"] | null;
+            /** Priority Score */
+            priority_score?: number | null;
+            /**
+             * Rubric Trace
+             * @default []
+             */
+            rubric_trace: string[];
+            /**
+             * Vote Agreement
+             * @default {}
+             */
+            vote_agreement: {
+                [key: string]: number;
+            };
+            /** Route */
+            route?: ("auto" | "review" | "triage") | null;
+            /**
+             * Escalated
+             * @default false
+             */
+            escalated: boolean;
+            /** Sla Due At */
+            sla_due_at?: string | null;
+            assignee_suggestion?: components["schemas"]["AssigneeSuggestion"] | null;
+            /** Playbook Ref */
+            playbook_ref?: string | null;
             /** Rationale */
             rationale: string;
             /** Evidence */
@@ -1018,6 +1392,22 @@ export interface components {
              */
             created_at: string;
         };
+        /** UserOut */
+        UserOut: {
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "analyst" | "lead" | "admin";
+            /** Teams */
+            teams: string[];
+            /** Capacity */
+            capacity: number;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1030,6 +1420,47 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** Workload */
+        Workload: {
+            /** Team */
+            team: string;
+            /** Open Total */
+            open_total: number;
+            /** Members */
+            members: components["schemas"]["WorkloadMember"][];
+            /** Escalations */
+            escalations: components["schemas"]["TicketOut"][];
+        };
+        /** WorkloadMember */
+        WorkloadMember: {
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "analyst" | "lead" | "admin";
+            /** Open */
+            open: number;
+            /** Capacity */
+            capacity: number;
+            /**
+             * Share
+             * @description Share of the team's open tickets
+             */
+            share: number;
+            /**
+             * High Open
+             * @description Open tickets with priority High or Highest
+             */
+            high_open: number;
+            /** Oldest Open At */
+            oldest_open_at: string | null;
+            /** Approved 7D */
+            approved_7d: number;
         };
     };
     responses: never;
@@ -1133,11 +1564,73 @@ export interface operations {
             };
         };
     };
+    preview_rubric: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RubricPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RubricPreview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_settings_view: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsOut"];
+                };
+            };
+        };
+    };
     list_tickets: {
         parameters: {
             query?: {
+                /** @description Queue tab */
+                view?: "mine" | "team" | "needs_review" | "escalations" | "all";
+                /** @description Email of the person viewing (for 'mine' / 'team') */
+                as_user?: string | null;
+                sort?: string;
                 state?: ("new" | "proposed" | "approved" | "edited" | "rejected") | null;
                 source?: ("challenge" | "training" | "manual" | "email") | null;
+                /** @description AI service */
+                service?: string | null;
+                /** @description AI team */
+                team?: string | null;
                 /** @description Search summary and description */
                 q?: string | null;
                 limit?: number;
@@ -1316,6 +1809,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assign_ticket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -1599,6 +2127,26 @@ export interface operations {
             };
         };
     };
+    get_calibration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Calibration"];
+                };
+            };
+        };
+    };
     export_submission: {
         parameters: {
             query?: {
@@ -1619,6 +2167,69 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_users: {
+        parameters: {
+            query?: {
+                team?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_workload: {
+        parameters: {
+            query: {
+                /** @description Team name, e.g. 'Client Services' */
+                team: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Workload"];
                 };
             };
             /** @description Validation Error */

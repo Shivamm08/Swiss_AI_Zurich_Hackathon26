@@ -8,6 +8,7 @@ import type {
   EmailIngest,
   EvidenceKind,
   KbSearchRequest,
+  RubricPreviewRequest,
   ReviewCreate,
   TicketCreate,
   TicketListParams,
@@ -23,6 +24,10 @@ export const queryKeys = {
   ticket: (id: string) => ['ticket', id] as const,
   kbDocuments: (kind?: EvidenceKind) => ['kb-documents', kind ?? 'all'] as const,
   metrics: ['metrics'] as const,
+  calibration: ['calibration'] as const,
+  users: ['users'] as const,
+  workload: (team: string) => ['workload', team] as const,
+  settings: ['settings'] as const,
 }
 
 // ------------------------------------------------------------------ system
@@ -68,6 +73,9 @@ function useInvalidateTickets() {
     qc.invalidateQueries({ queryKey: ['tickets'] })
     qc.invalidateQueries({ queryKey: ['ticket'] })
     qc.invalidateQueries({ queryKey: queryKeys.metrics })
+    qc.invalidateQueries({ queryKey: queryKeys.calibration })
+    qc.invalidateQueries({ queryKey: ['workload'] })
+    qc.invalidateQueries({ queryKey: ['kb-documents'] })
   }
 }
 
@@ -150,6 +158,33 @@ export const useReviewTriage = () => {
   })
 }
 
+export const useAssignTicket = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: ({ ticketId, assignee }: { ticketId: string; assignee: string }) =>
+      unwrap(api.POST('/api/tickets/{ticket_id}/assign', { params: { path: { ticket_id: ticketId } }, body: { assignee } })),
+    onSuccess: invalidate,
+  })
+}
+
+export const useRubricPreview = () =>
+  useMutation({ mutationFn: (body: RubricPreviewRequest) => unwrap(api.POST('/api/rubric/preview', { body })) })
+
+// ------------------------------------------------------------------ people
+
+export const useUsers = () =>
+  useQuery({ queryKey: queryKeys.users, queryFn: () => unwrap(api.GET('/api/users')), staleTime: 60_000 })
+
+export const useWorkload = (team: string | undefined) =>
+  useQuery({
+    queryKey: queryKeys.workload(team ?? ''),
+    queryFn: () => unwrap(api.GET('/api/workload', { params: { query: { team: team! } } })),
+    enabled: !!team,
+  })
+
+export const useSettings = () =>
+  useQuery({ queryKey: queryKeys.settings, queryFn: () => unwrap(api.GET('/api/settings')), staleTime: Infinity })
+
 // ------------------------------------------------------------------ knowledge base / RAG
 
 export const useKbDocuments = (kind?: EvidenceKind) =>
@@ -176,6 +211,9 @@ export const useAskAssistant = () =>
 
 export const useMetrics = () =>
   useQuery({ queryKey: queryKeys.metrics, queryFn: () => unwrap(api.GET('/api/metrics')) })
+
+export const useCalibration = () =>
+  useQuery({ queryKey: queryKeys.calibration, queryFn: () => unwrap(api.GET('/api/metrics/calibration')) })
 
 export const fetchSubmission = (source: TicketSource = 'challenge') =>
   unwrap(api.GET('/api/export/submission', { params: { query: { source } } }))

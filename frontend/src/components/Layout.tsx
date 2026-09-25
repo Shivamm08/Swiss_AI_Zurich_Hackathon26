@@ -1,42 +1,78 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { useHealth } from '../api/hooks'
+import { useHealth, useUsers } from '../api/hooks'
+import type { Role } from '../api/types'
+import { useViewer } from '../viewas/context'
 import ModelPicker from './ModelPicker'
 import { Pill } from './ui'
 
-const NAV = [
-  { to: '/', label: 'Dashboard', end: true },
-  { to: '/tickets', label: 'Ticket queue' },
+const NAV: { to: string; label: string; end?: boolean; roles?: Role[] }[] = [
+  { to: '/', label: 'Queue', end: true },
+  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/team', label: 'Team workload', roles: ['lead', 'admin'] },
+  { to: '/new', label: 'New ticket', roles: ['admin'] },
   { to: '/knowledge', label: 'Knowledge base' },
   { to: '/assistant', label: 'Assistant' },
-  { to: '/import', label: 'Import & export' },
+  { to: '/intake', label: 'Intake & export' },
+  { to: '/settings', label: 'Settings', roles: ['admin'] },
 ]
+
+const ROLE_LABEL: Record<Role, string> = { admin: 'Admin', lead: 'Team lead', analyst: 'Analyst' }
 
 function HealthIndicator() {
   const { data, isError } = useHealth()
   if (isError) return <Pill className="bg-red-100 text-red-800">Backend unreachable</Pill>
   if (!data) return null
   return (
-    <div className="flex flex-wrap gap-1">
-      <Pill className={data.database ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}>
-        DB {data.database ? 'ok' : 'down'}
-      </Pill>
-      <Pill className={data.llm_configured ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}>
-        {data.llm_configured ? `LLM: ${data.llm_provider} · ${data.llm_model}` : 'Heuristic mode'}
-      </Pill>
-    </div>
+    <Pill className={data.database && data.llm_configured ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}>
+      {data.database ? '● DB' : '○ DB down'} · {data.llm_configured ? 'LLM' : 'Heuristic mode'}
+    </Pill>
+  )
+}
+
+function ViewAsPicker() {
+  const { data: users } = useUsers()
+  const { user, setEmail } = useViewer()
+  if (!users) return null
+  const groups: Role[] = ['admin', 'lead', 'analyst']
+  return (
+    <label className="flex items-center gap-2 text-xs text-slate-300" htmlFor="view-as">
+      View as
+      <select
+        id="view-as"
+        value={user?.email ?? ''}
+        onChange={(e) => setEmail(e.target.value)}
+        className="max-w-56 rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-sm text-white"
+      >
+        {groups.map((role) => (
+          <optgroup key={role} label={ROLE_LABEL[role]}>
+            {users.filter((u) => u.role === role).map((u) => (
+              <option key={u.email} value={u.email}>
+                {u.name}{u.teams.length ? ` · ${u.teams[0]}` : ''}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    </label>
   )
 }
 
 export default function Layout() {
+  const { role } = useViewer()
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="flex flex-col gap-4 border-b border-slate-200 bg-white p-4 md:w-56 md:border-r md:border-b-0">
-        <div>
-          <p className="text-xs tracking-wider text-slate-500 uppercase">Swiss Life</p>
-          <h1 className="font-semibold">Triage Agent</h1>
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-10 flex flex-wrap items-center gap-3 bg-slate-900 px-4 py-2 text-white">
+        <span className="font-semibold">Triage Copilot</span>
+        <span className="text-xs text-slate-400">Swiss Life service desk</span>
+        <div className="ml-auto flex flex-wrap items-center gap-3">
+          <ViewAsPicker />
+          <ModelPicker />
+          <HealthIndicator />
         </div>
-        <nav className="flex flex-wrap gap-1 md:flex-col">
-          {NAV.map(({ to, label, end }) => (
+      </header>
+      <div className="flex flex-1 flex-col md:flex-row">
+        <nav className="flex flex-wrap gap-1 border-b border-slate-200 bg-white p-3 md:w-48 md:flex-col md:border-r md:border-b-0">
+          {NAV.filter((n) => !n.roles || n.roles.includes(role)).map(({ to, label, end }) => (
             <NavLink
               key={to}
               to={to}
@@ -48,15 +84,12 @@ export default function Layout() {
               {label}
             </NavLink>
           ))}
+          <span className="mt-auto hidden px-3 pt-4 text-xs text-slate-400 md:block">Viewing as {ROLE_LABEL[role]}</span>
         </nav>
-        <div className="flex flex-col gap-3 md:mt-auto">
-          <ModelPicker />
-          <HealthIndicator />
-        </div>
-      </aside>
-      <main className="min-w-0 flex-1 p-4 md:p-8">
-        <Outlet />
-      </main>
+        <main className="min-w-0 flex-1 p-4 md:p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

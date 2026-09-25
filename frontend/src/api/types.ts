@@ -24,11 +24,22 @@ export type Health = Schemas['Health']
 export type LlmModels = Schemas['LlmModels']
 export type TriageRequest = Schemas['TriageRequest']
 export type BatchTriageRequest = Schemas['BatchTriageRequest']
+export type Facts = Schemas['Facts']
+export type ConfidenceDetail = Schemas['ConfidenceOut']
+export type AssigneeSuggestion = Schemas['AssigneeSuggestion']
+export type User = Schemas['UserOut']
+export type Workload = Schemas['Workload']
+export type Calibration = Schemas['Calibration']
+export type Settings = Schemas['SettingsOut']
+export type RubricPreviewRequest = Schemas['RubricPreviewRequest']
 
 export type Level = Schemas['PriorityResponse']['priority']
 export type ServiceName = Decision['service']
 export type TriageState = Ticket['triage_state']
 export type TicketSource = Ticket['source']
 export type EvidenceKind = Evidence['kind']
+export type Route = NonNullable<Ticket['route']>
+export type Role = User['role']
+export type TicketView = NonNullable<TicketListParams['view']>
 
 export type TicketListParams = NonNullable<paths['/api/tickets']['get']['parameters']['query']>
