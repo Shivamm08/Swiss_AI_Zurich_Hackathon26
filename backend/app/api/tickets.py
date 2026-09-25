@@ -45,11 +45,14 @@ def list_tickets(
     service: str | None = Query(None, description="AI service"),
     team: str | None = Query(None, description="AI team"),
     q: str | None = Query(None, description="Search summary and description"),
+    include_closed: bool = Query(False, description="Also list closed tickets (status done)"),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ) -> TicketPage:
     stmt = select(Ticket)
+    if not include_closed:
+        stmt = stmt.where(or_(Ticket.status.is_(None), Ticket.status != "done"))
     user = db.get(User, as_user) if as_user else None
     if view == "mine":
         stmt = stmt.where(Ticket.assignee == as_user)

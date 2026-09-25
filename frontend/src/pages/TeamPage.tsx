@@ -63,7 +63,7 @@ export default function TeamPage() {
                   <li key={t.id} className="flex flex-wrap items-center gap-2">
                     <PriorityPill level={t.ai_priority} />
                     <Link to={`/tickets/${t.id}`} className="text-blue-800 hover:underline">#{t.number} {t.summary}</Link>
-                    <SlaTimer dueAt={t.sla_due_at} startAt={t.created_at} />
+                    <SlaTimer dueAt={t.sla_due_at} startAt={t.created_at} closed={t.status === 'done'} />
                     <span className="text-xs text-muted">{t.assignee ? t.assignee.split('@')[0] : 'unassigned'}</span>
                   </li>
                 ))}

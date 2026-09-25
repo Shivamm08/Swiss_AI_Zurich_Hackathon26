@@ -329,6 +329,18 @@
             "description": "Search summary and description"
           },
           {
+            "name": "include_closed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Also list closed tickets (status done)",
+              "default": false,
+              "title": "Include Closed"
+            },
+            "description": "Also list closed tickets (status done)"
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,

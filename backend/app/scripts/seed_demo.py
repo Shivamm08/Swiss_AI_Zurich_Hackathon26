@@ -9,6 +9,7 @@ How it is simulated (all numbers are assumptions, tuned to look like a normal se
 - about 22% arrive with the wrong intake service (a sibling service or the generic email bucket);
 - facts come from the ticket template, then the REAL rubric computes impact/urgency/priority;
 - confidence depends on how clear the template is; routing uses the real thresholds;
+- everything older than 3 days is resolved; only recent tickets are open work;
 - reviews: the likelier to be approved the more confident the proposal; a mild improvement over the
   four weeks stands in for the learning loop. This is illustrative, not a measured result.
 
@@ -223,6 +224,8 @@ def seed(db: Session, rng: random.Random) -> dict[str, int]:
                     ticket.route, ticket.assignee = "triage", None
                 elif back >= 2:
                     ticket.status = "done"
+            if back >= 3:  # a real desk resolves its backlog: only the last few days stay open
+                ticket.status = "done"
             if ticket.assignee and ticket.status != "done":
                 load[ticket.assignee] = load.get(ticket.assignee, 0) + 1
 

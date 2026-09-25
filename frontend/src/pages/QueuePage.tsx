@@ -33,7 +33,9 @@ export default function QueuePage() {
   const [sort, setSort] = useState<Sort>('priority_score')
   const [service, setService] = useState('')
   const [q, setQ] = useState('')
+  const [showClosed, setShowClosed] = useState(false)
   const { data, isLoading, error } = useTickets({
+    include_closed: showClosed,
     view,
     as_user: user?.email,
     sort: view === 'needs_review' ? 'confidence' : sort,
@@ -73,6 +75,10 @@ export default function QueuePage() {
             <option value="">All services</option>
             {reference?.services.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
           </select>
+          <label className="flex items-center gap-1.5 text-sm text-muted" htmlFor="queue-closed">
+            <input id="queue-closed" type="checkbox" checked={showClosed} onChange={(e) => setShowClosed(e.target.checked)} className="accent-[var(--color-accent)]" />
+            Show closed
+          </label>
           <label className="sr-only" htmlFor="queue-sort">Sort</label>
           <select id="queue-sort" value={sort} onChange={(e) => setSort(e.target.value as Sort)}
             className="rounded-lg border border-line bg-surface px-2 py-1.5 text-sm">
@@ -118,7 +124,7 @@ export default function QueuePage() {
                         <PriorityPill level={level} />
                         <ScoreBar score={t.priority_score} />
                       </td>
-                      <td className="px-3 py-3"><SlaTimer dueAt={t.sla_due_at} startAt={t.created_at} /></td>
+                      <td className="px-3 py-3"><SlaTimer dueAt={t.sla_due_at} startAt={t.created_at} closed={t.status === 'done'} /></td>
                       <td className="max-w-lg px-3 py-3">
                         <p className="font-medium text-ink group-hover:text-accent">{t.summary}</p>
                         <p className="mt-0.5 font-mono text-[11px] text-muted">

@@ -314,7 +314,7 @@ export default function TicketPage() {
             <h1 className="mt-1 text-xl font-semibold tracking-tight text-balance">{ticket.summary}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {result && <><PriorityPill level={ticket.ai_priority} /><ScoreBar score={ticket.priority_score} /></>}
-              {result && <SlaTimer dueAt={ticket.sla_due_at} startAt={ticket.created_at} />}
+              {result && <SlaTimer dueAt={ticket.sla_due_at} startAt={ticket.created_at} closed={ticket.status === 'done'} />}
               <StatePill state={ticket.triage_state} />
               {ticket.escalated && <Pill className="bg-red-50 text-red-700 ring-1 ring-red-200">escalated to team lead</Pill>}
               {ticket.manual_fields.length > 0 && <Pill className="bg-accent-soft text-accent">{ticket.manual_fields.length} fields set by staff</Pill>}

@@ -2109,6 +2109,8 @@ export interface operations {
                 team?: string | null;
                 /** @description Search summary and description */
                 q?: string | null;
+                /** @description Also list closed tickets (status done) */
+                include_closed?: boolean;
                 limit?: number;
                 offset?: number;
             };

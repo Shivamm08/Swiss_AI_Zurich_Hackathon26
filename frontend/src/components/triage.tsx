@@ -24,12 +24,13 @@ function formatRemaining(ms: number): string {
 }
 
 /** Live SLA countdown: neutral, amber after 75% of the target, red when overdue. */
-export function SlaTimer({ dueAt, startAt }: { dueAt?: string | null; startAt?: string | null }) {
+export function SlaTimer({ dueAt, startAt, closed = false }: { dueAt?: string | null; startAt?: string | null; closed?: boolean }) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30_000)
     return () => clearInterval(id)
   }, [])
+  if (closed) return <span className="text-xs text-muted">closed</span>
   if (!dueAt) return <span className="text-slate-400">–</span>
   const due = new Date(dueAt).getTime()
   const start = startAt ? new Date(startAt).getTime() : due
