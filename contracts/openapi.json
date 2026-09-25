@@ -109,6 +109,69 @@
         }
       }
     },
+    "/api/rubric/preview": {
+      "post": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Preview Rubric",
+        "description": "What impact/urgency/priority would these facts produce? (live preview while editing)",
+        "operationId": "preview_rubric",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RubricPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RubricPreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Get Settings View",
+        "operationId": "get_settings_view",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/tickets": {
       "get": {
         "tags": [
@@ -117,6 +180,54 @@
         "summary": "List Tickets",
         "operationId": "list_tickets",
         "parameters": [
+          {
+            "name": "view",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "mine",
+                "team",
+                "needs_review",
+                "escalations",
+                "all"
+              ],
+              "type": "string",
+              "description": "Queue tab",
+              "default": "all",
+              "title": "View"
+            },
+            "description": "Queue tab"
+          },
+          {
+            "name": "as_user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Email of the person viewing (for 'mine' / 'team')",
+              "title": "As User"
+            },
+            "description": "Email of the person viewing (for 'mine' / 'team')"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(priority_score|sla_due_at|number|confidence)$",
+              "default": "priority_score",
+              "title": "Sort"
+            }
+          },
           {
             "name": "state",
             "in": "query",
@@ -161,6 +272,42 @@
               ],
               "title": "Source"
             }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "AI service",
+              "title": "Service"
+            },
+            "description": "AI service"
+          },
+          {
+            "name": "team",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "AI team",
+              "title": "Team"
+            },
+            "description": "AI team"
           },
           {
             "name": "q",
@@ -412,6 +559,59 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tickets/{ticket_id}/assign": {
+      "post": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "Assign Ticket",
+        "operationId": "assign_ticket",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketOut"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -809,6 +1009,28 @@
         }
       }
     },
+    "/api/metrics/calibration": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Get Calibration",
+        "description": "Does confidence mean something? Per confidence bucket, the share of reviewed proposals\nthat analysts accepted without changing service or priority.",
+        "operationId": "get_calibration",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Calibration"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/export/submission": {
       "get": {
         "tags": [
@@ -863,10 +1085,205 @@
           }
         }
       }
+    },
+    "/api/users": {
+      "get": {
+        "tags": [
+          "people"
+        ],
+        "summary": "List Users",
+        "operationId": "list_users",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserOut"
+                  },
+                  "title": "Response List Users"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workload": {
+      "get": {
+        "tags": [
+          "people"
+        ],
+        "summary": "Get Workload",
+        "operationId": "get_workload",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Team name, e.g. 'Client Services'",
+              "title": "Team"
+            },
+            "description": "Team name, e.g. 'Client Services'"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workload"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AssignRequest": {
+        "properties": {
+          "assignee": {
+            "type": "string",
+            "title": "Assignee"
+          }
+        },
+        "type": "object",
+        "required": [
+          "assignee"
+        ],
+        "title": "AssignRequest"
+      },
+      "AssigneeCandidate": {
+        "properties": {
+          "user": {
+            "type": "string",
+            "title": "User"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "open": {
+            "type": "integer",
+            "title": "Open"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          },
+          "expertise": {
+            "type": "number",
+            "title": "Expertise"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user",
+          "name",
+          "score",
+          "open",
+          "capacity",
+          "expertise"
+        ],
+        "title": "AssigneeCandidate"
+      },
+      "AssigneeSuggestion": {
+        "properties": {
+          "expert": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expert",
+            "description": "Resolver of the matched playbook entry (used for the export)"
+          },
+          "recommended": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended",
+            "description": "Best candidate after workload balancing"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/AssigneeCandidate"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expert",
+          "recommended",
+          "reason",
+          "candidates"
+        ],
+        "title": "AssigneeSuggestion"
+      },
       "AssistantAnswer": {
         "properties": {
           "answer": {
@@ -1025,6 +1442,100 @@
           "file"
         ],
         "title": "Body_import_tickets"
+      },
+      "Calibration": {
+        "properties": {
+          "buckets": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationBucket"
+            },
+            "type": "array",
+            "title": "Buckets"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "buckets",
+          "note"
+        ],
+        "title": "Calibration"
+      },
+      "CalibrationBucket": {
+        "properties": {
+          "low": {
+            "type": "number",
+            "title": "Low"
+          },
+          "high": {
+            "type": "number",
+            "title": "High"
+          },
+          "reviewed": {
+            "type": "integer",
+            "title": "Reviewed"
+          },
+          "agreement": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agreement",
+            "description": "Share approved without changing service or priority"
+          }
+        },
+        "type": "object",
+        "required": [
+          "low",
+          "high",
+          "reviewed",
+          "agreement"
+        ],
+        "title": "CalibrationBucket"
+      },
+      "ConfidenceOut": {
+        "properties": {
+          "overall": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Overall",
+            "description": "min(votes, retrieval) x flag multipliers"
+          },
+          "votes": {
+            "type": "number",
+            "title": "Votes",
+            "description": "How consistently the model answered across votes"
+          },
+          "retrieval": {
+            "type": "number",
+            "title": "Retrieval",
+            "description": "How closely the matched past solution fits"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags",
+            "description": "Reasons for caution, e.g. generic_service, unclear_input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "overall",
+          "votes",
+          "retrieval",
+          "flags"
+        ],
+        "title": "ConfidenceOut"
       },
       "Decision": {
         "properties": {
@@ -1355,6 +1866,64 @@
         ],
         "title": "Evidence"
       },
+      "Facts": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "team",
+              "one_entity",
+              "multi_entity",
+              "external_counterparty"
+            ],
+            "title": "Scope",
+            "description": "Who is affected: one person up to external counterparties"
+          },
+          "outage_extent": {
+            "type": "string",
+            "enum": [
+              "none",
+              "partial_degradation",
+              "full_unavailability"
+            ],
+            "title": "Outage Extent"
+          },
+          "workaround": {
+            "type": "string",
+            "enum": [
+              "none",
+              "difficult",
+              "easy",
+              "not_applicable"
+            ],
+            "title": "Workaround"
+          },
+          "regulatory_or_security": {
+            "type": "boolean",
+            "title": "Regulatory Or Security",
+            "description": "Actual regulatory breach or security compromise"
+          },
+          "deadline_pressure": {
+            "type": "string",
+            "enum": [
+              "none",
+              "soft",
+              "hard"
+            ],
+            "title": "Deadline Pressure"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scope",
+          "outage_extent",
+          "workaround",
+          "regulatory_or_security",
+          "deadline_pressure"
+        ],
+        "title": "Facts"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1681,6 +2250,39 @@
             "type": "object",
             "title": "Field Override Counts",
             "description": "How often analysts changed each field"
+          },
+          "by_route": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Route",
+            "description": "Latest proposals per route (auto/review/triage)"
+          },
+          "escalations_open": {
+            "type": "integer",
+            "title": "Escalations Open"
+          },
+          "sla_breaches": {
+            "type": "integer",
+            "title": "Sla Breaches",
+            "description": "Open tickets past their SLA deadline"
+          },
+          "priority_intake": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Priority Intake",
+            "description": "Priority as submitted"
+          },
+          "priority_ai": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Priority Ai",
+            "description": "Priority after triage"
           }
         },
         "type": "object",
@@ -1693,7 +2295,12 @@
           "reject_rate",
           "avg_review_seconds",
           "avg_confidence",
-          "field_override_counts"
+          "field_override_counts",
+          "by_route",
+          "escalations_open",
+          "sla_breaches",
+          "priority_intake",
+          "priority_ai"
         ],
         "title": "Metrics"
       },
@@ -2074,6 +2681,111 @@
         ],
         "title": "ReviewOut"
       },
+      "RubricPreview": {
+        "properties": {
+          "impact": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Impact"
+          },
+          "urgency": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Urgency"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Highest",
+              "High",
+              "Medium",
+              "Low",
+              "Lowest"
+            ],
+            "title": "Priority"
+          },
+          "priority_score": {
+            "type": "number",
+            "title": "Priority Score"
+          },
+          "rubric_trace": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rubric Trace"
+          }
+        },
+        "type": "object",
+        "required": [
+          "impact",
+          "urgency",
+          "priority",
+          "priority_score",
+          "rubric_trace"
+        ],
+        "title": "RubricPreview"
+      },
+      "RubricPreviewRequest": {
+        "properties": {
+          "facts": {
+            "$ref": "#/components/schemas/Facts"
+          },
+          "service": {
+            "type": "string",
+            "enum": [
+              "Trading Platform",
+              "Order Management",
+              "Trade Matching",
+              "Securities Settlement",
+              "Corporate Actions",
+              "Fund Pricing",
+              "NAV Calculation",
+              "Portfolio Accounting",
+              "Cash Management",
+              "Risk & Compliance Monitoring",
+              "Regulatory Reporting",
+              "SimCorp Dimension",
+              "Rimes Data Feed",
+              "Client Reporting",
+              "Tax Reporting",
+              "CRM & Client Portal",
+              "Identity & Access Management",
+              "SharePoint & File Storage",
+              "Outlook & Email",
+              "Emailed Support Tickets"
+            ],
+            "title": "Service"
+          },
+          "work_type": {
+            "type": "string",
+            "enum": [
+              "Incident",
+              "Service Request"
+            ],
+            "title": "Work Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facts",
+          "service",
+          "work_type"
+        ],
+        "title": "RubricPreviewRequest"
+      },
       "ServiceInfo": {
         "properties": {
           "name": {
@@ -2136,6 +2848,56 @@
         ],
         "title": "ServiceInfo"
       },
+      "SettingsOut": {
+        "properties": {
+          "auto_threshold": {
+            "type": "number",
+            "title": "Auto Threshold"
+          },
+          "triage_threshold": {
+            "type": "number",
+            "title": "Triage Threshold"
+          },
+          "sla_hours": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "propertyNames": {
+              "enum": [
+                "Highest",
+                "High",
+                "Medium",
+                "Low",
+                "Lowest"
+              ]
+            },
+            "type": "object",
+            "title": "Sla Hours"
+          },
+          "votes": {
+            "type": "integer",
+            "title": "Votes"
+          },
+          "max_share": {
+            "type": "number",
+            "title": "Max Share"
+          },
+          "default_capacity": {
+            "type": "integer",
+            "title": "Default Capacity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "auto_threshold",
+          "triage_threshold",
+          "sla_hours",
+          "votes",
+          "max_share",
+          "default_capacity"
+        ],
+        "title": "SettingsOut"
+      },
       "TicketCreate": {
         "properties": {
           "work_type": {
@@ -2162,12 +2924,13 @@
           },
           "summary": {
             "type": "string",
+            "minLength": 3,
             "title": "Summary"
           },
           "description": {
             "type": "string",
-            "title": "Description",
-            "default": ""
+            "minLength": 3,
+            "title": "Description"
           },
           "affected_service": {
             "anyOf": [
@@ -2278,9 +3041,11 @@
         },
         "type": "object",
         "required": [
-          "summary"
+          "summary",
+          "description"
         ],
-        "title": "TicketCreate"
+        "title": "TicketCreate",
+        "description": "Admin \"New ticket\" form: only summary, description and reporter are required;\nthe pipeline derives everything else."
       },
       "TicketDetail": {
         "properties": {
@@ -2456,6 +3221,105 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee"
+          },
+          "ai_service": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Service"
+          },
+          "ai_team": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Team"
+          },
+          "ai_priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Priority"
+          },
+          "priority_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority Score"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "route": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "review",
+                  "triage"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route"
+          },
+          "escalated": {
+            "type": "boolean",
+            "title": "Escalated",
+            "default": false
+          },
+          "sla_due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sla Due At"
           },
           "latest_triage": {
             "anyOf": [
@@ -2663,6 +3527,105 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee"
+          },
+          "ai_service": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Service"
+          },
+          "ai_team": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Team"
+          },
+          "ai_priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Priority"
+          },
+          "priority_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority Score"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "route": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "review",
+                  "triage"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route"
+          },
+          "escalated": {
+            "type": "boolean",
+            "title": "Escalated",
+            "default": false
+          },
+          "sla_due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sla Due At"
           }
         },
         "type": "object",
@@ -2841,7 +3804,109 @@
             "type": "number",
             "maximum": 1.0,
             "minimum": 0.0,
-            "title": "Confidence"
+            "title": "Confidence",
+            "description": "Overall confidence (same as confidence_detail.overall)"
+          },
+          "confidence_detail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConfidenceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "facts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Facts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priority_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority Score"
+          },
+          "rubric_trace": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rubric Trace",
+            "default": []
+          },
+          "vote_agreement": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Vote Agreement",
+            "default": {}
+          },
+          "route": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "review",
+                  "triage"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route"
+          },
+          "escalated": {
+            "type": "boolean",
+            "title": "Escalated",
+            "default": false
+          },
+          "sla_due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sla Due At"
+          },
+          "assignee_suggestion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssigneeSuggestion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "playbook_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Playbook Ref"
           },
           "rationale": {
             "type": "string",
@@ -2899,6 +3964,47 @@
         ],
         "title": "TriageResultOut"
       },
+      "UserOut": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "analyst",
+              "lead",
+              "admin"
+            ],
+            "title": "Role"
+          },
+          "teams": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teams"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "name",
+          "role",
+          "teams",
+          "capacity"
+        ],
+        "title": "UserOut"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -2938,6 +4044,108 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "Workload": {
+        "properties": {
+          "team": {
+            "type": "string",
+            "title": "Team"
+          },
+          "open_total": {
+            "type": "integer",
+            "title": "Open Total"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/WorkloadMember"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "escalations": {
+            "items": {
+              "$ref": "#/components/schemas/TicketOut"
+            },
+            "type": "array",
+            "title": "Escalations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team",
+          "open_total",
+          "members",
+          "escalations"
+        ],
+        "title": "Workload"
+      },
+      "WorkloadMember": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "analyst",
+              "lead",
+              "admin"
+            ],
+            "title": "Role"
+          },
+          "open": {
+            "type": "integer",
+            "title": "Open"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Share of the team's open tickets"
+          },
+          "high_open": {
+            "type": "integer",
+            "title": "High Open",
+            "description": "Open tickets with priority High or Highest"
+          },
+          "oldest_open_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest Open At"
+          },
+          "approved_7d": {
+            "type": "integer",
+            "title": "Approved 7D"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "name",
+          "role",
+          "open",
+          "capacity",
+          "share",
+          "high_open",
+          "oldest_open_at",
+          "approved_7d"
+        ],
+        "title": "WorkloadMember"
       }
     }
   }

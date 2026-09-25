@@ -16,8 +16,18 @@ from app.domain import (
     WORK_TYPES,
     priority_for,
 )
-from app.pipeline import llm
-from app.schemas import Health, LlmModels, PriorityRequest, PriorityResponse, ReferenceData, ServiceInfo
+from app.pipeline import confidence, llm, rubric
+from app.schemas import (
+    Health,
+    LlmModels,
+    PriorityRequest,
+    PriorityResponse,
+    ReferenceData,
+    RubricPreview,
+    RubricPreviewRequest,
+    ServiceInfo,
+    SettingsOut,
+)
 
 router = APIRouter(tags=["system"])
 
@@ -66,3 +76,23 @@ def list_llm_models() -> LlmModels:
 @router.post("/reference/priority", response_model=PriorityResponse)
 def compute_priority(body: PriorityRequest) -> PriorityResponse:
     return PriorityResponse(priority=priority_for(body.urgency, body.impact))
+
+
+@router.post("/rubric/preview", response_model=RubricPreview)
+def preview_rubric(body: RubricPreviewRequest) -> RubricPreview:
+    """What impact/urgency/priority would these facts produce? (live preview while editing)"""
+    r = rubric.apply_rubric(body.facts, body.service, body.work_type)
+    return RubricPreview(impact=r.impact, urgency=r.urgency, priority=r.priority,
+                         priority_score=r.priority_score, rubric_trace=r.trace)
+
+
+@router.get("/settings", response_model=SettingsOut)
+def get_settings_view() -> SettingsOut:
+    return SettingsOut(
+        auto_threshold=settings.auto_threshold,
+        triage_threshold=settings.triage_threshold,
+        sla_hours=confidence.SLA_HOURS,
+        votes=settings.llm_votes,
+        max_share=settings.max_share,
+        default_capacity=settings.default_capacity,
+    )
