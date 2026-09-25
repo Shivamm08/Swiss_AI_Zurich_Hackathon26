@@ -44,6 +44,13 @@ class Settings(BaseSettings):
     llm_temperature: float | None = None
     embedding_dim: int = 1536
 
+    # Triage policy (see the spec, section 6-7)
+    llm_votes: int = 3                 # self-consistency votes per extraction
+    auto_threshold: float = 0.80       # overall confidence >= this -> auto-assigned
+    triage_threshold: float = 0.50     # below this -> Service Desk triage queue
+    default_capacity: int = 8          # open tickets per analyst
+    max_share: float = 0.30            # nobody holds more than this share of a team's open tickets
+
     kb_dir: Path = Path(__file__).parent / "kb"
 
     @property

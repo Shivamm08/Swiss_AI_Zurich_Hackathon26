@@ -18,10 +18,27 @@ TicketSource = Literal["challenge", "training", "manual", "email"]
 TriageState = Literal["new", "proposed", "approved", "edited", "rejected"]
 ReviewAction = Literal["approve", "edit", "reject"]
 EvidenceKind = Literal["service_card", "playbook", "historical_ticket"]
+Route = Literal["auto", "review", "triage"]
+Role = Literal["analyst", "lead", "admin"]
+TicketView = Literal["mine", "team", "needs_review", "escalations", "all"]
+
+# Observable facts the LLM extracts (enums/booleans only); the rubric turns them into Impact/Urgency.
+Scope = Literal["individual", "team", "one_entity", "multi_entity", "external_counterparty"]
+Outage = Literal["none", "partial_degradation", "full_unavailability"]
+Workaround = Literal["none", "difficult", "easy", "not_applicable"]
+Deadline = Literal["none", "soft", "hard"]
 
 
 class ORM(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
+
+class Facts(BaseModel):
+    scope: Scope = Field(description="Who is affected: one person up to external counterparties")
+    outage_extent: Outage
+    workaround: Workaround
+    regulatory_or_security: bool = Field(description="Actual regulatory breach or security compromise")
+    deadline_pressure: Deadline
 
 
 # ---------------------------------------------------------------- system
@@ -102,6 +119,11 @@ class TicketBase(BaseModel):
 
 
 class TicketCreate(TicketBase):
+    """Admin "New ticket" form: only summary, description and reporter are required;
+    the pipeline derives everything else."""
+
+    summary: str = Field(min_length=3)
+    description: str = Field(min_length=3)
     source: TicketSource = "manual"
 
 
@@ -119,6 +141,16 @@ class TicketOut(TicketBase, ORM):
     triage_state: TriageState
     source_created_at: datetime | None
     created_at: datetime
+    # Working assignment + fields flattened from the latest proposal, so the queue needs one call.
+    assignee: str | None = None
+    ai_service: str | None = None
+    ai_team: str | None = None
+    ai_priority: str | None = None
+    priority_score: float | None = None
+    confidence: float | None = None
+    route: Route | None = None
+    escalated: bool = False
+    sla_due_at: datetime | None = None
 
 
 class TicketPage(BaseModel):
@@ -156,10 +188,43 @@ class Decision(BaseModel):
     resolution_comment: str
 
 
+class ConfidenceOut(BaseModel):
+    overall: float = Field(ge=0, le=1, description="min(votes, retrieval) x flag multipliers")
+    votes: float = Field(description="How consistently the model answered across votes")
+    retrieval: float = Field(description="How closely the matched past solution fits")
+    flags: list[str] = Field(description="Reasons for caution, e.g. generic_service, unclear_input")
+
+
+class AssigneeCandidate(BaseModel):
+    user: str
+    name: str
+    score: float
+    open: int
+    capacity: int
+    expertise: float
+
+
+class AssigneeSuggestion(BaseModel):
+    expert: str | None = Field(description="Resolver of the matched playbook entry (used for the export)")
+    recommended: str | None = Field(description="Best candidate after workload balancing")
+    reason: str
+    candidates: list[AssigneeCandidate]
+
+
 class TriageResultOut(Decision, ORM):
     id: uuid.UUID
     ticket_id: uuid.UUID
-    confidence: float = Field(ge=0, le=1)
+    confidence: float = Field(ge=0, le=1, description="Overall confidence (same as confidence_detail.overall)")
+    confidence_detail: ConfidenceOut | None = None
+    facts: Facts | None = None
+    priority_score: float | None = None
+    rubric_trace: list[str] = []
+    vote_agreement: dict[str, float] = {}
+    route: Route | None = None
+    escalated: bool = False
+    sla_due_at: datetime | None = None
+    assignee_suggestion: AssigneeSuggestion | None = None
+    playbook_ref: str | None = None
     rationale: str
     evidence: list[Evidence]
     changed_fields: list[str] = Field(description="Fields that differ from the intake values")
@@ -217,6 +282,24 @@ class ReviewOut(ORM):
     created_at: datetime
 
 
+class AssignRequest(BaseModel):
+    assignee: str
+
+
+class RubricPreviewRequest(BaseModel):
+    facts: Facts
+    service: ServiceName
+    work_type: WorkType
+
+
+class RubricPreview(BaseModel):
+    impact: Level
+    urgency: Level
+    priority: Level
+    priority_score: float
+    rubric_trace: list[str]
+
+
 class TicketDetail(TicketOut):
     latest_triage: TriageResultOut | None
     reviews: list[ReviewOut]
@@ -271,3 +354,59 @@ class Metrics(BaseModel):
     avg_review_seconds: float | None
     avg_confidence: float | None
     field_override_counts: dict[str, int] = Field(description="How often analysts changed each field")
+    by_route: dict[str, int] = Field(description="Latest proposals per route (auto/review/triage)")
+    escalations_open: int
+    sla_breaches: int = Field(description="Open tickets past their SLA deadline")
+    priority_intake: dict[str, int] = Field(description="Priority as submitted")
+    priority_ai: dict[str, int] = Field(description="Priority after triage")
+
+
+class CalibrationBucket(BaseModel):
+    low: float
+    high: float
+    reviewed: int
+    agreement: float | None = Field(description="Share approved without changing service or priority")
+
+
+class Calibration(BaseModel):
+    buckets: list[CalibrationBucket]
+    note: str
+
+
+# ---------------------------------------------------------------- people / workload
+
+
+class UserOut(ORM):
+    email: str
+    name: str
+    role: Role
+    teams: list[str]
+    capacity: int
+
+
+class WorkloadMember(BaseModel):
+    email: str
+    name: str
+    role: Role
+    open: int
+    capacity: int
+    share: float = Field(description="Share of the team's open tickets")
+    high_open: int = Field(description="Open tickets with priority High or Highest")
+    oldest_open_at: datetime | None
+    approved_7d: int
+
+
+class Workload(BaseModel):
+    team: str
+    open_total: int
+    members: list[WorkloadMember]
+    escalations: list[TicketOut]
+
+
+class SettingsOut(BaseModel):
+    auto_threshold: float
+    triage_threshold: float
+    sla_hours: dict[Level, float]
+    votes: int
+    max_share: float
+    default_capacity: int

@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, Float, ForeignKey, Identity, Integer, String, Text, func, text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Identity, Integer, String, Text, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -42,6 +42,17 @@ class Ticket(Base):
 
     # new | proposed | approved | edited | rejected (denormalised for queue filtering)
     triage_state: Mapped[str] = mapped_column(String(20), default="new", server_default="new", index=True)
+
+    # Working assignment (workload-aware) + fields copied from the latest proposal for fast queue queries.
+    assignee: Mapped[str | None] = mapped_column(String(120), index=True)
+    ai_service: Mapped[str | None] = mapped_column(String(80))
+    ai_team: Mapped[str | None] = mapped_column(String(80), index=True)
+    ai_priority: Mapped[str | None] = mapped_column(String(10))
+    priority_score: Mapped[float | None] = mapped_column(Float, index=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    route: Mapped[str | None] = mapped_column(String(10), index=True)
+    escalated: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+    sla_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     source_created_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -79,6 +90,18 @@ class TriageResult(Base):
     changed_fields: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default=text("'[]'::jsonb"))
     model: Mapped[str] = mapped_column(String(80))
     latency_ms: Mapped[int] = mapped_column(Integer)
+
+    # Spec additions: facts -> rubric, confidence breakdown, routing, assignment.
+    facts: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    priority_score: Mapped[float | None] = mapped_column(Float)
+    rubric_trace: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default=text("'[]'::jsonb"))
+    vote_agreement: Mapped[dict[str, float]] = mapped_column(JSONB, default=dict, server_default=text("'{}'::jsonb"))
+    confidence_detail: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    route: Mapped[str | None] = mapped_column(String(10))
+    escalated: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+    sla_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    assignee_suggestion: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    playbook_ref: Mapped[str | None] = mapped_column(String(120))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     ticket: Mapped[Ticket] = relationship(back_populates="triage_results")
@@ -118,3 +141,15 @@ class KbDocument(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class User(Base):
+    """Roster: people, their teams, role and capacity (generated, see kb/roster.yaml)."""
+
+    __tablename__ = "users"
+
+    email: Mapped[str] = mapped_column(String(120), primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    role: Mapped[str] = mapped_column(String(10), default="analyst", server_default="analyst")  # analyst | lead | admin
+    teams: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default=text("'[]'::jsonb"))
+    capacity: Mapped[int] = mapped_column(Integer, default=8, server_default="8")
