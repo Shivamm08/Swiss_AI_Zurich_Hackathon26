@@ -12,4 +12,5 @@ export const ViewerContext = createContext<Viewer>({ user: undefined, role: 'adm
 
 export const useViewer = () => useContext(ViewerContext)
 
-export const canLead = (role: Role) => role === 'lead' || role === 'admin'
+/** Team Lead / Analyst and admin: check the AI triage, dispatch and reassign work. */
+export const canDispatch = (role: Role) => role === 'analyst' || role === 'admin'

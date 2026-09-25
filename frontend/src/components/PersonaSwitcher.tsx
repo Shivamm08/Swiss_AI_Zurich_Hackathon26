@@ -10,8 +10,8 @@ import { Pill } from './ui'
 
 const ROLE_STYLE = {
   admin: 'bg-ink text-white',
-  lead: 'bg-accent-soft text-accent',
-  analyst: 'bg-slate-100 text-slate-700',
+  analyst: 'bg-accent-soft text-accent',
+  specialist: 'bg-slate-100 text-slate-700',
 } as const
 
 function PersonRow({ user, open, capacity, active, onPick }: { user: User; open?: number; capacity?: number; active: boolean; onPick: () => void }) {
@@ -23,7 +23,7 @@ function PersonRow({ user, open, capacity, active, onPick }: { user: User; open?
         <span className="block truncate text-sm font-medium">{user.name}</span>
         <span className="block truncate text-[11px] text-muted">{user.email}</span>
       </span>
-      {open !== undefined && capacity !== undefined && user.role !== 'admin' && <LoadBar open={open} capacity={capacity} />}
+      {open !== undefined && capacity !== undefined && user.role === 'specialist' && <LoadBar open={open} capacity={capacity} />}
       <Pill className={ROLE_STYLE[user.role]}>{ROLE_LABEL[user.role]}</Pill>
       {active && <Check size={15} className="text-accent" />}
     </button>
@@ -52,14 +52,15 @@ export default function PersonaSwitcher() {
   const quickPicks = useMemo(() => {
     if (!users) return []
     const admin = users.find((u) => u.role === 'admin')
-    const lead = users.filter((u) => u.role === 'lead').sort((a, b) => (load.get(b.email)?.open ?? 0) - (load.get(a.email)?.open ?? 0))[0]
-    const analyst = users.filter((u) => u.role === 'analyst').sort((a, b) => (load.get(b.email)?.open ?? 0) - (load.get(a.email)?.open ?? 0))[0]
+    const deptOpen = new Map<string, number>(departments?.map((d) => [d.team, d.open_tickets]) ?? [])
+    const analyst = users.filter((u) => u.role === 'analyst').sort((a, b) => (deptOpen.get(b.teams[0] ?? '') ?? 0) - (deptOpen.get(a.teams[0] ?? '') ?? 0))[0]
+    const specialist = users.filter((u) => u.role === 'specialist').sort((a, b) => (load.get(b.email)?.open ?? 0) - (load.get(a.email)?.open ?? 0))[0]
     return [
       admin && { user: admin, why: 'Sees everything: knowledge base, intake, settings' },
-      lead && { user: lead, why: `Team lead · ${lead.teams[0] ?? ''}: needs review, escalations, workload` },
-      analyst && { user: analyst, why: `Analyst · ${analyst.teams[0] ?? ''}: busiest queue right now` },
+      analyst && { user: analyst, why: `Team Lead / Analyst · ${analyst.teams[0] ?? ''}: checks the AI triage and dispatches work` },
+      specialist && { user: specialist, why: `Specialist · ${specialist.teams[0] ?? ''}: busiest queue right now` },
     ].filter(Boolean) as { user: User; why: string }[]
-  }, [users, load])
+  }, [users, load, departments])
 
   const pick = (email: string) => { setEmail(email); setOpen(false); setQ('') }
   const match = (u: User) => !q || `${u.name} ${u.email} ${u.teams.join(' ')} ${u.role}`.toLowerCase().includes(q.toLowerCase())
@@ -82,7 +83,7 @@ export default function PersonaSwitcher() {
               <Users size={18} className="text-accent" />
               <div className="flex-1">
                 <p className="font-semibold">Switch persona</p>
-                <p className="text-xs text-muted">See the app through anyone's eyes. Roles change what's visible: analysts work tickets, leads also handle escalations and workload, the admin sees everything.</p>
+                <p className="text-xs text-muted">See the app through anyone's eyes. Roles change what's visible: team leads / analysts check the AI triage and dispatch work, specialists do the work and close tickets, the admin runs the system.</p>
               </div>
               <button type="button" onClick={() => setOpen(false)} className="rounded-lg p-1.5 text-muted hover:bg-canvas" aria-label="Close"><X size={18} /></button>
             </header>
@@ -121,7 +122,7 @@ export default function PersonaSwitcher() {
               <div className="grid gap-x-6 gap-y-4 md:grid-cols-2">
                 {departments?.map((d) => {
                   const people = (users ?? []).filter((u) => u.teams.includes(d.team) && match(u))
-                    .sort((a, b) => (a.role === 'lead' ? -1 : b.role === 'lead' ? 1 : a.name.localeCompare(b.name)))
+                    .sort((a, b) => (a.role === 'analyst' ? -1 : b.role === 'analyst' ? 1 : a.name.localeCompare(b.name)))
                   if (!people.length) return null
                   return (
                     <section key={d.team}>

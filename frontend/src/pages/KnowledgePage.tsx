@@ -8,7 +8,7 @@ const KINDS: { value: EvidenceKind | undefined; label: string }[] = [
   { value: undefined, label: 'All' },
   { value: 'service_card', label: 'Service cards' },
   { value: 'playbook', label: 'Playbook' },
-  { value: 'historical_ticket', label: 'Learned (approved tickets)' },
+  { value: 'historical_ticket', label: 'Learned (done tickets)' },
 ]
 
 export default function KnowledgePage() {
@@ -21,7 +21,7 @@ export default function KnowledgePage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title="Knowledge base"
-        subtitle="What the AI retrieves from: service cards, the resolution playbook, and tickets analysts approved (it learns from every review)."
+        subtitle="What the AI retrieves from: service cards, the resolution playbook, and every ticket a specialist marked done, with their closing note (it learns from finished work)."
         actions={<Button variant="secondary" icon={<RefreshCw size={14} />} onClick={() => sync.mutate()} disabled={sync.isPending}>
           {sync.isPending ? 'Syncing…' : 'Re-sync from files'}
         </Button>} />

@@ -30,7 +30,7 @@ export function SlaTimer({ dueAt, startAt, closed = false }: { dueAt?: string | 
     const id = setInterval(() => setNow(Date.now()), 30_000)
     return () => clearInterval(id)
   }, [])
-  if (closed) return <span className="text-xs text-muted">closed</span>
+  if (closed) return <span className="text-slate-400" title="Done: the SLA clock has stopped">–</span>
   if (!dueAt) return <span className="text-slate-400">–</span>
   const due = new Date(dueAt).getTime()
   const start = startAt ? new Date(startAt).getTime() : due
@@ -60,9 +60,10 @@ export function ConfidenceMeter({ value, detail }: { value?: number | null; deta
 }
 
 const ROUTE_STYLES: Record<Route, [string, string]> = {
-  auto: ['bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200', 'auto'],
-  review: ['bg-amber-50 text-amber-800 ring-1 ring-amber-200', 'review'],
-  triage: ['bg-red-50 text-red-700 ring-1 ring-red-200', 'needs review'],
+  // The route only says how closely the analyst should look; every ticket still needs their decision.
+  auto: ['bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200', 'high confidence'],
+  review: ['bg-amber-50 text-amber-800 ring-1 ring-amber-200', 'check carefully'],
+  triage: ['bg-red-50 text-red-700 ring-1 ring-red-200', 'low confidence'],
 }
 
 export function RoutePill({ route }: { route?: Route | null }) {

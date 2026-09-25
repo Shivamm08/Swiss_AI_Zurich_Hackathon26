@@ -180,7 +180,7 @@ export default function CopilotPanel({ open, onClose, messages, busy, onSend, on
             <div>
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-ai to-accent text-white shadow-pop"><Sparkles size={20} /></span>
               <p className="mt-3 text-lg font-semibold">Hi {user?.name.split(' ')[0] ?? 'there'}, how can I help?</p>
-              <p className="text-sm text-muted">I search the service catalogue, the resolution playbook and every ticket your team approved, and I cite where each answer comes from.</p>
+              <p className="text-sm text-muted">I search the service catalogue, the resolution playbook and every ticket your team resolved, and I cite where each answer comes from.</p>
             </div>
             <div className="flex flex-col gap-2">
               {prompts.map((p) => (

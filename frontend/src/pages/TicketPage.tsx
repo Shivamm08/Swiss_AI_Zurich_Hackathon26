@@ -1,15 +1,18 @@
 import {
   ArrowLeft,
   BookOpen,
+  CircleCheck,
   Check,
   ChevronDown,
   ChevronUp,
   Gauge,
+  Hourglass,
   History,
   Inbox,
   MessagesSquare,
   Pencil,
   Play,
+  PlayCircle,
   Scale,
   Siren,
   Sparkles,
@@ -18,9 +21,9 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { useAssignTicket, useLlmModels, useReference, useReviewTriage, useSettings, useTicket } from '../api/hooks'
+import { useAssignTicket, useLlmModels, useReference, useReviewTriage, useSettings, useTicket, useUsers, useWorkUpdate } from '../api/hooks'
 import { useTriageStream } from '../api/stream'
-import type { DecisionEdit, Level, ReviewCreate, TicketDetail, TriageResult } from '../api/types'
+import type { DecisionEdit, Level, ReviewCreate, TicketDetail, TriageResult, WorkUpdate } from '../api/types'
 import {
   ConfidenceMeter,
   EvidenceList,
@@ -34,9 +37,9 @@ import {
 import ComposeDialog from '../components/ComposeDialog'
 import Walkthrough from '../components/Walkthrough'
 import { useCopilot } from '../copilot/context'
-import { Button, Card, ErrorBox, Field, Loading, Pill, PriorityPill, StatePill, inputClass } from '../components/ui'
+import { Button, Card, ErrorBox, Field, Loading, Pill, PriorityPill, StatePill, WorkStatusPill, inputClass } from '../components/ui'
 import { HEURISTIC, useSelectedModel } from '../model/context'
-import { useViewer } from '../viewas/context'
+import { canDispatch, useViewer } from '../viewas/context'
 
 const short = (email?: string | null) => (email ? email.split('@')[0] : '–')
 
@@ -64,32 +67,42 @@ function ConfidencePanel({ result }: { result: TriageResult }) {
 
 function AssigneePanel({ ticket, result }: { ticket: TicketDetail; result: TriageResult }) {
   const assign = useAssignTicket()
+  const { user, role } = useViewer()
+  const { data: users } = useUsers()
   const s = result.assignee_suggestion
+  const canAssign = canDispatch(role) && ticket.work_status !== 'done'
+  // Only specialists take work (proposals saved before a roster change may list others).
+  const specialists = new Set(users?.filter((u) => u.role === 'specialist').map((u) => u.email))
+  const candidates = s?.candidates.filter((c) => !users || specialists.has(c.user)) ?? []
   return (
-    <Card title="Assignee" icon={<UserCheck size={15} />}>
+    <Card title="Specialist" icon={<UserCheck size={15} />}>
       <dl>
-        <Field label="Working on it">
-          {ticket.assignee ? <b>{short(ticket.assignee)}</b> : <span className="text-red-600">unassigned</span>}
+        <Field label={ticket.work_status === 'open' ? 'AI suggests' : 'Assigned to'}>
+          {ticket.work_status !== 'open' ? <b>{short(ticket.assignee)}</b>
+            : s?.recommended ? <><b>{short(s.recommended)}</b> <span className="text-xs text-muted">(not dispatched yet)</span></>
+            : <span className="text-red-600">no suggestion</span>}
           {ticket.manual_fields.includes('assignee') && <StaffBadge />}
         </Field>
         <Field label="Expert">{short(s?.expert)} <span className="text-xs text-muted">(export)</span></Field>
       </dl>
       {s && <p className="mt-1 text-xs text-muted">{s.reason}</p>}
-      {s && s.candidates.length > 0 && (
+      {candidates.length > 0 && (
         <ul className="mt-3 flex flex-col divide-y divide-line rounded-lg border border-line text-xs">
-          {s.candidates.map((c) => {
+          {candidates.map((c) => {
             const load = c.capacity ? c.open / c.capacity : 0
             return (
               <li key={c.user} className="flex items-center gap-2 px-2.5 py-2">
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-canvas text-[10px] font-semibold uppercase">{c.name.split(' ').map((p) => p[0]).join('')}</span>
                 <span className="min-w-0 flex-1 truncate">
-                  {c.name}{c.user === s.expert && <span className="ml-1 text-accent">expert</span>}
+                  {c.name}{c.user === s?.expert && <span className="ml-1 text-accent">expert</span>}
                 </span>
                 <span className="inline-block h-1.5 w-10 overflow-hidden rounded bg-slate-200"><span className={`block h-1.5 ${load >= 1 ? 'bg-red-500' : load >= 0.6 ? 'bg-amber-400' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, load * 100)}%` }} /></span>
                 <span className="w-8 text-right tabular">{c.open}/{c.capacity}</span>
-                {ticket.assignee === c.user ? <Check size={14} className="text-emerald-600" /> : (
+                {ticket.assignee === c.user ? <Check size={14} className="text-emerald-600" /> : canAssign && (
                   <button type="button" className="font-medium text-accent hover:underline disabled:opacity-50" disabled={assign.isPending}
-                    onClick={() => assign.mutate({ ticketId: ticket.id, assignee: c.user })}>assign</button>
+                    onClick={() => assign.mutate({ ticketId: ticket.id, assignee: c.user, by: user?.email })}>
+                    {ticket.work_status === 'open' ? 'dispatch' : 'reassign'}
+                  </button>
                 )}
               </li>
             )
@@ -164,7 +177,8 @@ function ProposalPanels({ ticket, result, editing, edits, setEdit }: {
         </div>
       </Card>
 
-      <Card title={<>Resolution draft{staff('resolution_comment') && <StaffBadge />}</>} icon={<Pencil size={15} />}>
+      <Card title={<>Suggested resolution{staff('resolution_comment') && <StaffBadge />}</>} icon={<Pencil size={15} />}
+        actions={<span className="text-xs text-muted">AI draft</span>}>
         {editing ? (
           <>
             <label className="sr-only" htmlFor="edit-comment">Resolution comment</label>
@@ -178,7 +192,8 @@ function ProposalPanels({ ticket, result, editing, edits, setEdit }: {
   )
 }
 
-function ActionBar({ result, editing, setEditing, edits, reset }: {
+/** The analyst's decision on the AI proposal. Approving dispatches the ticket to the specialist. */
+function DecisionBar({ result, editing, setEditing, edits, reset }: {
   result: TriageResult
   editing: boolean
   setEditing: (v: boolean) => void
@@ -229,20 +244,104 @@ function ActionBar({ result, editing, setEditing, edits, reset }: {
         </>
       ) : editing ? (
         <>
-          <Button icon={<Check size={15} />} onClick={() => submit('edit')} disabled={review.isPending}>Save edits</Button>
+          <Button icon={<Check size={15} />} onClick={() => submit('edit')} disabled={review.isPending}>Save & dispatch</Button>
           <Button variant="ghost" onClick={() => { setEditing(false); reset() }}>Cancel</Button>
           <span className="text-xs text-muted">Team and priority are recomputed from service and urgency/impact.</span>
         </>
       ) : (
         <>
-          <Button icon={<Check size={15} />} onClick={() => submit('approve')} disabled={review.isPending}>Approve <kbd className="ml-1 rounded bg-white/20 px-1 text-[10px]">A</kbd></Button>
+          <Button icon={<Check size={15} />} onClick={() => submit('approve')} disabled={review.isPending}>
+            Approve & dispatch{result.assignee_suggestion?.recommended ? ` to ${short(result.assignee_suggestion.recommended)}` : ''}
+            <kbd className="ml-1 rounded bg-white/20 px-1 text-[10px]">A</kbd>
+          </Button>
           <Button variant="secondary" icon={<Pencil size={14} />} onClick={() => setEditing(true)}>Edit <kbd className="ml-1 rounded bg-canvas px-1 text-[10px]">E</kbd></Button>
           <Button variant="secondary" className="text-red-600" icon={<X size={14} />} onClick={() => setRejecting(true)}>Reject <kbd className="ml-1 rounded bg-canvas px-1 text-[10px]">R</kbd></Button>
         </>
       )}
-      <span className="ml-auto text-xs text-muted">Reviewing as <b className="text-ink">{user?.name ?? '–'}</b></span>
+      <span className="ml-auto text-xs text-muted">Deciding as <b className="text-ink">{user?.name ?? '–'}</b></span>
       <div className="w-full"><ErrorBox error={review.error} /></div>
     </div>
+  )
+}
+
+/** The specialist's controls: start, wait for information, resume, and mark done with a closing note. */
+function WorkBar({ ticket, result }: { ticket: TicketDetail; result: TriageResult | null }) {
+  const work = useWorkUpdate()
+  const { user } = useViewer()
+  const { data: ref } = useReference()
+  const [mode, setMode] = useState<'idle' | 'wait' | 'resolve'>('idle')
+  const [note, setNote] = useState('')
+  const [resolution, setResolution] = useState<string>(result?.resolution ?? 'done')
+  const [comment, setComment] = useState(result?.resolution_comment ?? '')
+  const send = (body: Omit<WorkUpdate, 'by'>) =>
+    work.mutate({ ticketId: ticket.id, body: { ...body, by: user?.email ?? '' } }, { onSuccess: () => setMode('idle') })
+  const status = ticket.work_status
+
+  return (
+    <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface/95 px-4 py-3 shadow-pop backdrop-blur">
+      {mode === 'resolve' ? (
+        <div className="flex w-full flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="text-sm font-medium" htmlFor="work-resolution">Resolution</label>
+            <select id="work-resolution" value={resolution} onChange={(e) => setResolution(e.target.value)}
+              className="rounded-md border border-line bg-surface px-2 py-1 text-sm">
+              {(ref?.resolutions ?? ['done']).map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <span className="text-xs text-muted">Prefilled with the AI's suggestion: change it to what you actually did.</span>
+          </div>
+          <label className="sr-only" htmlFor="work-comment">Closing note</label>
+          <textarea id="work-comment" rows={3} value={comment} onChange={(e) => setComment(e.target.value)} className={inputClass}
+            placeholder="Root cause, what you did, how you verified it" />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button icon={<CircleCheck size={15} />} disabled={work.isPending || !comment.trim()}
+              onClick={() => send({ action: 'resolve', resolution: resolution as WorkUpdate['resolution'], resolution_comment: comment })}>
+              Mark done
+            </Button>
+            <Button variant="ghost" onClick={() => setMode('idle')}>Cancel</Button>
+            <span className="text-xs text-muted">Done tickets are added to the knowledge base, so the next similar ticket finds your fix.</span>
+          </div>
+        </div>
+      ) : mode === 'wait' ? (
+        <>
+          <label className="sr-only" htmlFor="work-note">What's missing</label>
+          <input id="work-note" autoFocus value={note} onChange={(e) => setNote(e.target.value)} placeholder="What information are you waiting for?"
+            className={`${inputClass} min-w-0 flex-1`} />
+          <Button variant="secondary" icon={<Hourglass size={14} />} disabled={work.isPending} onClick={() => send({ action: 'wait', note: note || null })}>Set waiting</Button>
+          <Button variant="ghost" onClick={() => setMode('idle')}>Cancel</Button>
+        </>
+      ) : (
+        <>
+          {status === 'assigned' && <Button icon={<PlayCircle size={15} />} disabled={work.isPending} onClick={() => send({ action: 'start' })}>Start work</Button>}
+          {status === 'waiting' && <Button icon={<PlayCircle size={15} />} disabled={work.isPending} onClick={() => send({ action: 'resume' })}>Resume</Button>}
+          <Button variant={status === 'in_progress' ? 'primary' : 'secondary'} icon={<CircleCheck size={15} />} onClick={() => setMode('resolve')}>Mark done…</Button>
+          {status !== 'waiting' && <Button variant="secondary" icon={<Hourglass size={14} />} onClick={() => setMode('wait')}>Waiting for info…</Button>}
+        </>
+      )}
+      <span className="ml-auto text-xs text-muted">Working as <b className="text-ink">{user?.name ?? '–'}</b></span>
+      <div className="w-full"><ErrorBox error={work.error} /></div>
+    </div>
+  )
+}
+
+const ACTIVITY_LABEL: Record<string, string> = {
+  triaged: 'AI triaged it', approved: 'approved and dispatched', edited: 'edited and dispatched', rejected: 'rejected the proposal',
+  assigned: 'assigned it to', start: 'started work', wait: 'is waiting for information', resume: 'resumed work', resolve: 'marked it done',
+}
+
+function ActivityCard({ ticket }: { ticket: TicketDetail }) {
+  return (
+    <Card title="Activity" icon={<History size={15} />}>
+      <ol className="relative flex flex-col gap-3 border-l border-line pl-4 text-sm">
+        {ticket.activity.map((a, i) => (
+          <li key={i} className="relative">
+            <span className={`absolute top-1.5 -left-[21px] h-2.5 w-2.5 rounded-full ring-2 ring-surface ${a.action === 'resolve' ? 'bg-emerald-500' : a.action === 'rejected' ? 'bg-red-500' : a.action === 'triaged' ? 'bg-ai' : 'bg-slate-400'}`} />
+            {a.action === 'triaged' ? <b>AI</b> : <b>{short(a.by)}</b>} {ACTIVITY_LABEL[a.action] ?? a.action}
+            {a.note && <span className="text-muted"> {a.action === 'assigned' || a.action === 'approved' || a.action === 'edited' ? short(a.note) : `· ${a.note}`}</span>}
+            <p className="text-xs text-muted">{new Date(a.at).toLocaleString()}</p>
+          </li>
+        ))}
+      </ol>
+    </Card>
   )
 }
 
@@ -274,6 +373,7 @@ export default function TicketPage() {
   const [compose, setCompose] = useState<'escalate' | 'handoff' | 'question' | null>(null)
   const autoStarted = useRef(false)
   const copilot = useCopilot()
+  const { user, role } = useViewer()
   const { setTicket } = copilot
   const [tid, tnum, tsum] = [ticket?.id, ticket?.number, ticket?.summary]
 
@@ -314,13 +414,14 @@ export default function TicketPage() {
             <h1 className="mt-1 text-xl font-semibold tracking-tight text-balance">{ticket.summary}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {result && <><PriorityPill level={ticket.ai_priority} /><ScoreBar score={ticket.priority_score} /></>}
-              {result && <SlaTimer dueAt={ticket.sla_due_at} startAt={ticket.created_at} closed={ticket.status === 'done'} />}
-              <StatePill state={ticket.triage_state} />
-              {ticket.escalated && <Pill className="bg-red-50 text-red-700 ring-1 ring-red-200">escalated to team lead</Pill>}
+              {result && <SlaTimer dueAt={ticket.sla_due_at} startAt={ticket.created_at} closed={ticket.work_status === 'done'} />}
+              <WorkStatusPill ticket={ticket} />
+              {ticket.work_status !== 'open' && ticket.assignee && <span className="text-xs text-muted">with <b className="text-ink">{short(ticket.assignee)}</b></span>}
+              {ticket.escalated && <Pill className="bg-red-50 text-red-700 ring-1 ring-red-200">escalated to the team lead</Pill>}
               {ticket.manual_fields.length > 0 && <Pill className="bg-accent-soft text-accent">{ticket.manual_fields.length} fields set by staff</Pill>}
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          {(canDispatch(role) || !result) && <div className="flex flex-wrap items-center gap-2">
             <label className="sr-only" htmlFor="run-model">Model</label>
             <select id="run-model" value={runModel} onChange={(e) => setRunModel(e.target.value)} className="rounded-lg border border-line bg-surface px-2 py-1.5 text-sm">
               <option value="">{model ? `Model: ${model}` : 'Default model'}</option>
@@ -330,7 +431,7 @@ export default function TicketPage() {
             <Button variant="ai" icon={<Play size={14} />} onClick={run} disabled={stream.running}>
               {stream.running ? 'Triaging…' : result ? 'Re-run live' : 'Watch the AI triage it'}
             </Button>
-          </div>
+          </div>}
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3">
           <Button variant="secondary" className="text-red-600" icon={<Siren size={14} />} onClick={() => setCompose('escalate')} disabled={!result}>Escalate</Button>
@@ -383,6 +484,14 @@ export default function TicketPage() {
         </div>
 
         <div className="flex flex-col gap-4">
+          {ticket.work_status === 'done' && (
+            <Card title={<>Closing note <span className="font-normal text-muted">· by {short(ticket.resolved_by)}</span></>} icon={<CircleCheck size={15} className="text-emerald-600" />}
+              actions={<Pill className="bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">in the knowledge base</Pill>}>
+              <p className="mb-2 text-sm"><span className="text-muted">Resolution:</span> <b>{ticket.resolution}</b>
+                {ticket.resolved_at && <span className="text-xs text-muted"> · {new Date(ticket.resolved_at).toLocaleString()}</span>}</p>
+              <blockquote className="rounded-lg border-l-4 border-emerald-500 bg-emerald-50/60 p-3 text-sm leading-relaxed">{ticket.resolution_comment}</blockquote>
+            </Card>
+          )}
           {result ? (
             <ProposalPanels key={result.id} ticket={ticket} result={result} editing={editing} edits={edits} setEdit={setEdit} />
           ) : (
@@ -398,7 +507,8 @@ export default function TicketPage() {
               <EvidenceList evidence={result.evidence} highlight={result.playbook_ref} />
             </Card>
           )}
-          {ticket.reviews.length > 0 && (
+          {ticket.activity.length > 0 && <ActivityCard ticket={ticket} />}
+          {ticket.activity.length === 0 && ticket.reviews.length > 0 && (
             <Card title="Review history" icon={<History size={15} />}>
               <ul className="flex flex-col gap-2 text-sm">
                 {ticket.reviews.map((r) => (
@@ -417,8 +527,11 @@ export default function TicketPage() {
 
       {compose && <ComposeDialog ticket={ticket} initialPurpose={compose} onClose={() => setCompose(null)} />}
 
-      {result && !stream.running && (
-        <ActionBar key={result.id} result={result} editing={editing} setEditing={setEditing} edits={edits} reset={() => setEdits({})} />
+      {result && !stream.running && ticket.work_status === 'open' && canDispatch(role) && (
+        <DecisionBar key={result.id} result={result} editing={editing} setEditing={setEditing} edits={edits} reset={() => setEdits({})} />
+      )}
+      {!stream.running && ['assigned', 'in_progress', 'waiting'].includes(ticket.work_status) && (user?.email === ticket.assignee || role === 'admin') && (
+        <WorkBar key={`${ticket.id}-${ticket.work_status}`} ticket={ticket} result={result ?? null} />
       )}
     </div>
   )

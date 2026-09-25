@@ -65,7 +65,7 @@ export default function DashboardPage() {
       acceptance: rolling(data.days, (d) => [d.approved, d.approved + d.edited + d.rejected]),
       reviewTime: rolling(data.days, (d) => [(d.avg_review_seconds ?? 0) * (d.approved + d.edited + d.rejected), d.avg_review_seconds == null ? 0 : d.approved + d.edited + d.rejected]),
       routes: [
-        { label: 'Auto-assigned', color: SERIES[0], values: data.days.map((d) => d.auto) },
+        { label: 'High confidence', color: SERIES[0], values: data.days.map((d) => d.auto) },
         { label: 'Assigned, review', color: SERIES[1], values: data.days.map((d) => d.review) },
         { label: 'Needs human triage', color: SERIES[2], values: data.days.map((d) => d.triage) },
       ],
@@ -120,16 +120,16 @@ export default function DashboardPage() {
                 value={String(data.misroutes_caught)} unit="misrouted tickets caught" />
               <PainCard icon={Scale} pain="Everything is marked urgent" answer="Priority comes from an auditable rule and the official matrix, never from who shouts loudest."
                 value={String(data.priority_corrected)} unit="priorities corrected" />
-              <PainCard icon={BookOpenCheck} pain="Fixes live in people's heads" answer="Every approved fix becomes knowledge the next similar ticket reuses: the learning loop."
-                value={String(data.learned_documents)} unit="approved fixes now reusable" />
+              <PainCard icon={BookOpenCheck} pain="Fixes live in people's heads" answer="Every finished ticket becomes knowledge the next similar ticket reuses: the learning loop."
+                value={String(data.learned_documents)} unit="resolved fixes now reusable" />
               <PainCard icon={Clock3} pain="Tickets wait hours for first triage" answer="A complete proposal in seconds, with SLA timers from the moment it arrives."
                 value={`${data.avg_triage_seconds ?? '–'} s`} unit={`vs ~${data.manual_triage_minutes} min by hand`} />
               <PainCard icon={Users} pain="One expert gets all the tickets" answer="Assignment balances expertise with capacity, so nobody is buried."
                 value={pct(data.max_load)} unit={`busiest person's load · ${data.over_capacity} over capacity`} />
               <PainCard icon={Siren} pain="Escalations get lost in email" answer="Critical tickets alert the owning team instantly; escalations carry the ticket and an AI-drafted brief."
                 value={String(data.escalations)} unit="escalations with full context" />
-              <PainCard icon={ShieldCheck} pain="Nobody trusts a black-box AI" answer="Every step is shown live, confidence is measured, and a human approves every decision."
-                value={pct(data.auto_routed_share)} unit="confident enough to auto-assign" />
+              <PainCard icon={ShieldCheck} pain="Nobody trusts a black-box AI" answer="Every step is shown live, confidence is measured, and an analyst approves every ticket before anyone works on it."
+                value={pct(data.auto_routed_share)} unit="high confidence: one-click approval" />
               <PainCard icon={HelpCircle} pain="Vague tickets: “pls fix asap”" answer="Unclear tickets are detected and the draft asks the reporter for exactly what's missing."
                 value={String(data.clarifications_requested)} unit="vague tickets caught early" />
             </div>

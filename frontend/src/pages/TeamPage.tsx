@@ -28,7 +28,7 @@ export default function TeamPage() {
           <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-card">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-line bg-canvas/60 text-[11px] font-semibold tracking-wider text-muted uppercase">
-                <tr><th className="px-3 py-2">Analyst</th><th className="px-3 py-2">Open / capacity</th><th className="px-3 py-2">Share of team</th><th className="px-3 py-2">High+Highest</th><th className="px-3 py-2">Oldest open</th><th className="px-3 py-2">Approved (7d)</th></tr>
+                <tr><th className="px-3 py-2">Specialist</th><th className="px-3 py-2">Open / capacity</th><th className="px-3 py-2">Share of team</th><th className="px-3 py-2">High+Highest</th><th className="px-3 py-2">Oldest open</th><th className="px-3 py-2">Done (7d)</th></tr>
               </thead>
               <tbody>
                 {data.members.map((m) => {
@@ -36,7 +36,7 @@ export default function TeamPage() {
                   const over = m.open >= m.capacity || m.share >= 0.3
                   return (
                     <tr key={m.email} className="border-t border-line">
-                      <td className="px-3 py-2">{m.name}{m.role === 'lead' && <span className="ml-1 text-xs text-muted">lead</span>}</td>
+                      <td className="px-3 py-2">{m.name}{m.role === 'analyst' && <span className="ml-1 text-xs text-muted">team lead</span>}</td>
                       <td className="px-3 py-2">
                         <span className="inline-flex items-center gap-2">
                           <span className="inline-block h-2 w-24 overflow-hidden rounded bg-slate-100">
@@ -48,7 +48,7 @@ export default function TeamPage() {
                       <td className={`px-3 py-2 tabular-nums ${over ? 'font-semibold text-red-700' : ''}`}>{Math.round(m.share * 100)}%{over && ' ⚠'}</td>
                       <td className="px-3 py-2 tabular-nums">{m.high_open}</td>
                       <td className="px-3 py-2">{m.oldest_open_at ? new Date(m.oldest_open_at).toLocaleDateString() : '–'}</td>
-                      <td className="px-3 py-2 tabular-nums">{m.approved_7d}</td>
+                      <td className="px-3 py-2 tabular-nums">{m.resolved_7d}</td>
                     </tr>
                   )
                 })}
@@ -63,7 +63,7 @@ export default function TeamPage() {
                   <li key={t.id} className="flex flex-wrap items-center gap-2">
                     <PriorityPill level={t.ai_priority} />
                     <Link to={`/tickets/${t.id}`} className="text-blue-800 hover:underline">#{t.number} {t.summary}</Link>
-                    <SlaTimer dueAt={t.sla_due_at} startAt={t.created_at} closed={t.status === 'done'} />
+                    <SlaTimer dueAt={t.sla_due_at} startAt={t.created_at} closed={t.work_status === 'done'} />
                     <span className="text-xs text-muted">{t.assignee ? t.assignee.split('@')[0] : 'unassigned'}</span>
                   </li>
                 ))}

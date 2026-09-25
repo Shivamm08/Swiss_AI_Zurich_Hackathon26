@@ -28,7 +28,7 @@ export default function ComposeDialog({ ticket, initialPurpose, onClose }: { tic
   const team = ticket.ai_team ?? undefined
   const dept = departments?.find((d) => d.team === team)
   const options = [
-    ...(dept?.lead ? [{ to: dept.lead.email, label: dept.lead.name, sub: `Team lead · ${team}` }] : []),
+    ...(dept?.lead ? [{ to: dept.lead.email, label: dept.lead.name, sub: `Team Lead / Analyst · ${team}` }] : []),
     ...(ticket.assignee && ticket.assignee !== dept?.lead?.email
       ? [{ to: ticket.assignee, label: dept?.members.find((m) => m.email === ticket.assignee)?.name ?? ticket.assignee, sub: 'Working on this ticket' }] : []),
     ...(team ? [{ to: `team:${team}`, label: `${team} channel`, sub: 'Everyone in the department' }] : []),

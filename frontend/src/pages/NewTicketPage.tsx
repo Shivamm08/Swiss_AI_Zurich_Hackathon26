@@ -39,7 +39,7 @@ export default function NewTicketPage() {
 
   const team = reference?.services.find((s) => s.name === manual.service)?.team
   const priority = manual.urgency && manual.impact ? reference?.priority_matrix[manual.urgency as Level]?.[manual.impact as Level] : undefined
-  const people = (users ?? []).filter((u) => u.role !== 'admin' && (!team || u.teams.includes(team)))
+  const people = (users ?? []).filter((u) => u.role === 'specialist' && (!team || u.teams.includes(team)))
   const filled = Object.entries(manual).filter(([, v]) => v).map(([k]) => k)
 
   const submit = async (triageNow: boolean) => {
@@ -55,6 +55,7 @@ export default function NewTicketPage() {
       linked_issues: [],
       comments: [],
       manual: filled.length ? (cleaned as TicketCreate['manual']) : null,
+      created_by: user?.email ?? null,
     })
     navigate(`/tickets/${ticket.id}${triageNow ? '?run=1' : ''}`)
   }
