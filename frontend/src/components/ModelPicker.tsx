@@ -14,13 +14,13 @@ export default function ModelPicker() {
   if (!data) return null
 
   return (
-    <label className="flex items-center gap-2 text-xs text-slate-300" htmlFor="model-picker">
-      Model
+    <label className="flex items-center gap-2 text-xs text-muted" htmlFor="model-picker">
+      AI model
       <select
         id="model-picker"
         value={model ?? ''}
         onChange={(e) => setModel(e.target.value || undefined)}
-        className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-sm text-white"
+        className="rounded-lg border border-line bg-surface px-2 py-1 text-sm text-ink focus:border-accent focus:outline-none"
       >
         <option value="">{data.default_model ? `Default (${data.default_model})` : 'No LLM configured'}</option>
         {(Object.keys(PROVIDER_LABELS) as (keyof typeof PROVIDER_LABELS)[]).map((provider) => {

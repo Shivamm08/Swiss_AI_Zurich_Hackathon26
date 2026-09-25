@@ -1,10 +1,39 @@
 @import "tailwindcss";
 
+/* Design tokens: use as bg-canvas, text-ink, border-line, bg-accent, text-ai, … */
 @theme {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-canvas: #f3f5f9;       /* page background */
+  --color-surface: #ffffff;      /* cards */
+  --color-ink: #0f1a2b;          /* text, sidebar */
+  --color-ink-2: #1b2940;        /* sidebar hover */
+  --color-ink-3: #2a3a55;        /* sidebar borders */
+  --color-muted: #5e6878;        /* secondary text */
+  --color-line: #e3e8ef;         /* borders */
+  --color-accent: #2f5bea;       /* primary actions, links */
+  --color-accent-soft: #eaf0fe;
+  --color-ai: #7048e8;           /* anything the AI changed or produced */
+  --color-ai-soft: #f1ecfe;
+
+  --shadow-card: 0 1px 2px rgb(15 26 43 / 0.05), 0 2px 8px rgb(15 26 43 / 0.04);
+  --shadow-pop: 0 8px 24px rgb(15 26 43 / 0.12);
+
+  --animate-rise: rise 0.35s ease-out both;
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-canvas text-ink antialiased;
+  font-feature-settings: "tnum" 0;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

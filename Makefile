@@ -4,10 +4,10 @@ help: ## List commands
 	@grep -E '^[a-z-]+:.*## ' Makefile | sed 's/:.*## /\t/'
 
 up: ## Start the stack against DATABASE_URL in .env (Supabase)
-	docker compose up --build
+	docker compose up --build --renew-anon-volumes
 
 up-local: ## Start the stack with a local Postgres
-	DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/triage docker compose --profile local-db up --build
+	DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/triage docker compose --profile local-db up --build --renew-anon-volumes
 
 down: ## Stop everything
 	docker compose --profile local-db down

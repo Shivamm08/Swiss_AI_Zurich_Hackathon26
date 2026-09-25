@@ -59,9 +59,9 @@ export function ConfidenceMeter({ value, detail }: { value?: number | null; deta
 }
 
 const ROUTE_STYLES: Record<Route, [string, string]> = {
-  auto: ['bg-emerald-100 text-emerald-800', 'auto'],
-  review: ['bg-amber-100 text-amber-800', 'review'],
-  triage: ['bg-red-100 text-red-800', 'needs review'],
+  auto: ['bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200', 'auto'],
+  review: ['bg-amber-50 text-amber-800 ring-1 ring-amber-200', 'review'],
+  triage: ['bg-red-50 text-red-700 ring-1 ring-red-200', 'needs review'],
 }
 
 export function RoutePill({ route }: { route?: Route | null }) {
@@ -76,7 +76,7 @@ export function FieldDiff({ intake, value }: { intake?: string | null; value?: s
   if (!intake || intake === value) return <span>{value}</span>
   return (
     <span title={`Changed from intake: ${intake}`}>
-      <span className="text-slate-400 line-through">{intake}</span> <span className="font-medium text-violet-700">→ {value}</span>
+      <span className="text-slate-400 line-through">{intake}</span> <span className="font-medium text-ai">→ {value}</span>
     </span>
   )
 }
@@ -97,7 +97,7 @@ export function FactChips({ facts }: { facts?: Facts | null }) {
         const value = facts[key]
         const text = typeof value === 'boolean' ? (value ? 'yes' : 'no') : value.replaceAll('_', ' ')
         return (
-          <span key={key} className="rounded-full border border-slate-200 px-2 py-0.5 text-xs">
+          <span key={key} className="rounded-full border border-line bg-surface px-2 py-0.5 text-xs">
             <span className="text-slate-500">{FACT_LABELS[key]}</span> <b className="font-medium">{text}</b>
           </span>
         )
@@ -122,7 +122,7 @@ export function MatrixGrid({ reference, urgency, impact }: { reference?: Referen
           {levels.map((i) => {
             const hit = u === urgency && i === impact
             return (
-              <span key={i} className={`rounded-sm py-0.5 ${hit ? 'bg-slate-900 font-bold text-white' : 'bg-slate-100 text-slate-600'}`}>
+              <span key={i} className={`rounded-sm py-0.5 ${hit ? 'bg-ink font-bold text-white shadow-pop' : 'bg-slate-100 text-slate-600'}`}>
                 {LEVEL_SHORT[reference.priority_matrix[u][i]]}
               </span>
             )
@@ -134,9 +134,9 @@ export function MatrixGrid({ reference, urgency, impact }: { reference?: Referen
 }
 
 const KIND_LABEL: Record<Evidence['kind'], [string, string]> = {
-  playbook: ['playbook', 'bg-blue-100 text-blue-800'],
+  playbook: ['playbook', 'bg-accent-soft text-accent'],
   service_card: ['service', 'bg-slate-100 text-slate-700'],
-  historical_ticket: ['learned', 'bg-violet-100 text-violet-800'],
+  historical_ticket: ['learned', 'bg-ai-soft text-ai'],
 }
 
 export function EvidenceList({ evidence, highlight }: { evidence: Evidence[]; highlight?: string | null }) {
@@ -146,12 +146,12 @@ export function EvidenceList({ evidence, highlight }: { evidence: Evidence[]; hi
       {evidence.map((e) => {
         const [label, cls] = KIND_LABEL[e.kind]
         return (
-          <li key={e.ref_id} className={`rounded-md p-2 ${e.ref_id === highlight ? 'bg-blue-50 ring-1 ring-blue-300' : ''}`}>
+          <li key={e.ref_id} className={`rounded-md p-2 ${e.ref_id === highlight ? 'bg-accent-soft ring-1 ring-accent/30' : ''}`}>
             <button type="button" className="w-full text-left" onClick={() => setOpen(open === e.ref_id ? null : e.ref_id)}>
               <span className="flex items-center gap-2">
                 <Pill className={cls}>{label}</Pill>
                 <span className="font-mono text-xs text-slate-500">{e.score.toFixed(2)}</span>
-                {e.ref_id === highlight && <span className="text-xs font-medium text-blue-800">used for this proposal</span>}
+                {e.ref_id === highlight && <span className="text-xs font-medium text-accent">used for this proposal</span>}
               </span>
               <span className="mt-0.5 block">{e.title}</span>
             </button>
