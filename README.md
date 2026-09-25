@@ -1,4 +1,4 @@
-# ![Triage Copilot](https://swiss-ai-zurich-hackathon26.vercel.app/)
+# [Triage Copilot](https://swiss-ai-zurich-hackathon26.vercel.app/)
 
 **An AI copilot for IT service desks, with humans in charge.** Built for the Swiss Life challenge
 *"AI Support Agent for Operational Service Desks"* at Swiss {ai} Weeks, Zurich 2026.
