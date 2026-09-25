@@ -133,10 +133,10 @@ export default function Layout() {
           <span className="font-semibold md:hidden">Triage Copilot</span>
           <HealthDot />
           <div className="ml-auto flex items-center gap-3">
-            <ModelPicker />
-            <button type="button" onClick={() => copilot.setOpen(!copilot.open)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-ai to-accent px-3.5 py-1.5 text-sm font-medium text-white shadow-sm transition hover:brightness-110">
-              <Sparkles size={14} />Copilot
+            <span className="hidden md:contents"><ModelPicker /></span>
+            <button type="button" onClick={() => copilot.setOpen(!copilot.open)} aria-label="Copilot"
+              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-ai to-accent px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:brightness-110 sm:px-3.5">
+              <Sparkles size={14} /><span className="hidden sm:inline">Copilot</span>
             </button>
             <PersonaSwitcher />
           </div>

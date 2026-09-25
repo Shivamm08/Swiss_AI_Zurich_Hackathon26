@@ -71,7 +71,7 @@ export default function PersonaSwitcher() {
         className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pr-3 pl-1 text-sm shadow-card transition hover:border-accent/40">
         {user && <Avatar name={user.name} email={user.email} size="xs" />}
         <span className="hidden max-w-40 truncate font-medium sm:inline">{user?.name ?? 'Choose persona'}</span>
-        {user && <Pill className={`${ROLE_STYLE[user.role]} hidden md:inline-flex`}>{ROLE_LABEL[user.role]}</Pill>}
+        {user && <span className="hidden md:inline"><Pill className={ROLE_STYLE[user.role]}>{ROLE_LABEL[user.role]}</Pill></span>}
         <ChevronDown size={14} className="text-muted" />
       </button>
 

@@ -13,6 +13,7 @@ import {
   Pencil,
   Play,
   PlayCircle,
+  RotateCcw,
   Undo2,
   Scale,
   Siren,
@@ -22,8 +23,8 @@ import {
   X,
 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { useAssignTicket, useDeescalate, useLlmModels, useReference, useReviewTriage, useSettings, useTicket, useUsers, useWorkUpdate } from '../api/hooks'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useAssignTicket, useDeescalate, useLlmModels, useReference, useReopen, useReviewTriage, useSettings, useTicket, useTickets, useUsers, useWorkUpdate } from '../api/hooks'
 import { useTriageStream } from '../api/stream'
 import type { DecisionEdit, Level, ReviewCreate, TicketDetail, TriageResult, WorkUpdate } from '../api/types'
 import {
@@ -227,9 +228,10 @@ function dispatchTarget(ticket: TicketDetail, result: TriageResult) {
   return [s?.recommended, ...(s?.candidates.map((c) => c.user) ?? [])].find((e) => e && !skip.has(e)) ?? null
 }
 
-function DecisionBar({ ticket, result, editing, setEditing, edits, reset }: {
+function DecisionBar({ ticket, result, editing, setEditing, edits, reset, onDone }: {
   ticket: TicketDetail
   result: TriageResult
+  onDone: (message: string) => void
   editing: boolean
   setEditing: (v: boolean) => void
   edits: DecisionEdit
@@ -253,7 +255,13 @@ function DecisionBar({ ticket, result, editing, setEditing, edits, reset }: {
           review_seconds: (Date.now() - openedAt) / 1000,
         },
       },
-      { onSuccess: () => { setEditing(false); setRejecting(false); reset() } },
+      {
+        onSuccess: (review) => {
+          setEditing(false); setRejecting(false); reset()
+          onDone(action === 'reject' ? 'Rejected: the ticket is now in Needs review for any analyst.'
+            : `${action === 'edit' ? 'Edited and dispatched' : 'Approved and dispatched'}${review.final?.assignee || dispatchTarget(ticket, result) ? ` to ${short(dispatchTarget(ticket, result))}` : ''}.`)
+        },
+      },
     )
 
   useEffect(() => {
@@ -274,19 +282,19 @@ function DecisionBar({ ticket, result, editing, setEditing, edits, reset }: {
           <label className="sr-only" htmlFor="reject-reason">Reason</label>
           <input id="reject-reason" autoFocus value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Why is the proposal wrong?"
             className={`${inputClass} min-w-0 flex-1`} />
-          <Button variant="danger" onClick={() => submit('reject')} disabled={review.isPending}>Reject → Needs review</Button>
+          <Button variant="danger" onClick={() => submit('reject')} disabled={review.isPending}>{review.isPending ? 'Rejecting…' : 'Reject → Needs review'}</Button>
           <Button variant="ghost" onClick={() => setRejecting(false)}>Cancel</Button>
         </>
       ) : editing ? (
         <>
-          <Button icon={<Check size={15} />} onClick={() => submit('edit')} disabled={review.isPending}>Save & dispatch</Button>
+          <Button icon={<Check size={15} />} onClick={() => submit('edit')} disabled={review.isPending}>{review.isPending ? 'Dispatching…' : 'Save & dispatch'}</Button>
           <Button variant="ghost" onClick={() => { setEditing(false); reset() }}>Cancel</Button>
           <span className="text-xs text-muted">Team and priority are recomputed from service and urgency/impact.</span>
         </>
       ) : (
         <>
           <Button icon={<Check size={15} />} onClick={() => submit('approve')} disabled={review.isPending}>
-            Approve & dispatch{dispatchTarget(ticket, result) ? ` to ${short(dispatchTarget(ticket, result))}` : ''}
+            {review.isPending ? 'Dispatching…' : `Approve & dispatch${dispatchTarget(ticket, result) ? ` to ${short(dispatchTarget(ticket, result))}` : ''}`}
             <kbd className="ml-1 rounded bg-white/20 px-1 text-[10px]">A</kbd>
           </Button>
           <Button variant="secondary" icon={<Pencil size={14} />} onClick={() => setEditing(true)}>Edit <kbd className="ml-1 rounded bg-canvas px-1 text-[10px]">E</kbd></Button>
@@ -370,10 +378,57 @@ function WorkBar({ ticket, result }: { ticket: TicketDetail; result: TriageResul
   )
 }
 
+/** The analyst isn't satisfied with the fix: back to the same specialist, out of the knowledge base. */
+function ReopenBox({ ticketId, specialist }: { ticketId: string; specialist?: string | null }) {
+  const reopen = useReopen()
+  const { user } = useViewer()
+  const [open, setOpen] = useState(false)
+  const [note, setNote] = useState('')
+  if (!open) {
+    return <Button variant="secondary" className="mt-3" icon={<RotateCcw size={14} />} onClick={() => setOpen(true)}>Reopen…</Button>
+  }
+  return (
+    <div className="mt-3 flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50/60 p-3">
+      <label className="text-xs font-medium text-amber-900" htmlFor="reopen-note">
+        What isn't right? {short(specialist)} gets it back with your note, and this fix leaves the knowledge base.
+      </label>
+      <input id="reopen-note" autoFocus value={note} onChange={(e) => setNote(e.target.value)} className={inputClass}
+        placeholder="e.g. The closing note doesn't say how it was verified" />
+      <div className="flex gap-2">
+        <Button variant="danger" icon={<RotateCcw size={14} />} disabled={!note.trim() || reopen.isPending}
+          onClick={() => reopen.mutate({ ticketId, by: user?.email ?? '', note }, { onSuccess: () => setOpen(false) })}>
+          {reopen.isPending ? 'Reopening…' : 'Reopen and send back'}
+        </Button>
+        <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+      </div>
+      <ErrorBox error={reopen.error} />
+    </div>
+  )
+}
+
+/** Shown after the analyst decides, so the click visibly did something, with a way on to the next ticket. */
+function DoneBanner({ message, ticketId, onClose }: { message: string; ticketId: string; onClose: () => void }) {
+  const { user } = useViewer()
+  const navigate = useNavigate()
+  const { data: inbox } = useTickets({ view: 'inbox', as_user: user?.email, limit: 5 })
+  const next = inbox?.items.find((t) => t.id !== ticketId)
+  return (
+    <div role="status" className="animate-rise sticky bottom-3 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/95 px-4 py-3 text-sm text-emerald-900 shadow-pop backdrop-blur">
+      <CircleCheck size={16} className="text-emerald-600" />
+      <span className="font-medium">{message}</span>
+      <span className="ml-auto flex gap-2">
+        {next ? <Button onClick={() => { onClose(); navigate(`/tickets/${next.id}`) }}>Next in inbox: #{next.number} →</Button>
+          : <Button variant="secondary" onClick={() => navigate('/')}>Inbox is clear: back to the queue</Button>}
+        <Button variant="ghost" onClick={onClose}>Dismiss</Button>
+      </span>
+    </div>
+  )
+}
+
 const ACTIVITY_LABEL: Record<string, string> = {
   triaged: 'triaged it', approved: 'approved and dispatched', edited: 'edited and dispatched', rejected: 'rejected the proposal',
   assigned: 'assigned it to', start: 'started work', wait: 'is waiting for information', resume: 'resumed work', resolve: 'marked it done',
-  handback: 'handed it back', escalated: 'escalated it', deescalated: 'de-escalated it',
+  handback: 'handed it back', escalated: 'escalated it', deescalated: 'de-escalated it', reopened: 'reopened it',
 }
 
 function ActivityCard({ ticket }: { ticket: TicketDetail }) {
@@ -421,6 +476,10 @@ export default function TicketPage() {
   const [edits, setEdits] = useState<DecisionEdit>({})
   const [compose, setCompose] = useState<'escalate' | 'question' | null>(null)
   const deescalate = useDeescalate()
+  // The banner belongs to the ticket it was raised on, so it disappears when you move to the next one.
+  const [flashed, setFlashed] = useState<{ id: string; message: string } | null>(null)
+  const flash = flashed?.id === ticketId ? flashed.message : null
+  const setFlash = (message: string | null) => setFlashed(message ? { id: ticketId, message } : null)
   const autoStarted = useRef(false)
   const copilot = useCopilot()
   const { user, role } = useViewer()
@@ -543,10 +602,13 @@ export default function TicketPage() {
         <div className="flex flex-col gap-4">
           {ticket.work_status === 'done' && (
             <Card title={<>Closing note <span className="font-normal text-muted">· by {short(ticket.resolved_by)}</span></>} icon={<CircleCheck size={15} className="text-emerald-600" />}
-              actions={<Pill className="bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">in the knowledge base</Pill>}>
+              actions={ticket.source === 'demo'
+                ? <Pill className="bg-slate-100 text-slate-600">simulated: not in the knowledge base</Pill>
+                : <Pill className="bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">in the knowledge base</Pill>}>
               <p className="mb-2 text-sm"><span className="text-muted">Resolution:</span> <b>{ticket.resolution}</b>
                 {ticket.resolved_at && <span className="text-xs text-muted"> · {new Date(ticket.resolved_at).toLocaleString()}</span>}</p>
               <blockquote className="rounded-lg border-l-4 border-emerald-500 bg-emerald-50/60 p-3 text-sm leading-relaxed">{ticket.resolution_comment}</blockquote>
+              {canManageTicket(user, ticket) && <ReopenBox ticketId={ticket.id} specialist={ticket.resolved_by} />}
             </Card>
           )}
           {result ? (
@@ -585,9 +647,10 @@ export default function TicketPage() {
       {compose && <ComposeDialog ticket={ticket} initialPurpose={compose} onClose={() => setCompose(null)} />}
 
       {result && !stream.running && ticket.work_status === 'open' && canManageTicket(user, ticket) && (
-        <DecisionBar key={result.id} ticket={ticket} result={result} editing={editing} setEditing={setEditing} edits={edits} reset={() => setEdits({})} />
+        <DecisionBar key={result.id} ticket={ticket} result={result} onDone={setFlash} editing={editing} setEditing={setEditing} edits={edits} reset={() => setEdits({})} />
       )}
-      {!stream.running && ['assigned', 'in_progress', 'waiting'].includes(ticket.work_status) && (user?.email === ticket.assignee || role === 'admin') && (
+      {flash && <DoneBanner message={flash} ticketId={ticket.id} onClose={() => setFlash(null)} />}
+      {!flash && !stream.running && ['assigned', 'in_progress', 'waiting'].includes(ticket.work_status) && (user?.email === ticket.assignee || role === 'admin') && (
         <WorkBar key={`${ticket.id}-${ticket.work_status}`} ticket={ticket} result={result ?? null} />
       )}
     </div>

@@ -1,11 +1,42 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchSubmission, useBatchTriage, useImportTickets, useIngestEmail, useTickets } from '../api/hooks'
+import { fetchSubmission, useBatchTriage, useChallengeStats, useImportTickets, useIngestEmail, useTickets } from '../api/hooks'
 import type { TicketSource } from '../api/types'
 import { Button, Card, ErrorBox, PageHeader } from '../components/ui'
 import { useSelectedModel } from '../model/context'
 
 const input = 'rounded-md border border-line px-2 py-1 text-sm'
+
+function ChallengeStatsCard() {
+  const { data: s } = useChallengeStats()
+  if (!s) return null
+  const pct = (n: number) => (s.triaged ? `${Math.round((n / s.triaged) * 100)}%` : '–')
+  const stat = (label: string, value: string, sub?: string) => (
+    <div className="rounded-lg bg-canvas px-3 py-2">
+      <p className="text-[11px] tracking-wide text-muted uppercase">{label}</p>
+      <p className={`font-semibold tabular ${value.length > 14 ? 'text-sm leading-snug' : 'text-lg'}`}>{value}</p>
+      {sub && <p className="text-[11px] text-muted">{sub}</p>}
+    </div>
+  )
+  return (
+    <Card title="Challenge set: how the system handles the 20 tickets">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {stat('Triaged', `${s.triaged} / ${s.tickets}`, s.heuristic ? `${s.heuristic} without AI` : 'all with the AI model')}
+        {stat('Avg confidence', s.avg_confidence != null ? `${Math.round(s.avg_confidence * 100)}%` : '–')}
+        {stat('Votes agree', s.avg_vote_agreement != null ? `${Math.round(s.avg_vote_agreement * 100)}%` : '–', `service unanimous on ${s.unanimous_service}`)}
+        {stat('Past fix matched', pct(s.with_precedent), `${s.with_precedent} tickets`)}
+        {stat('Routes', Object.entries(s.by_route).map(([k, v]) => `${v} ${k === 'auto' ? 'high' : k === 'review' ? 'check' : 'low'}`).join(' · ') || '–', 'by confidence')}
+        {stat('Priority vs intake', `${s.priority_raised}↑ ${s.priority_lowered}↓`, 'raised / lowered by the rules')}
+        {stat('Changed vs intake', Object.entries(s.changed_vs_intake).map(([k, v]) => `${k.replace('_', ' ')} ${v}`).join(' · ') || 'none')}
+        {stat('Speed', s.avg_latency_seconds != null ? `${s.avg_latency_seconds.toFixed(1)} s` : '–', 'per full proposal')}
+      </div>
+      <p className="mt-2 text-xs text-muted">
+        Priorities: {Object.entries(s.by_priority).map(([k, v]) => `${v} ${k}`).join(', ') || '–'} · Analyst decisions so far: {s.decided} ({s.accepted_unchanged} accepted unchanged).
+      </p>
+      <p className="mt-1 text-xs text-muted italic">{s.note}</p>
+    </Card>
+  )
+}
 
 function BatchTriageCard() {
   const { model } = useSelectedModel()
@@ -107,6 +138,8 @@ export default function ImportPage() {
         </form>
         <ErrorBox error={ingestEmail.error} />
       </Card>
+
+      <ChallengeStatsCard />
 
       <Card title="Export challenge submission">
         <p className="mb-2 text-sm text-muted">

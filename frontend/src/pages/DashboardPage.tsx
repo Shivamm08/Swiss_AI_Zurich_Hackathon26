@@ -49,6 +49,17 @@ function PainCard({ icon: Icon, pain, answer, value, unit }: { icon: LucideIcon;
   )
 }
 
+function Kpi({ label, value, how, bad = false }: { label: string; value: string; how: string; bad?: boolean }) {
+  return (
+    <div className="rounded-2xl border border-line bg-surface p-4 shadow-card" title={how}>
+      <p className="text-xs tracking-wider text-muted uppercase">{label}</p>
+      <p className="mt-1 text-3xl font-semibold tabular">{value}</p>
+      <p className="mt-1 text-[11px] leading-snug text-muted">{how}</p>
+      {bad && <p className="mt-1 text-[10px] font-medium text-muted uppercase">lower is better</p>}
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const [includeDemo, setIncludeDemo] = useState(true)
   const [showTable, setShowTable] = useState(false)
@@ -111,6 +122,32 @@ export default function DashboardPage() {
               <p className="mt-1 text-4xl font-semibold tabular">{data.avg_triage_seconds ?? '–'} s</p>
               <p className="mt-1 text-xs text-muted">then {data.avg_review_seconds ?? '–'} s of human review on average</p>
             </div>
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-[13px] font-semibold tracking-wide text-muted uppercase">Desk KPIs</h2>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+              <Kpi label="Time to assign" value={data.time_to_assign_minutes != null ? `${Math.round(data.time_to_assign_minutes)} min` : '–'}
+                how="Median time from a ticket arriving to its dispatch to a specialist (activity timeline)." />
+              <Kpi label="First-time accuracy" value={pct(data.first_time_accuracy)}
+                how="Analyst decisions that accepted the AI proposal with no field changed (reviews.overridden_fields empty)." />
+              <Kpi label="AI misroutes" value={pct(data.ai_misroute_rate)} bad
+                how="Decisions where the analyst changed the service (wrong department) or rejected the proposal." />
+              <Kpi label="Reassigned" value={pct(data.reassignment_rate)} bad
+                how="Dispatched tickets later reassigned or handed back by the specialist." />
+              <Kpi label="Reopened" value={pct(data.reopen_rate)} bad
+                how="Finished tickets the Team Lead / Analyst reopened because the fix wasn't good enough." />
+            </div>
+            {Object.keys(data.field_accuracy).length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-xs shadow-card">
+                <span className="font-medium text-muted">Kept as proposed, per field:</span>
+                {Object.entries(data.field_accuracy).map(([f, v]) => (
+                  <span key={f} className={`rounded-full px-2 py-0.5 tabular ${v >= 0.95 ? 'bg-emerald-50 text-emerald-700' : v >= 0.85 ? 'bg-amber-50 text-amber-800' : 'bg-red-50 text-red-700'}`}>
+                    {f.replace('_', ' ')} {Math.round(v * 100)}%
+                  </span>
+                ))}
+              </div>
+            )}
           </section>
 
           <section>
