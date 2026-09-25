@@ -1,13 +1,24 @@
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
 import {
-  useAssignTicket,
-  useLlmModels,
-  useReference,
-  useReviewTriage,
-  useTicket,
-  useTriageTicket,
-} from '../api/hooks'
+  ArrowLeft,
+  BookOpen,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Gauge,
+  History,
+  Inbox,
+  MessagesSquare,
+  Pencil,
+  Play,
+  Scale,
+  Sparkles,
+  UserCheck,
+  X,
+} from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useAssignTicket, useLlmModels, useReference, useReviewTriage, useSettings, useTicket } from '../api/hooks'
+import { useTriageStream } from '../api/stream'
 import type { DecisionEdit, Level, ReviewCreate, TicketDetail, TriageResult } from '../api/types'
 import {
   ConfidenceMeter,
@@ -19,29 +30,31 @@ import {
   ScoreBar,
   SlaTimer,
 } from '../components/triage'
-import { Button, Card, ErrorBox, Field, Loading, PriorityPill, StatePill } from '../components/ui'
+import Walkthrough from '../components/Walkthrough'
+import { Button, Card, ErrorBox, Field, Loading, Pill, PriorityPill, StatePill, inputClass } from '../components/ui'
 import { HEURISTIC, useSelectedModel } from '../model/context'
 import { useViewer } from '../viewas/context'
 
 const short = (email?: string | null) => (email ? email.split('@')[0] : '–')
 
+const StaffBadge = () => <Pill className="ml-1.5 bg-accent-soft text-accent">set by staff</Pill>
+
 function ConfidencePanel({ result }: { result: TriageResult }) {
   const d = result.confidence_detail
   return (
-    <Card title={`Confidence ${Math.round(result.confidence * 100)}%`} actions={<RoutePill route={result.route} />}>
+    <Card title={`Confidence ${Math.round(result.confidence * 100)}%`} icon={<Gauge size={15} />} actions={<RoutePill route={result.route} />}>
       {d ? (
-        <dl className="flex flex-col gap-1 text-sm">
-          <div className="flex items-center justify-between"><dt className="text-slate-500">Votes agree</dt><dd><ConfidenceMeter value={d.votes} /></dd></div>
-          <div className="flex items-center justify-between"><dt className="text-slate-500">Similar past case</dt><dd><ConfidenceMeter value={d.retrieval} /></dd></div>
-          <div className="flex items-center justify-between"><dt className="text-slate-500">Flags</dt><dd className="text-xs">{d.flags.length ? d.flags.join(', ').replaceAll('_', ' ') : 'none'}</dd></div>
-          <p className="mt-1 text-xs text-slate-500">
-            {result.confidence < 0.8 &&
-              `Weakest part: ${d.flags.includes('heuristic_fallback') ? 'no LLM result' : d.votes < d.retrieval ? 'the votes disagree' : 'no close past case'}.`}
-          </p>
+        <dl className="flex flex-col gap-2 text-sm">
+          <div className="flex items-center justify-between"><dt className="text-muted">Votes agree</dt><dd><ConfidenceMeter value={d.votes} /></dd></div>
+          <div className="flex items-center justify-between"><dt className="text-muted">Similar past case</dt><dd><ConfidenceMeter value={d.retrieval} /></dd></div>
+          <div className="flex items-center justify-between"><dt className="text-muted">Flags</dt><dd className="text-xs">{d.flags.length ? d.flags.join(', ').replaceAll('_', ' ') : 'none'}</dd></div>
+          {result.confidence < 0.8 && (
+            <p className="rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900">
+              Weakest part: {d.flags.includes('heuristic_fallback') ? 'no LLM result' : d.votes < d.retrieval ? 'the votes disagree' : 'no close past case'}.
+            </p>
+          )}
         </dl>
-      ) : (
-        <ConfidenceMeter value={result.confidence} />
-      )}
+      ) : <ConfidenceMeter value={result.confidence} />}
     </Card>
   )
 }
@@ -50,39 +63,42 @@ function AssigneePanel({ ticket, result }: { ticket: TicketDetail; result: Triag
   const assign = useAssignTicket()
   const s = result.assignee_suggestion
   return (
-    <Card title="Assignee">
-      <dl className="flex flex-col gap-1 text-sm">
-        <Field label="Working on it">{ticket.assignee ? <b>{short(ticket.assignee)}</b> : <span className="text-red-700">unassigned</span>}</Field>
-        <Field label="Expert">{short(s?.expert)} <span className="text-xs text-slate-500">(used in the export)</span></Field>
-        <Field label="Recommended">{short(s?.recommended)}</Field>
+    <Card title="Assignee" icon={<UserCheck size={15} />}>
+      <dl>
+        <Field label="Working on it">
+          {ticket.assignee ? <b>{short(ticket.assignee)}</b> : <span className="text-red-600">unassigned</span>}
+          {ticket.manual_fields.includes('assignee') && <StaffBadge />}
+        </Field>
+        <Field label="Expert">{short(s?.expert)} <span className="text-xs text-muted">(export)</span></Field>
       </dl>
-      {s && <p className="mt-1 text-xs text-slate-500">{s.reason}</p>}
+      {s && <p className="mt-1 text-xs text-muted">{s.reason}</p>}
       {s && s.candidates.length > 0 && (
-        <table className="mt-2 w-full text-xs">
-          <thead className="text-slate-500"><tr><th className="text-left">Team member</th><th>Open</th><th>Score</th><th></th></tr></thead>
-          <tbody>
-            {s.candidates.map((c) => (
-              <tr key={c.user} className="border-t border-slate-100">
-                <td className="py-1">{c.name}{c.user === s.expert && <span className="ml-1 text-blue-700">expert</span>}</td>
-                <td className={`text-center tabular-nums ${c.open >= c.capacity ? 'font-semibold text-red-700' : ''}`}>{c.open}/{c.capacity}</td>
-                <td className="text-center tabular-nums">{c.score.toFixed(2)}</td>
-                <td className="text-right">
-                  {ticket.assignee !== c.user && (
-                    <button type="button" className="text-blue-700 hover:underline" disabled={assign.isPending}
-                      onClick={() => assign.mutate({ ticketId: ticket.id, assignee: c.user })}>assign</button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ul className="mt-3 flex flex-col divide-y divide-line rounded-lg border border-line text-xs">
+          {s.candidates.map((c) => {
+            const load = c.capacity ? c.open / c.capacity : 0
+            return (
+              <li key={c.user} className="flex items-center gap-2 px-2.5 py-2">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-canvas text-[10px] font-semibold uppercase">{c.name.split(' ').map((p) => p[0]).join('')}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  {c.name}{c.user === s.expert && <span className="ml-1 text-accent">expert</span>}
+                </span>
+                <span className="inline-block h-1.5 w-10 overflow-hidden rounded bg-slate-200"><span className={`block h-1.5 ${load >= 1 ? 'bg-red-500' : load >= 0.6 ? 'bg-amber-400' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, load * 100)}%` }} /></span>
+                <span className="w-8 text-right tabular">{c.open}/{c.capacity}</span>
+                {ticket.assignee === c.user ? <Check size={14} className="text-emerald-600" /> : (
+                  <button type="button" className="font-medium text-accent hover:underline disabled:opacity-50" disabled={assign.isPending}
+                    onClick={() => assign.mutate({ ticketId: ticket.id, assignee: c.user })}>assign</button>
+                )}
+              </li>
+            )
+          })}
+        </ul>
       )}
       <ErrorBox error={assign.error} />
     </Card>
   )
 }
 
-function ProposalPanel({ ticket, result, editing, edits, setEdit }: {
+function ProposalPanels({ ticket, result, editing, edits, setEdit }: {
   ticket: TicketDetail
   result: TriageResult
   editing: boolean
@@ -96,52 +112,63 @@ function ProposalPanel({ ticket, result, editing, edits, setEdit }: {
   const priority = ref?.priority_matrix[urgency]?.[impact] ?? result.priority
   const team = ref?.services.find((s) => s.name === current.service)?.team ?? result.team
   const votes = result.vote_agreement
+  const staff = (f: string) => ticket.manual_fields.includes(f)
 
   const select = (key: 'work_type' | 'service' | 'urgency' | 'impact' | 'resolution', options: readonly string[]) => (
     <select id={`edit-${key}`} aria-label={key} value={String(current[key])} onChange={(e) => setEdit(key, e.target.value as never)}
-      className="rounded-md border border-slate-300 px-1.5 py-0.5 text-sm">
+      className="rounded-md border border-line bg-surface px-1.5 py-0.5 text-sm">
       {options.map((o) => <option key={o} value={o}>{o}</option>)}
     </select>
   )
   const voteNote = (field: string) =>
-    votes[field] !== undefined && votes[field] < 1 ? <span className="ml-1 text-xs text-amber-700">votes {Math.round(votes[field] * 100)}%</span> : null
+    staff(field) ? <StaffBadge /> : votes[field] !== undefined && votes[field] < 1
+      ? <Pill className="ml-1.5 bg-amber-50 text-amber-800">votes {Math.round(votes[field] * 100)}%</Pill> : null
+  const row = (label: string, field: 'work_type' | 'service' | 'urgency' | 'impact' | 'resolution', intake: string | null | undefined, options?: readonly string[]) => (
+    <Field label={label}>
+      {editing && options ? select(field, options) : intake !== undefined ? <FieldDiff intake={intake} value={String(current[field])} /> : String(current[field])}
+      {!editing && voteNote(field)}
+    </Field>
+  )
 
   return (
     <>
-      <Card title={`AI proposal · ${result.model}`} actions={<span className="text-xs text-slate-500">{result.latency_ms} ms</span>}>
-        <dl>
-          <Field label="Work type">{editing && ref ? select('work_type', ref.work_types) : <FieldDiff intake={ticket.work_type} value={current.work_type} />}{voteNote('work_type')}</Field>
-          <Field label="Service">{editing && ref ? select('service', ref.services.map((s) => s.name)) : <FieldDiff intake={ticket.affected_service} value={current.service} />}{voteNote('service')}</Field>
-          <Field label="Team">{team} <span className="text-xs text-slate-500">(fixed by service)</span></Field>
-          <Field label="Impact">{editing && ref ? select('impact', ref.levels) : <FieldDiff intake={ticket.impact} value={current.impact} />}</Field>
-          <Field label="Urgency">{editing && ref ? select('urgency', ref.levels) : <FieldDiff intake={ticket.urgency} value={current.urgency} />}</Field>
-          <Field label="Priority"><PriorityPill level={priority} /><ScoreBar score={result.priority_score} />{priority !== ticket.priority && ticket.priority && <span className="ml-2 text-xs text-slate-500">was {ticket.priority}</span>}</Field>
-          <Field label="Resolution">{editing && ref ? select('resolution', ref.resolutions) : current.resolution}{voteNote('resolution')}</Field>
+      <Card title={<>AI proposal <span className="font-normal text-muted">· {result.model}</span></>} icon={<Sparkles size={15} />}
+        actions={<span className="font-mono text-xs text-muted">{(result.latency_ms / 1000).toFixed(1)} s</span>}>
+        <dl className="divide-y divide-line/70">
+          {row('Work type', 'work_type', ticket.work_type, ref?.work_types)}
+          {row('Service', 'service', ticket.affected_service, ref?.services.map((s) => s.name))}
+          <Field label="Team">{team} <span className="text-xs text-muted">(fixed by service)</span></Field>
+          {row('Impact', 'impact', ticket.impact, ref?.levels)}
+          {row('Urgency', 'urgency', ticket.urgency, ref?.levels)}
+          <Field label="Priority">
+            <PriorityPill level={priority} /><ScoreBar score={result.priority_score} />
+            {ticket.priority && priority !== ticket.priority && <span className="ml-2 text-xs text-muted">was {ticket.priority}</span>}
+          </Field>
+          {row('Resolution', 'resolution', undefined, ref?.resolutions)}
         </dl>
         <div className="mt-3"><FactChips facts={result.facts} /></div>
-        <p className="mt-2 text-xs text-slate-500">{result.rationale}</p>
+        {result.rationale && <p className="mt-3 rounded-lg bg-canvas px-3 py-2 text-xs text-muted">{result.rationale}</p>}
       </Card>
 
-      <Card title="Why this priority">
-        <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
-          <ul className="flex flex-col gap-1 text-sm">
+      <Card title="Why this priority" icon={<Scale size={15} />}>
+        <div className="grid gap-4 sm:grid-cols-[1fr_13rem]">
+          <ul className="flex flex-col gap-1.5 text-sm">
             {(editing ? [`Priority ${priority} = matrix[urgency ${urgency}][impact ${impact}] (edited)`] : result.rubric_trace).map((line) => (
-              <li key={line}>• {line}</li>
+              <li key={line} className="flex gap-2"><span className="text-muted">→</span>{line}</li>
             ))}
           </ul>
           <MatrixGrid reference={ref} urgency={urgency} impact={impact} />
         </div>
       </Card>
 
-      <Card title="Resolution draft">
+      <Card title={<>Resolution draft{staff('resolution_comment') && <StaffBadge />}</>} icon={<Pencil size={15} />}>
         {editing ? (
           <>
             <label className="sr-only" htmlFor="edit-comment">Resolution comment</label>
-            <textarea id="edit-comment" rows={5} value={current.resolution_comment} onChange={(e) => setEdit('resolution_comment', e.target.value)}
-              className="w-full rounded-md border border-slate-300 p-2 text-sm" />
+            <textarea id="edit-comment" rows={5} value={current.resolution_comment} onChange={(e) => setEdit('resolution_comment', e.target.value)} className={inputClass} />
           </>
         ) : (
-          <p className="rounded-md bg-slate-50 p-3 text-sm">{current.resolution_comment}</p>
+          <blockquote className="rounded-lg border-l-4 border-ai bg-ai-soft/50 p-3 text-sm leading-relaxed">{current.resolution_comment}</blockquote>
         )}
       </Card>
     </>
@@ -188,98 +215,148 @@ function ActionBar({ result, editing, setEditing, edits, reset }: {
   })
 
   return (
-    <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
+    <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface/95 px-4 py-3 shadow-pop backdrop-blur">
       {rejecting ? (
         <>
           <label className="sr-only" htmlFor="reject-reason">Reason</label>
           <input id="reject-reason" autoFocus value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Why is the proposal wrong?"
-            className="min-w-0 flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm" />
-          <Button variant="danger" onClick={() => submit('reject')} disabled={review.isPending}>Reject and send to Needs review</Button>
-          <Button variant="secondary" onClick={() => setRejecting(false)}>Cancel</Button>
+            className={`${inputClass} min-w-0 flex-1`} />
+          <Button variant="danger" onClick={() => submit('reject')} disabled={review.isPending}>Reject → Needs review</Button>
+          <Button variant="ghost" onClick={() => setRejecting(false)}>Cancel</Button>
         </>
       ) : editing ? (
         <>
-          <Button onClick={() => submit('edit')} disabled={review.isPending}>Save edits</Button>
-          <Button variant="secondary" onClick={() => { setEditing(false); reset() }}>Cancel</Button>
-          <span className="text-xs text-slate-500">Team and priority are recomputed from service and urgency/impact.</span>
+          <Button icon={<Check size={15} />} onClick={() => submit('edit')} disabled={review.isPending}>Save edits</Button>
+          <Button variant="ghost" onClick={() => { setEditing(false); reset() }}>Cancel</Button>
+          <span className="text-xs text-muted">Team and priority are recomputed from service and urgency/impact.</span>
         </>
       ) : (
         <>
-          <Button onClick={() => submit('approve')} disabled={review.isPending}>Approve (a)</Button>
-          <Button variant="secondary" onClick={() => setEditing(true)}>Edit (e)</Button>
-          <Button variant="danger" onClick={() => setRejecting(true)}>Reject (r)</Button>
+          <Button icon={<Check size={15} />} onClick={() => submit('approve')} disabled={review.isPending}>Approve <kbd className="ml-1 rounded bg-white/20 px-1 text-[10px]">A</kbd></Button>
+          <Button variant="secondary" icon={<Pencil size={14} />} onClick={() => setEditing(true)}>Edit <kbd className="ml-1 rounded bg-canvas px-1 text-[10px]">E</kbd></Button>
+          <Button variant="secondary" className="text-red-600" icon={<X size={14} />} onClick={() => setRejecting(true)}>Reject <kbd className="ml-1 rounded bg-canvas px-1 text-[10px]">R</kbd></Button>
         </>
       )}
-      <span className="ml-auto text-xs text-slate-500">Reviewer: {user?.name ?? '–'}</span>
-      <ErrorBox error={review.error} />
+      <span className="ml-auto text-xs text-muted">Reviewing as <b className="text-ink">{user?.name ?? '–'}</b></span>
+      <div className="w-full"><ErrorBox error={review.error} /></div>
     </div>
+  )
+}
+
+function Section({ title, icon, actions, children }: { title: string; icon: ReactNode; actions?: ReactNode; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 text-[13px] font-semibold tracking-wide text-muted uppercase">{icon}{title}</h2>
+        {actions}
+      </div>
+      {children}
+    </section>
   )
 }
 
 export default function TicketPage() {
   const { ticketId = '' } = useParams()
+  const [params, setParams] = useSearchParams()
   const { data: ticket, isLoading, error } = useTicket(ticketId)
-  const triage = useTriageTicket()
-  const { model } = useSelectedModel()
+  const { data: reference } = useReference()
+  const { data: settings } = useSettings()
   const { data: models } = useLlmModels()
-  const [rerunModel, setRerunModel] = useState<string>('')
+  const { model } = useSelectedModel()
+  const stream = useTriageStream(ticketId)
+  const [runModel, setRunModel] = useState<string>('')
+  const [showWalkthrough, setShowWalkthrough] = useState(true)
   const [editing, setEditing] = useState(false)
   const [edits, setEdits] = useState<DecisionEdit>({})
+  const autoStarted = useRef(false)
+
+  const run = () => {
+    setShowWalkthrough(true)
+    stream.start(runModel || model)
+  }
+
+  useEffect(() => {
+    if (params.get('run') === '1' && ticket && !autoStarted.current) {
+      autoStarted.current = true
+      setParams({}, { replace: true })
+      stream.start(runModel || model)
+    }
+  }, [params, ticket, setParams, stream, runModel, model])
 
   if (isLoading) return <Loading />
   if (error || !ticket) return <ErrorBox error={error ?? new Error('Ticket not found')} />
   const result = ticket.latest_triage
   const setEdit = <K extends keyof DecisionEdit>(key: K, value: DecisionEdit[K]) => setEdits((e) => ({ ...e, [key]: value }))
-  const runModel = rerunModel || model
+  const hasWalkthrough = stream.events.length > 0 || stream.running
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link to="/" className="text-sm text-blue-700 hover:underline">← Queue</Link>
-          <p className="font-mono text-xs text-slate-500">#{ticket.number} · {ticket.source} · {ticket.business_entity ?? 'no entity'}</p>
-          <h1 className="text-xl font-semibold text-balance">{ticket.summary}</h1>
+    <div className="flex flex-col gap-5">
+      {/* header */}
+      <div className="rounded-xl border border-line bg-surface p-5 shadow-card">
+        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted hover:text-accent"><ArrowLeft size={14} />Queue</Link>
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="font-mono text-xs text-muted">#{ticket.number} · {ticket.source} · {ticket.business_entity ?? 'no entity'} · {ticket.reporter ?? 'unknown reporter'}</p>
+            <h1 className="mt-1 text-xl font-semibold tracking-tight text-balance">{ticket.summary}</h1>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {result && <><PriorityPill level={ticket.ai_priority} /><ScoreBar score={ticket.priority_score} /></>}
+              {result && <SlaTimer dueAt={ticket.sla_due_at} startAt={ticket.created_at} />}
+              <StatePill state={ticket.triage_state} />
+              {ticket.escalated && <Pill className="bg-red-50 text-red-700 ring-1 ring-red-200">escalated to team lead</Pill>}
+              {ticket.manual_fields.length > 0 && <Pill className="bg-accent-soft text-accent">{ticket.manual_fields.length} fields set by staff</Pill>}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="sr-only" htmlFor="run-model">Model</label>
+            <select id="run-model" value={runModel} onChange={(e) => setRunModel(e.target.value)} className="rounded-lg border border-line bg-surface px-2 py-1.5 text-sm">
+              <option value="">{model ? `Model: ${model}` : 'Default model'}</option>
+              {models?.models.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+              <option value={HEURISTIC}>Heuristic (no LLM)</option>
+            </select>
+            <Button variant="ai" icon={<Play size={14} />} onClick={run} disabled={stream.running}>
+              {stream.running ? 'Triaging…' : result ? 'Re-run live' : 'Watch the AI triage it'}
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {result && <><PriorityPill level={ticket.ai_priority} /><ScoreBar score={ticket.priority_score} /></>}
-          {result && <SlaTimer dueAt={ticket.sla_due_at} startAt={ticket.created_at} />}
-          <StatePill state={ticket.triage_state} />
-          <label className="sr-only" htmlFor="rerun-model">Model for re-run</label>
-          <select id="rerun-model" value={rerunModel} onChange={(e) => setRerunModel(e.target.value)} className="rounded-md border border-slate-300 px-2 py-1 text-sm">
-            <option value="">{model ? `Model: ${model}` : 'Default model'}</option>
-            {models?.models.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
-            <option value={HEURISTIC}>Heuristic (no LLM)</option>
-          </select>
-          <Button onClick={() => triage.mutate({ ticketId: ticket.id, model: runModel })} disabled={triage.isPending}>
-            {triage.isPending ? 'Running…' : result ? 'Re-run triage' : 'Run triage'}
-          </Button>
-        </div>
-      </header>
-      <ErrorBox error={triage.error} />
-      {ticket.escalated && <p className="rounded-md bg-red-50 p-3 text-sm font-medium text-red-800">Escalated to the team lead: Highest priority on a critical service.</p>}
-      {result?.confidence_detail?.flags.includes('heuristic_fallback') && (
-        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">Heuristic fallback: {result.rationale}</p>
+      </div>
+
+      {/* live walkthrough */}
+      {hasWalkthrough && (
+        <Section title="Live triage walkthrough" icon={<Sparkles size={14} />}
+          actions={<Button variant="ghost" className="text-xs" icon={showWalkthrough ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            onClick={() => setShowWalkthrough((v) => !v)}>{showWalkthrough ? 'Hide' : 'Show'}</Button>}>
+          {showWalkthrough && <Walkthrough events={stream.events} running={stream.running} reference={reference} votesTotal={settings?.votes ?? 3} />}
+          {stream.error && <ErrorBox error={new Error(stream.error)} />}
+        </Section>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_1.35fr_1fr]">
+      {!result && !hasWalkthrough && (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-ai/40 bg-ai-soft/40 px-6 py-10 text-center">
+          <Sparkles size={28} className="text-ai" />
+          <p className="font-semibold">This ticket hasn't been triaged yet</p>
+          <p className="max-w-lg text-sm text-muted">Watch the AI work through it step by step: find similar past cases, vote on the facts, apply the priority rules, measure its own confidence and pick the right person.</p>
+          <Button variant="ai" icon={<Play size={14} />} onClick={run}>Watch the AI triage it</Button>
+        </div>
+      )}
+
+      <div className="grid gap-5 xl:grid-cols-[1fr_1.35fr_1fr]">
         <div className="flex flex-col gap-4">
-          <Card title="As received">
-            <p className="mb-3 text-sm whitespace-pre-wrap">{ticket.description}</p>
-            <dl>
+          <Card title="As received" icon={<Inbox size={15} />}>
+            <p className="mb-3 text-sm leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
+            <dl className="divide-y divide-line/70">
               <Field label="Request type">{ticket.request_type}</Field>
               <Field label="Work type">{ticket.work_type}</Field>
               <Field label="Intake service">{ticket.affected_service}</Field>
               <Field label="Entity">{ticket.business_entity}</Field>
-              <Field label="Reporter">{ticket.reporter}</Field>
               <Field label="Urgency / Impact">{ticket.urgency ?? '–'} / {ticket.impact ?? '–'}</Field>
               <Field label="Priority"><PriorityPill level={ticket.priority} /></Field>
               <Field label="Linked issues">{ticket.linked_issues.join(', ') || '–'}</Field>
             </dl>
           </Card>
-          <Card title={`Comments (${ticket.comments.length})`}>
-            {ticket.comments.length === 0 ? <p className="text-sm text-slate-500">None.</p> : (
+          <Card title={`Comments (${ticket.comments.length})`} icon={<MessagesSquare size={15} />}>
+            {ticket.comments.length === 0 ? <p className="text-sm text-muted">None.</p> : (
               <ul className="flex flex-col gap-2 text-sm">
-                {ticket.comments.map((c, i) => <li key={i} className="border-l-2 border-slate-200 pl-2">{c}</li>)}
+                {ticket.comments.map((c, i) => <li key={i} className="border-l-2 border-line pl-3">{c}</li>)}
               </ul>
             )}
           </Card>
@@ -287,9 +364,9 @@ export default function TicketPage() {
 
         <div className="flex flex-col gap-4">
           {result ? (
-            <ProposalPanel key={result.id} ticket={ticket} result={result} editing={editing} edits={edits} setEdit={setEdit} />
+            <ProposalPanels key={result.id} ticket={ticket} result={result} editing={editing} edits={edits} setEdit={setEdit} />
           ) : (
-            <Card title="AI proposal"><p className="text-sm text-slate-500">Not triaged yet. Run triage to get a proposal.</p></Card>
+            <Card title="AI proposal" icon={<Sparkles size={15} />}><p className="text-sm text-muted">{stream.running ? 'Working on it…' : 'No proposal yet.'}</p></Card>
           )}
         </div>
 
@@ -297,29 +374,31 @@ export default function TicketPage() {
           {result && <ConfidencePanel result={result} />}
           {result && <AssigneePanel ticket={ticket} result={result} />}
           {result && (
-            <Card title="Evidence used">
+            <Card title="Evidence used" icon={<BookOpen size={15} />}>
               <EvidenceList evidence={result.evidence} highlight={result.playbook_ref} />
             </Card>
           )}
           {ticket.reviews.length > 0 && (
-            <Card title="Review history">
-              <ul className="flex flex-col gap-1 text-sm">
+            <Card title="Review history" icon={<History size={15} />}>
+              <ul className="flex flex-col gap-2 text-sm">
                 {ticket.reviews.map((r) => (
                   <li key={r.id}>
-                    <b>{r.action}</b> by {short(r.reviewer)}
-                    {r.overridden_fields.length > 0 && ` (changed ${r.overridden_fields.join(', ')})`}
-                    {r.notes && <span className="text-slate-600">: “{r.notes}”</span>}
-                    <span className="text-slate-500"> · {new Date(r.created_at).toLocaleString()}</span>
+                    <StatePill state={r.action === 'approve' ? 'approved' : r.action === 'edit' ? 'edited' : 'rejected'} /> by <b>{short(r.reviewer)}</b>
+                    {r.overridden_fields.length > 0 && <span className="text-muted"> · changed {r.overridden_fields.join(', ')}</span>}
+                    {r.notes && <span className="text-muted">: “{r.notes}”</span>}
+                    <p className="text-xs text-muted">{new Date(r.created_at).toLocaleString()}</p>
                   </li>
                 ))}
               </ul>
             </Card>
           )}
-          <Link to={`/assistant?ticket=${ticket.id}`} className="text-sm text-blue-700 hover:underline">Ask the assistant about this ticket →</Link>
+          <Link to={`/assistant?ticket=${ticket.id}`} className="inline-flex items-center gap-1.5 text-sm text-accent hover:underline">
+            <MessagesSquare size={14} />Ask the assistant about this ticket
+          </Link>
         </div>
       </div>
 
-      {result && (
+      {result && !stream.running && (
         <ActionBar key={result.id} result={result} editing={editing} setEditing={setEditing} edits={edits} reset={() => setEdits({})} />
       )}
     </div>
