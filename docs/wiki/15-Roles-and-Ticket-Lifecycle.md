@@ -54,7 +54,12 @@ flowchart LR
 
 ### Creating tickets
 
-Analysts and the admin can create tickets (**New ticket**). Tickets also arrive by Jira import and
+Analysts and the admin can create tickets (**New ticket**). Every new ticket passes an **intake
+check** first (`backend/app/pipeline/intake_check.py`): rules reject text with too few real words or
+mostly symbols, and a small AI call rejects anything that isn't a ticket at all (keyboard mashing,
+"test test", "write me a poem"), with a reason shown in the form. Vague but real tickets ("cash not
+there pls fix asap") are accepted and flagged `unclear_input`, so they get low confidence and a
+clarification draft. Tickets also arrive by Jira import and
 email. If the creator already picks the specialist in the form, that's their dispatch decision:
 the ticket starts as `assigned` and skips the Triage inbox. The AI still triages it and keeps
 every value the creator set.
@@ -88,7 +93,11 @@ resolution, and they change it to what they actually did. Then:
 - the specialist gains expertise on that service, which future assignments use;
 - the challenge export uses the specialist's resolution and note instead of the AI's draft.
 
-There's no separate verification step: the specialist who did the work closes the ticket.
+There's no separate verification step: the specialist who did the work closes the ticket. But the
+analyst stays in the loop: they get the "ticket done" message, and if they aren't satisfied they
+**reopen** it (`POST /api/tickets/{id}/reopen`, reason required). The ticket goes back to the same
+specialist as `assigned`, the specialist gets a "reopened" message with the reason, and the fix is
+**taken out of the knowledge base** so the AI never learns from a rejected fix.
 
 ### Activity timeline
 
@@ -111,6 +120,7 @@ only shows the buttons they can use.
 | Hand back | only their own tickets | – | ✓ |
 | Escalate | their own tickets | own department | ✓ |
 | De-escalate | – | own department | ✓ |
+| Reopen a done ticket | – | own department | ✓ |
 | Delete a ticket | – | – | ✓ |
 | Team workload, Impact | – | ✓ | ✓ |
 | Knowledge base, Intake & export, Settings | – | – | ✓ |

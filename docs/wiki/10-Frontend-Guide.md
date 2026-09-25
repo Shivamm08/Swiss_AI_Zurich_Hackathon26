@@ -13,7 +13,7 @@ lucide-react (icons). Code in `frontend/src/`.
 | `/messages` | **Messages** | everyone | Department channels and direct messages; ticket cards; escalations |
 | `/people` | **People & teams** | everyone | Department cards, members with load, message buttons |
 | `/team` | **Team workload** | analyst, admin | Per-specialist load, share, done in 7 days, flags, escalations |
-| `/dashboard` | **Impact** | analyst, admin | Pain points we solve, headline numbers, trends, calibration ([details](14-Impact-and-Demo-Data.md)) |
+| `/dashboard` | **Impact** | analyst, admin | Desk KPIs (time to assign, first-time accuracy per field, AI misroutes, reassigned, reopened), pain points we solve, headline numbers, trends, calibration ([details](14-Impact-and-Demo-Data.md)) |
 | `/knowledge` | **Knowledge base** | admin | Test retrieval; browse service cards, playbook, learned tickets; re-sync |
 | `/intake` | **Intake & export** | admin | Import JSON, paste an email, **batch triage**, download `submission.json` |
 | `/settings` | **Settings** | admin | Thresholds, SLA targets, matrix, roster (read-only) |

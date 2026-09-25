@@ -29,6 +29,30 @@ analysts actually spent reviewing. The card states it's an assumption; change it
 
 API: `GET /api/metrics/impact?include_demo=true&days=28`.
 
+## Desk KPIs
+
+A row of KPIs above the pain points, computed from the activity timeline and the analysts'
+decisions (`desk_kpis` in `backend/app/api/insights.py`, tested):
+
+| KPI | Definition | Lower or higher is better |
+|---|---|---|
+| **Time to assign** | Median minutes from a ticket arriving to its dispatch to a specialist | lower |
+| **First-time accuracy** | Analyst decisions that accepted the AI proposal with no field changed (`reviews.overridden_fields` empty) | higher |
+| Kept as proposed, per field | For each field, the share of decisions where the analyst kept the AI's value | higher |
+| **AI misroutes** | Decisions where the analyst changed the service (wrong department) or rejected the proposal | lower |
+| **Reassigned** | Dispatched tickets later reassigned, or handed back by the specialist | lower |
+| **Reopened** | Finished tickets the analyst reopened | lower |
+
+"Misrouted tickets caught" (a pain-point card) is different: tickets whose **intake** service was
+wrong and the AI corrected.
+
+## The challenge set
+
+Intake & export shows how the 20 challenge tickets are handled (`GET /api/metrics/challenge`):
+triaged, average confidence, vote agreement, how many matched a past fix, routes, priority raised or
+lowered versus intake, fields changed versus intake, and speed. The answer set is hidden, so these
+are coverage and certainty figures, **not accuracy**. Never tune on these tickets.
+
 ## The simulated history (demo data)
 
 Twenty challenge tickets can't show a trend. For the demo there's a **simulated four-week desk
@@ -51,6 +75,7 @@ How it's generated (`backend/app/scripts/seed_demo.py`, fixed random seed, so ev
 | Assignment | Expert if not clearly busier than the least-loaded teammate, like the real rule |
 | Analyst decisions | Every ticket older than a day was decided by its department's Team Lead / Analyst (about half of today's are still waiting). Low-confidence proposals are corrected or rejected more often (what a calibrated system implies). A mild improvement over the 4 weeks stands in for the learning loop. **Illustrative, not measured** |
 | Work | Approved tickets go to a specialist. Everything older than 3 days is `done` (with resolution, closing note and who resolved it); about half of 2-day-old and a sixth of yesterday's are done; the rest are assigned, in progress or waiting for info |
+| Hand-backs and reopens | About 7% of dispatched tickets are handed back and redispatched; about 4% of finished tickets are reopened once, so the KPIs aren't trivially 0 |
 | Messages | Per department: a short realistic conversation (announcements, hand-offs, follow-ups), automatic escalation posts, and a few direct messages between analysts, specialists and the admin |
 
 The simulated tickets **don't enter the knowledge base**, so they can't affect how real tickets are triaged.

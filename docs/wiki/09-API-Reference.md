@@ -20,11 +20,12 @@ endpoint with its exact request and response shapes, and lets you try them. The 
 | Method | Path | What it does |
 |---|---|---|
 | GET | `/api/tickets` | The queue. Query: `view` (mine · inbox · team · needs_review · escalations · all), `as_user` (email), `sort` (priority_score · sla_due_at · confidence · number), `state`, `work_status`, `source`, `service`, `team`, `q` (search), `include_done` (default false: done tickets are hidden), `limit`, `offset`. `inbox` = proposals waiting for the analyst of `as_user`'s department (all departments for the admin); `needs_review` = untriaged, low-confidence or rejected tickets |
-| POST | `/api/tickets` | Create a ticket. `summary`, `description`, `created_by` required (a Team Lead / Analyst or admin, else `403`); optional `manual` = staff-confirmed fields. A `manual.assignee` (a specialist) dispatches it right away |
+| POST | `/api/tickets` | Create a ticket. `summary`, `description`, `created_by` required (a Team Lead / Analyst or admin, else `403`); text that isn't a ticket is rejected by the intake check (`422` with the reason); optional `manual` = staff-confirmed fields. A `manual.assignee` (a specialist) dispatches it right away |
 | POST | `/api/tickets/from-email` | `{from_address, subject, body, business_entity?}` → a new ticket |
 | POST | `/api/tickets/import` | Upload a Jira export JSON (multipart: `file`, `source`) |
 | GET | `/api/tickets/{id}` | Ticket + latest proposal + review history + activity timeline |
 | DELETE | `/api/tickets/{id}?by=` | Delete a ticket (and its proposals/reviews). Admin only |
+| POST | `/api/tickets/{id}/reopen` | `{by, note}`: the department's analyst or an admin sends a done ticket back to its specialist (reason required); its fix leaves the knowledge base |
 | POST | `/api/tickets/{id}/deescalate` | `{by, note?}`: clear the escalation. The department's analyst or an admin |
 | POST | `/api/tickets/{id}/assign` | `{assignee, by}`: dispatch (open → assigned) or reassign. `by` must be the department's analyst (any analyst for Needs review) or an admin (`403`); `assignee` must be a specialist in the ticket's department (`400`); `409` once done |
 | POST | `/api/tickets/{id}/work` | Specialist: `{action: start · wait · resume · resolve · handback, by, note?, resolution?, resolution_comment?}`. `handback` needs a `note` and returns the ticket to the analyst. Only the assignee or an admin (`403`); invalid step `409`; `resolve` needs resolution + comment (`422`), adds the ticket to the knowledge base and sends the department's Team Lead / Analyst a "ticket done" direct message |
@@ -68,6 +69,7 @@ endpoint with its exact request and response shapes, and lets you try them. The 
 | GET | `/api/users?team=` | The roster |
 | GET | `/api/workload?team=` | Per-member load, share, escalations for one team |
 | GET | `/api/metrics` | Acceptance / edit / reject rates, review time, routes, escalations, SLA breaches, priority before vs after |
+| GET | `/api/metrics/challenge` | Coverage and certainty on the challenge set: triaged, confidence, vote agreement, precedent matches, routes, changes vs intake, speed (no accuracy: the answers are hidden) |
 | GET | `/api/metrics/calibration` | Confidence buckets → agreement with analysts |
 | GET | `/api/metrics/impact?include_demo=&days=` | Pain-point numbers + daily series for the Impact dashboard |
 | GET | `/api/export/submission?source=challenge` | Challenge-format JSON: the final decision if reviewed, else the latest proposal |
