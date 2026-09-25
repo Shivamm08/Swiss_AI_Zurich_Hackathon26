@@ -1,0 +1,4 @@
+# Shell scripts run inside Linux containers: keep Unix line endings on every OS
+# (a Windows checkout with CRLF breaks backend/entrypoint.sh).
+*.sh text eol=lf
+Makefile text eol=lf
