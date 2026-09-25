@@ -262,9 +262,10 @@ Also: [backend/README.md](backend/README.md), [frontend/README.md](frontend/READ
 backend/        FastAPI app, triage pipeline, knowledge base files, migrations, tests
 frontend/       React app (screens, Copilot, API client generated from the contract)
 contracts/      openapi.json: the API contract, generated from the backend
-data/           training data and teammates' data scripts (challenge file goes in data/raw/)
+data/           training data, the team's data-science experiments (challenge file goes in data/raw/)
 docs/wiki/      the project wiki
 docs/images/    screenshots
+PRESENTATION_SCRIPT.md, PowerPointDescription, *.svg   pitch script and slide material
 ```
 
 ## Team rules (short version)
