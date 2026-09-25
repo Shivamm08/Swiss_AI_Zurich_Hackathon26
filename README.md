@@ -30,7 +30,6 @@ flowchart LR
 ```bash
 git clone https://github.com/Shivamm08/Swiss_AI_Zurich_Hackathon26.git
 cd Swiss_AI_Zurich_Hackathon26
-git switch triage-copilot
 
 cp .env.example .env          # then open .env and paste your OPENAI_API_KEY
 # put the challenge file into data/raw/ (see data/README.md)

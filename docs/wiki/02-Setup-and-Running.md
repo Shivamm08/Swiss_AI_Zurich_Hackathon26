@@ -17,7 +17,6 @@ You don't need Python or Node on your machine: everything runs inside Docker.
 ```bash
 git clone https://github.com/Shivamm08/Swiss_AI_Zurich_Hackathon26.git
 cd Swiss_AI_Zurich_Hackathon26
-git switch triage-copilot
 
 cp .env.example .env
 ```
