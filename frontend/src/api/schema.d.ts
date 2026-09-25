@@ -224,6 +224,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tickets/{ticket_id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reopen
+         * @description The department's Team Lead / Analyst isn't satisfied with a done ticket: it goes back to the same
+         *     specialist (assigned), its fix leaves the knowledge base, and the specialist gets a message.
+         */
+        post: operations["reopen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tickets/{ticket_id}/deescalate": {
         parameters: {
             query?: never;
@@ -489,6 +510,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/metrics/challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Challenge Stats
+         * @description Coverage and certainty on the challenge tickets (the answer set is hidden, so no accuracy).
+         */
+        get: operations["get_challenge_stats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/metrics/impact": {
         parameters: {
             query?: never;
@@ -630,7 +671,7 @@ export interface components {
             by: string;
             /**
              * Action
-             * @description triaged | approved | edited | rejected | assigned | start | wait | resume | resolve | handback | escalated | deescalated
+             * @description triaged | approved | edited | rejected | assigned | start | wait | resume | resolve | handback | escalated | deescalated | reopened
              */
             action: string;
             /** Note */
@@ -767,6 +808,75 @@ export interface components {
              * @description Share approved without changing service or priority
              */
             agreement: number | null;
+        };
+        /**
+         * ChallengeStats
+         * @description How the system handles the challenge set. There are no answer labels (they're hidden), so this
+         *     measures coverage, certainty and what changed versus intake, not accuracy.
+         */
+        ChallengeStats: {
+            /** Tickets */
+            tickets: number;
+            /** Triaged */
+            triaged: number;
+            /**
+             * Heuristic
+             * @description Triaged without an AI model (fallback)
+             */
+            heuristic: number;
+            /** Avg Confidence */
+            avg_confidence: number | null;
+            /**
+             * Avg Vote Agreement
+             * @description How consistently the 3 AI readings agreed
+             */
+            avg_vote_agreement: number | null;
+            /**
+             * Unanimous Service
+             * @description Tickets where all 3 votes named the same service
+             */
+            unanimous_service: number;
+            /**
+             * With Precedent
+             * @description Tickets matched to a real past fix
+             */
+            with_precedent: number;
+            /** By Route */
+            by_route: {
+                [key: string]: number;
+            };
+            /** By Priority */
+            by_priority: {
+                [key: string]: number;
+            };
+            /** By Service */
+            by_service: {
+                [key: string]: number;
+            };
+            /**
+             * Changed Vs Intake
+             * @description Per field: how many proposals differ from the intake value
+             */
+            changed_vs_intake: {
+                [key: string]: number;
+            };
+            /** Priority Raised */
+            priority_raised: number;
+            /** Priority Lowered */
+            priority_lowered: number;
+            /** Escalated */
+            escalated: number;
+            /** Avg Latency Seconds */
+            avg_latency_seconds: number | null;
+            /**
+             * Decided
+             * @description Proposals an analyst has decided on
+             */
+            decided: number;
+            /** Accepted Unchanged */
+            accepted_unchanged: number;
+            /** Note */
+            note: string;
         };
         /** ChannelOut */
         ChannelOut: {
@@ -992,7 +1102,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "message" | "system" | "escalation" | "handoff" | "resolved";
+            kind: "message" | "system" | "escalation" | "handoff" | "resolved" | "reopened";
             /** Model */
             model: string;
         };
@@ -1151,6 +1261,38 @@ export interface components {
             over_capacity: number;
             /** Learned Documents */
             learned_documents: number;
+            /**
+             * Time To Assign Minutes
+             * @description Median minutes from a ticket arriving to its dispatch to a specialist
+             */
+            time_to_assign_minutes: number | null;
+            /**
+             * First Time Accuracy
+             * @description Share of analyst decisions that accepted the proposal with no field changed
+             */
+            first_time_accuracy: number | null;
+            /**
+             * Field Accuracy
+             * @description Per field: share of decisions where the analyst kept the AI's value
+             */
+            field_accuracy: {
+                [key: string]: number;
+            };
+            /**
+             * Ai Misroute Rate
+             * @description Share of decisions where the analyst changed the service or rejected the proposal
+             */
+            ai_misroute_rate: number | null;
+            /**
+             * Reassignment Rate
+             * @description Share of dispatched tickets later reassigned or handed back
+             */
+            reassignment_rate: number | null;
+            /**
+             * Reopen Rate
+             * @description Share of finished tickets the analyst reopened
+             */
+            reopen_rate: number | null;
             /** Days */
             days: components["schemas"]["DailyPoint"][];
         };
@@ -1273,7 +1415,7 @@ export interface components {
              * @default message
              * @enum {string}
              */
-            kind: "message" | "system" | "escalation" | "handoff" | "resolved";
+            kind: "message" | "system" | "escalation" | "handoff" | "resolved" | "reopened";
             /**
              * Ticket Id
              * @description Attach a ticket; kind 'escalation' also marks it escalated
@@ -1299,7 +1441,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "message" | "system" | "escalation" | "handoff" | "resolved";
+            kind: "message" | "system" | "escalation" | "handoff" | "resolved" | "reopened";
             /** Ticket Id */
             ticket_id: string | null;
             /** Ticket Number */
@@ -2593,6 +2735,41 @@ export interface operations {
             };
         };
     };
+    reopen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketNote"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     deescalate: {
         parameters: {
             query?: never;
@@ -3008,6 +3185,37 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_challenge_stats: {
+        parameters: {
+            query?: {
+                source?: "challenge" | "training" | "manual" | "email" | "demo";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengeStats"];
                 };
             };
             /** @description Validation Error */

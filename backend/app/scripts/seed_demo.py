@@ -227,18 +227,30 @@ def seed(db: Session, rng: random.Random) -> dict[str, int]:
                 ))
                 made["reviews"] += 1
                 ticket.triage_state = {"approve": "approved", "edit": "edited", "reject": "rejected"}[action]
-                _act(ticket, decided_at, reviewer, ticket.triage_state, None)
+                _act(ticket, decided_at, reviewer, ticket.triage_state, working if action != "reject" else None)
                 if action == "reject":
                     ticket.route = "triage"
                 if action != "reject" or back >= 1:  # rejected ones are classified by hand, then dispatched
                     ticket.assignee = final["assignee"] if action == "edit" and "assignee" in overridden else working
                     ticket.work_status = "assigned"
+                    others = [p for p in pool if p and p != ticket.assignee]
+                    if others and rng.random() < 0.07:  # handed back (at capacity / wrong skills) and redispatched
+                        back_at = decided_at + timedelta(minutes=rng.randint(20, 180))
+                        _act(ticket, back_at, ticket.assignee, "handback", rng.choice(["At capacity today", "Needs a different specialist", "On leave from tomorrow"]))
+                        ticket.assignee = rng.choice(others)
+                        _act(ticket, back_at + timedelta(minutes=rng.randint(5, 60)), reviewer, "assigned", ticket.assignee)
                     if done_by_now:
                         ticket.work_status, ticket.resolution = "done", final["resolution"]
                         ticket.resolution_comment = final["resolution_comment"].replace("Resolution (edited):", "Resolution:")
                         ticket.resolved_by = ticket.assignee
                         ticket.resolved_at = min(decided_at + timedelta(hours=rng.uniform(0.5, 30)), datetime.now(timezone.utc) - timedelta(minutes=5))
                         _act(ticket, ticket.resolved_at, ticket.assignee, "resolve", ticket.resolution)
+                        if rng.random() < 0.04:  # the analyst wasn't satisfied: reopened, then fixed properly
+                            first_done = ticket.resolved_at - timedelta(hours=rng.uniform(2, 8))
+                            ticket.activity = [a for a in ticket.activity if a["action"] != "resolve"]
+                            _act(ticket, first_done, ticket.assignee, "resolve", ticket.resolution)
+                            _act(ticket, first_done + timedelta(minutes=rng.randint(15, 90)), reviewer, "reopened", "Closing note doesn't say how it was verified")
+                            _act(ticket, ticket.resolved_at, ticket.assignee, "resolve", ticket.resolution)
                     elif back >= 1 or rng.random() < 0.5:
                         ticket.work_status = _pick(rng, {"in_progress": 0.7, "waiting": 0.3})
             if ticket.assignee and ticket.work_status != "done":

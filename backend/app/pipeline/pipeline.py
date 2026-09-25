@@ -52,7 +52,8 @@ def _flags(ticket: Ticket, service: str) -> list[str]:
     if service == GENERIC_SERVICE:
         flags.append("generic_service")
     request_type = (ticket.request_type or "").lower()
-    if request_type.startswith("nonsense") or "unclear" in request_type:
+    vague = (ticket.raw or {}).get("intake_check") == "vague"  # the New-ticket intake check said so
+    if request_type.startswith("nonsense") or "unclear" in request_type or vague:
         flags.append("unclear_input")
     return flags
 

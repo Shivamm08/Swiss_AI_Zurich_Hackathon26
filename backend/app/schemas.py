@@ -368,7 +368,7 @@ class ActivityEntry(BaseModel):
     at: datetime
     by: str
     action: str = Field(description="triaged | approved | edited | rejected | assigned | start | wait | resume | resolve | "
-                                     "handback | escalated | deescalated")
+                                     "handback | escalated | deescalated | reopened")
     note: str | None = None
 
 
@@ -501,7 +501,8 @@ class SettingsOut(BaseModel):
 
 ChannelKind = Literal["team", "dm"]
 # resolved: the automatic "ticket done" note a specialist's Team Lead / Analyst receives
-MessageKind = Literal["message", "system", "escalation", "handoff", "resolved"]
+# reopened: the analyst sent a done ticket back to the specialist
+MessageKind = Literal["message", "system", "escalation", "handoff", "resolved", "reopened"]
 # Hand-offs are not a message any more: a specialist hands a ticket back (POST /tickets/{id}/work).
 DraftPurpose = Literal["escalate", "question"]
 
@@ -620,6 +621,30 @@ class DailyPoint(BaseModel):
     acceptance_rate: float | None
 
 
+class ChallengeStats(BaseModel):
+    """How the system handles the challenge set. There are no answer labels (they're hidden), so this
+    measures coverage, certainty and what changed versus intake, not accuracy."""
+
+    tickets: int
+    triaged: int
+    heuristic: int = Field(description="Triaged without an AI model (fallback)")
+    avg_confidence: float | None
+    avg_vote_agreement: float | None = Field(description="How consistently the 3 AI readings agreed")
+    unanimous_service: int = Field(description="Tickets where all 3 votes named the same service")
+    with_precedent: int = Field(description="Tickets matched to a real past fix")
+    by_route: dict[str, int]
+    by_priority: dict[str, int]
+    by_service: dict[str, int]
+    changed_vs_intake: dict[str, int] = Field(description="Per field: how many proposals differ from the intake value")
+    priority_raised: int
+    priority_lowered: int
+    escalated: int
+    avg_latency_seconds: float | None
+    decided: int = Field(description="Proposals an analyst has decided on")
+    accepted_unchanged: int
+    note: str
+
+
 class Impact(BaseModel):
     include_demo: bool
     tickets: int
@@ -637,4 +662,11 @@ class Impact(BaseModel):
     max_load: float | None = Field(description="Busiest person's open tickets divided by their capacity")
     over_capacity: int = Field(description="People at or over capacity")
     learned_documents: int
+    # Desk KPIs, from the activity timeline and the analysts' decisions
+    time_to_assign_minutes: float | None = Field(description="Median minutes from a ticket arriving to its dispatch to a specialist")
+    first_time_accuracy: float | None = Field(description="Share of analyst decisions that accepted the proposal with no field changed")
+    field_accuracy: dict[str, float] = Field(description="Per field: share of decisions where the analyst kept the AI's value")
+    ai_misroute_rate: float | None = Field(description="Share of decisions where the analyst changed the service or rejected the proposal")
+    reassignment_rate: float | None = Field(description="Share of dispatched tickets later reassigned or handed back")
+    reopen_rate: float | None = Field(description="Share of finished tickets the analyst reopened")
     days: list[DailyPoint]

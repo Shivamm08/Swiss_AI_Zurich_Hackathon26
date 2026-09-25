@@ -730,6 +730,60 @@
         }
       }
     },
+    "/api/tickets/{ticket_id}/reopen": {
+      "post": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "Reopen",
+        "description": "The department's Team Lead / Analyst isn't satisfied with a done ticket: it goes back to the same\nspecialist (assigned), its fix leaves the knowledge base, and the specialist gets a message.",
+        "operationId": "reopen",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketNote"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/tickets/{ticket_id}/deescalate": {
       "post": {
         "tags": [
@@ -1353,6 +1407,57 @@
         }
       }
     },
+    "/api/metrics/challenge": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Get Challenge Stats",
+        "description": "Coverage and certainty on the challenge tickets (the answer set is hidden, so no accuracy).",
+        "operationId": "get_challenge_stats",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "challenge",
+                "training",
+                "manual",
+                "email",
+                "demo"
+              ],
+              "type": "string",
+              "default": "challenge",
+              "title": "Source"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeStats"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/metrics/impact": {
       "get": {
         "tags": [
@@ -1733,7 +1838,7 @@
           "action": {
             "type": "string",
             "title": "Action",
-            "description": "triaged | approved | edited | rejected | assigned | start | wait | resume | resolve | handback | escalated | deescalated"
+            "description": "triaged | approved | edited | rejected | assigned | start | wait | resume | resolve | handback | escalated | deescalated | reopened"
           },
           "note": {
             "anyOf": [
@@ -2088,6 +2193,144 @@
           "agreement"
         ],
         "title": "CalibrationBucket"
+      },
+      "ChallengeStats": {
+        "properties": {
+          "tickets": {
+            "type": "integer",
+            "title": "Tickets"
+          },
+          "triaged": {
+            "type": "integer",
+            "title": "Triaged"
+          },
+          "heuristic": {
+            "type": "integer",
+            "title": "Heuristic",
+            "description": "Triaged without an AI model (fallback)"
+          },
+          "avg_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Confidence"
+          },
+          "avg_vote_agreement": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Vote Agreement",
+            "description": "How consistently the 3 AI readings agreed"
+          },
+          "unanimous_service": {
+            "type": "integer",
+            "title": "Unanimous Service",
+            "description": "Tickets where all 3 votes named the same service"
+          },
+          "with_precedent": {
+            "type": "integer",
+            "title": "With Precedent",
+            "description": "Tickets matched to a real past fix"
+          },
+          "by_route": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Route"
+          },
+          "by_priority": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Priority"
+          },
+          "by_service": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Service"
+          },
+          "changed_vs_intake": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Changed Vs Intake",
+            "description": "Per field: how many proposals differ from the intake value"
+          },
+          "priority_raised": {
+            "type": "integer",
+            "title": "Priority Raised"
+          },
+          "priority_lowered": {
+            "type": "integer",
+            "title": "Priority Lowered"
+          },
+          "escalated": {
+            "type": "integer",
+            "title": "Escalated"
+          },
+          "avg_latency_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Latency Seconds"
+          },
+          "decided": {
+            "type": "integer",
+            "title": "Decided",
+            "description": "Proposals an analyst has decided on"
+          },
+          "accepted_unchanged": {
+            "type": "integer",
+            "title": "Accepted Unchanged"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tickets",
+          "triaged",
+          "heuristic",
+          "avg_confidence",
+          "avg_vote_agreement",
+          "unanimous_service",
+          "with_precedent",
+          "by_route",
+          "by_priority",
+          "by_service",
+          "changed_vs_intake",
+          "priority_raised",
+          "priority_lowered",
+          "escalated",
+          "avg_latency_seconds",
+          "decided",
+          "accepted_unchanged",
+          "note"
+        ],
+        "title": "ChallengeStats",
+        "description": "How the system handles the challenge set. There are no answer labels (they're hidden), so this\nmeasures coverage, certainty and what changed versus intake, not accuracy."
       },
       "ChannelOut": {
         "properties": {
@@ -2756,7 +2999,8 @@
               "system",
               "escalation",
               "handoff",
-              "resolved"
+              "resolved",
+              "reopened"
             ],
             "title": "Kind"
           },
@@ -3138,6 +3382,74 @@
             "type": "integer",
             "title": "Learned Documents"
           },
+          "time_to_assign_minutes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time To Assign Minutes",
+            "description": "Median minutes from a ticket arriving to its dispatch to a specialist"
+          },
+          "first_time_accuracy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Time Accuracy",
+            "description": "Share of analyst decisions that accepted the proposal with no field changed"
+          },
+          "field_accuracy": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Field Accuracy",
+            "description": "Per field: share of decisions where the analyst kept the AI's value"
+          },
+          "ai_misroute_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Misroute Rate",
+            "description": "Share of decisions where the analyst changed the service or rejected the proposal"
+          },
+          "reassignment_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reassignment Rate",
+            "description": "Share of dispatched tickets later reassigned or handed back"
+          },
+          "reopen_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reopen Rate",
+            "description": "Share of finished tickets the analyst reopened"
+          },
           "days": {
             "items": {
               "$ref": "#/components/schemas/DailyPoint"
@@ -3164,6 +3476,12 @@
           "max_load",
           "over_capacity",
           "learned_documents",
+          "time_to_assign_minutes",
+          "first_time_accuracy",
+          "field_accuracy",
+          "ai_misroute_rate",
+          "reassignment_rate",
+          "reopen_rate",
           "days"
         ],
         "title": "Impact"
@@ -3524,7 +3842,8 @@
               "system",
               "escalation",
               "handoff",
-              "resolved"
+              "resolved",
+              "reopened"
             ],
             "title": "Kind",
             "default": "message"
@@ -3581,7 +3900,8 @@
               "system",
               "escalation",
               "handoff",
-              "resolved"
+              "resolved",
+              "reopened"
             ],
             "title": "Kind"
           },

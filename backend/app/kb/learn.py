@@ -20,6 +20,14 @@ def final_decision(ticket: Ticket) -> dict:
     return {f: getattr(latest, f) for f in DECISION_FIELDS}
 
 
+def forget_resolution(db: Session, ticket: Ticket) -> bool:
+    """A reopened ticket's fix wasn't good enough: take it out of the knowledge base."""
+    doc = db.scalar(select(KbDocument).where(KbDocument.ref_id == f"tkt-{ticket.number}"))
+    if doc is not None:
+        db.delete(doc)
+    return doc is not None
+
+
 def learn_from_resolution(db: Session, ticket: Ticket) -> KbDocument:
     decision = final_decision(ticket)
     service = ticket.ai_service or decision["service"]

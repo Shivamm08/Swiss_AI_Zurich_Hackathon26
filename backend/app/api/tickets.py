@@ -11,7 +11,8 @@ from app.api.deps import get_actor, require_creator, require_manager
 from app.db import get_db
 from app.domain import priority_for, team_for
 from app.ingest import jira_records, ticket_from_email, ticket_from_jira
-from app.kb.learn import learn_from_resolution
+from app.kb.learn import forget_resolution, learn_from_resolution
+from app.pipeline import intake_check, llm
 from app.models import Ticket, User
 from app.schemas import (
     ActivityEntry,
@@ -121,6 +122,10 @@ def create_ticket(body: TicketCreate, db: Session = Depends(get_db)) -> Ticket:
     automatic intake channels."""
     creator = get_actor(db, body.created_by)
     require_creator(creator)
+    screened = intake_check.check(body.summary, body.description, llm.resolve_model(None))
+    if not screened.ok:
+        raise HTTPException(status_code=422, detail=f"This doesn't look like a ticket: {screened.reason} "
+                                                    "Describe what is broken or what you need, and for whom.")
     manual = body.manual.model_dump(exclude_none=True) if body.manual else {}
     if manual.get("assignee"):
         require_specialist(db, manual["assignee"], team_for(manual["service"]) if manual.get("service") else None)
@@ -134,7 +139,7 @@ def create_ticket(body: TicketCreate, db: Session = Depends(get_db)) -> Ticket:
     }.items() if v})
     if manual.get("urgency") and manual.get("impact"):
         fields["priority"] = priority_for(manual["urgency"], manual["impact"])
-    ticket = Ticket(**fields, raw={"manual": manual} if manual else {})
+    ticket = Ticket(**fields, raw=({"manual": manual} if manual else {}) | {"intake_check": screened.verdict})
     if manual.get("assignee"):  # only analysts and admins create tickets: choosing the specialist is their dispatch
         ticket.assignee, ticket.work_status = manual["assignee"], "assigned"
         ticket.add_activity(creator.email, "assigned", manual["assignee"])
@@ -258,6 +263,32 @@ def update_work(ticket_id: uuid.UUID, body: WorkUpdate, db: Session = Depends(ge
         if ticket.triage_results:
             learn_from_resolution(db, ticket)  # only finished work becomes knowledge
         notify_done(db, ticket)
+    db.commit()
+    db.refresh(ticket)
+    return ticket
+
+
+@router.post("/{ticket_id}/reopen", response_model=TicketOut)
+def reopen(ticket_id: uuid.UUID, body: TicketNote, db: Session = Depends(get_db)) -> Ticket:
+    """The department's Team Lead / Analyst isn't satisfied with a done ticket: it goes back to the same
+    specialist (assigned), its fix leaves the knowledge base, and the specialist gets a message."""
+    ticket = get_ticket_or_404(db, ticket_id)
+    actor = get_actor(db, body.by)
+    require_manager(actor, ticket, "reopen this ticket")
+    if ticket.work_status != "done":
+        raise HTTPException(status_code=409, detail="Only a done ticket can be reopened")
+    if not (body.note or "").strip():
+        raise HTTPException(status_code=422, detail="Say what isn't right, so the specialist knows what to fix")
+    specialist = ticket.resolved_by or ticket.assignee
+    removed = forget_resolution(db, ticket)
+    ticket.work_status, ticket.assignee = "assigned", specialist
+    ticket.resolution = ticket.resolution_comment = ticket.resolved_at = ticket.resolved_by = None
+    ticket.add_activity(actor.email, "reopened", body.note.strip())
+    if specialist and specialist != actor.email:
+        chat.post(db, chat.dm_channel(actor.email, specialist), actor.email,
+                  f"Reopened #{ticket.number} \"{ticket.summary}\": {body.note.strip()}"
+                  + (" (its fix was taken out of the knowledge base)" if removed else ""),
+                  kind="reopened", ticket_id=ticket.id)
     db.commit()
     db.refresh(ticket)
     return ticket
