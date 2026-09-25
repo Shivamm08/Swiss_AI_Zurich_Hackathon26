@@ -52,7 +52,7 @@ On a triaged ticket, **Escalate** or **Message about this ticket** opens a dialo
 
 1. Pick the purpose: **Escalate** (take ownership now), **Hand off** (pass it on with context) or
    **Ask a question** (get missing information).
-2. Pick the recipient: the owning team's **lead**, the person **working on it**, or the whole **team channel**.
+2. Pick the recipient: the owning team's **Team Lead / Analyst**, the **specialist** working on it, or the whole **team channel**.
 3. **Draft with Copilot.** The AI writes 3–5 sentences with the ticket number, what's affected,
    the priority, the SLA deadline and one concrete ask (`POST /api/chat/draft`).
 4. Messages opens on the right conversation with the draft ready. **Edit it, then send.** Nothing
@@ -75,16 +75,16 @@ API: `GET /api/directory`.
 ## Personas ("View as")
 
 There is no login. The **persona button** (top right) opens a panel with:
-- **Demo personas:** the admin, the busiest team lead, the busiest analyst. One click to switch.
+- **Demo personas:** the admin, the Team Lead / Analyst with the busiest department, the busiest specialist. One click to switch.
 - **Everyone, grouped by department**, with role and current load, plus a search box.
 
 The role changes what the sidebar shows:
 
 | Role | Workspace | Manage | Administration |
 |---|---|---|---|
-| Analyst | Queue, Messages, People & teams | – | – |
-| Team lead | ✓ | New ticket, Team workload, Impact | – |
+| Specialist | Queue (My work…), Messages, People & teams | – | – |
+| Team Lead / Analyst | Queue (Triage inbox, Needs review…) ✓ | New ticket, Team workload, Impact | – |
 | Admin | ✓ | ✓ | Knowledge base, Intake & export, Settings |
 
-The knowledge base is admin-only because analysts get knowledge where they need it (the
+The knowledge base is admin-only because everyone else gets knowledge where they need it (the
 evidence on each ticket and the Copilot) instead of browsing documents.

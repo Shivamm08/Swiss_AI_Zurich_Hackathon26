@@ -58,7 +58,7 @@ On every push to `main` and every pull request (`.github/workflows/ci.yml`):
 - **Never tune prompts, thresholds or models on the 20 challenge tickets.** Use an evaluation set
   (training tickets rewritten into challenge style, tickets generated from the playbook, and
   hand-labelled examples). Run the challenge file once at the end.
-- The export (`/api/export/submission`) uses the analyst's final decision where one exists, else
+- The export (`/api/export/submission`) uses the specialist's resolution and closing note for done tickets, the analyst's final decision where one exists, else
   the latest proposal. Its assignee is the **expert**.
 
 ## Typical tasks

@@ -7,13 +7,13 @@ lucide-react (icons). Code in `frontend/src/`.
 
 | Route | Screen | Who sees it | What's on it |
 |---|---|---|---|
-| `/` | **Queue** | everyone | Tabs: My queue · My team · Needs review · Escalations · All. Open tickets only unless **Show closed** is ticked. Sorted by priority score, with SLA countdown ("closed" for closed tickets), intake→AI service change, confidence, status. Untriaged rows have a **▶ Triage** button |
-| `/tickets/:id` | **Ticket** | everyone | Header · **Live triage walkthrough** · As received · AI proposal · Why this priority (matrix) · Resolution draft · Confidence · Assignee · Evidence · History · Approve/Edit/Reject bar |
-| `/new` | **New ticket** | lead, admin | Required: summary, description, reporter. Optional "Set details yourself" for every AI-fillable field. Buttons: *Create and watch AI triage* / *Create only* |
+| `/` | **Queue** | everyone | Tabs by role. Analyst: Triage inbox · Needs review · My department · Escalations · All. Specialist: My work · My department · Escalations · All. Admin: Triage inbox (all departments) · Needs review · Escalations · All. Done tickets hidden unless **Show done** is ticked. Sorted by priority score, with SLA countdown, intake→AI service change, confidence, and a status pill (not triaged, needs review, awaiting analyst + confidence label, assigned, in progress, waiting for info, done). Untriaged rows have a **▶ Triage** button |
+| `/tickets/:id` | **Ticket** | everyone | Header (status, specialist) · **Live triage walkthrough** · As received · Closing note (when done) · AI proposal · Why this priority (matrix) · Suggested resolution · Confidence · Specialist (suggestion + candidates with dispatch/reassign) · Evidence · Activity. Bottom bar by role: analyst **Approve & dispatch / Edit / Reject** while open; assigned specialist **Start / Waiting for info / Resume / Mark done** |
+| `/new` | **New ticket** | analyst, admin | Required: summary, description, reporter. Optional "Set details yourself" for every AI-fillable field. Buttons: *Create and watch AI triage* / *Create only* |
 | `/messages` | **Messages** | everyone | Department channels and direct messages; ticket cards; escalations |
 | `/people` | **People & teams** | everyone | Department cards, members with load, message buttons |
-| `/team` | **Team workload** | lead, admin | Per-person load, share, flags, escalations |
-| `/dashboard` | **Impact** | lead, admin | Pain points we solve, headline numbers, trends, calibration ([details](14-Impact-and-Demo-Data.md)) |
+| `/team` | **Team workload** | analyst, admin | Per-specialist load, share, done in 7 days, flags, escalations |
+| `/dashboard` | **Impact** | analyst, admin | Pain points we solve, headline numbers, trends, calibration ([details](14-Impact-and-Demo-Data.md)) |
 | `/knowledge` | **Knowledge base** | admin | Test retrieval; browse service cards, playbook, learned tickets; re-sync |
 | `/intake` | **Intake & export** | admin | Import JSON, paste an email, **batch triage**, download `submission.json` |
 | `/settings` | **Settings** | admin | Thresholds, SLA targets, matrix, roster (read-only) |

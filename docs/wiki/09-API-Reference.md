@@ -19,13 +19,14 @@ endpoint with its exact request and response shapes, and lets you try them. The 
 
 | Method | Path | What it does |
 |---|---|---|
-| GET | `/api/tickets` | The queue. Query: `view` (mine · team · needs_review · escalations · all), `as_user` (email), `sort` (priority_score · sla_due_at · confidence · number), `state`, `source`, `service`, `team`, `q` (search), `include_closed` (default false: closed tickets are hidden), `limit`, `offset` |
+| GET | `/api/tickets` | The queue. Query: `view` (mine · inbox · team · needs_review · escalations · all), `as_user` (email), `sort` (priority_score · sla_due_at · confidence · number), `state`, `work_status`, `source`, `service`, `team`, `q` (search), `include_done` (default false: done tickets are hidden), `limit`, `offset`. `inbox` = proposals waiting for the analyst of `as_user`'s department (all departments for the admin); `needs_review` = untriaged, low-confidence or rejected tickets |
 | POST | `/api/tickets` | Create a ticket. `summary`, `description` required; optional `manual` = staff-confirmed fields |
 | POST | `/api/tickets/from-email` | `{from_address, subject, body, business_entity?}` → a new ticket |
 | POST | `/api/tickets/import` | Upload a Jira export JSON (multipart: `file`, `source`) |
-| GET | `/api/tickets/{id}` | Ticket + latest proposal + review history |
+| GET | `/api/tickets/{id}` | Ticket + latest proposal + review history + activity timeline |
 | DELETE | `/api/tickets/{id}` | Delete a ticket (and its proposals/reviews) |
-| POST | `/api/tickets/{id}/assign` | `{assignee: email}`: set the working assignee |
+| POST | `/api/tickets/{id}/assign` | `{assignee: email, by?}`: dispatch (open → assigned) or reassign. `409` once done |
+| POST | `/api/tickets/{id}/work` | Specialist: `{action: start · wait · resume · resolve, by, note?, resolution?, resolution_comment?}`. Only the assignee or an admin (`403`); invalid step `409`; `resolve` needs resolution + comment (`422`) and adds the ticket to the knowledge base |
 
 ## Triage and review
 
@@ -35,7 +36,7 @@ endpoint with its exact request and response shapes, and lets you try them. The 
 | POST | `/api/tickets/{id}/triage` | Triage one ticket, return the proposal. Body `{model}` optional |
 | POST | `/api/triage/batch` | `{ticket_ids?, source?, model?}`: triage many (default: all `new`) |
 | GET | `/api/triage/{result_id}` | One proposal |
-| POST | `/api/triage/{result_id}/review` | `{action: approve · edit · reject, edits?, reviewer, notes?, review_seconds?}` |
+| POST | `/api/triage/{result_id}/review` | Analyst decision `{action: approve · edit · reject, edits?, reviewer, notes?, review_seconds?}`. Approve/edit dispatches the ticket to a specialist; reject sends it to Needs review |
 
 `model` is any id from `/api/llm/models`, or `heuristic` for no LLM. Unknown models get a `400`.
 

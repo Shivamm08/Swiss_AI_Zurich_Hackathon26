@@ -88,15 +88,16 @@ Priority High = matrix[urgency Medium][impact High]
 ## Step 4: Measure confidence
 
 `overall = min(vote agreement, past-case match) × warning flags`, then the route:
-`auto` (≥ 80%), `review` (50–80%), `triage` (< 50%). Highest priority on a critical service is
-**escalated** to the team lead. The SLA deadline is set from the priority.
+`auto` (≥ 80%, *high confidence*), `review` (50–80%, *check carefully*), `triage` (< 50%, shared
+Needs review queue). The route never skips the analyst: every ticket waits for their decision.
+Highest priority on a critical service is **escalated** to the team lead. The SLA deadline is set from the priority.
 Details: [Priority and confidence](05-Priority-and-Confidence.md#confidence).
 
-## Step 5: Route to a person
+## Step 5: Suggest a specialist
 
 - **Expert:** the author of the matched past solution. Saved as the proposal's assignee and used in the challenge export.
-- **Recommended:** the best team member once workload is considered. Becomes the ticket's
-  working assignee, unless the route is `triage` (then nobody until a human classifies it).
+- **Recommended:** the best **specialist** in the team once workload is considered. This is only a
+  suggestion: the ticket is assigned when the analyst approves it.
 - A staff-chosen assignee always wins.
 
 Details: [Assignment and workload](06-Assignment-and-Workload.md).
@@ -115,7 +116,9 @@ A new `triage_results` row stores everything above: decision, facts, trace, vote
 confidence breakdown, route, SLA, assignee suggestion, evidence, model and timing. Re-running
 triage adds a new row; the latest one is shown. For fast queue sorting, these fields are copied
 onto the ticket: `ai_service`, `ai_team`, `ai_priority`, `priority_score`, `confidence`, `route`,
-`escalated`, `sla_due_at`, `assignee`. The ticket's state becomes `proposed`.
+`escalated`, `sla_due_at`. The ticket's state becomes `proposed` and a `triaged` entry is added to
+its activity timeline. A ticket that is still `open` has no assignee yet; one already with a
+specialist keeps its assignee and work status.
 
 If the ticket has just become **escalated** (Highest on a critical service), an automatic
 escalation message is posted to the owning team's channel ([Collaboration](13-Collaboration-and-Copilot.md#automatic-escalation)).
@@ -126,9 +129,12 @@ escalation message is posted to the owning team's channel ([Collaboration](13-Co
 
 | Action | Effect |
 |---|---|
-| **approve** | The proposal becomes final. State `approved`. Added to the knowledge base (learning loop) |
-| **edit** | The analyst's changes are applied; team and priority are **recomputed** from service and urgency/impact, so they can't become inconsistent. State `edited`. Added to the knowledge base |
+| **approve** | The proposal becomes final. State `approved`. The ticket is **dispatched** to the suggested specialist (work status `assigned`) |
+| **edit** | The analyst's changes are applied; team and priority are **recomputed** from service and urgency/impact, so they can't become inconsistent. State `edited`. Dispatched to the specialist they picked, or the suggestion (recomputed if the team changed) |
 | **reject** | State `rejected`, route set back to `triage`, assignee cleared. The ticket goes to Needs review |
+
+The knowledge base doesn't learn here. It learns when the specialist **marks the ticket done**,
+from their own closing note: see [Roles and ticket lifecycle](15-Roles-and-Ticket-Lifecycle.md).
 
 The time spent (`review_seconds`) and the changed fields are recorded; the dashboard uses them.
 

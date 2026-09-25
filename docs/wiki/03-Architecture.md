@@ -89,7 +89,7 @@ backend/
       playbook.jsonl   21 resolution notes (generated from training data)
       roster.yaml      people, teams, roles, capacity (generated, edit freely)
       sync.py          loads the files above into the database
-      learn.py         approved reviews → new knowledge (learning loop)
+      learn.py         done tickets → new knowledge (learning loop)
     scripts/           import tickets, build playbook/roster, sync, export contract, seed_demo
   alembic/versions/    database migrations
   migrations_sql/      the same migrations as plain SQL (for the Supabase SQL editor)

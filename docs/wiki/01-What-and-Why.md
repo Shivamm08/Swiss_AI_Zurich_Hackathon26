@@ -26,9 +26,9 @@ the 20 challenge tickets, so we never tune anything on them.
 A web app for service-desk staff with three jobs:
 
 1. **Triage.** For every ticket, propose all seven outputs, with the reasoning and the evidence behind them.
-2. **Keep humans in control.** Nothing is final until an analyst approves, edits or rejects it.
-   Low-confidence tickets go to a human queue.
-3. **Get better with use.** Every approved answer becomes knowledge for the next similar ticket.
+2. **Keep humans in control.** Every ticket waits for a Team Lead / Analyst to approve, edit or
+   reject the proposal before a specialist gets it. Low-confidence tickets go to a shared Needs-review queue.
+3. **Get better with use.** Every ticket a specialist marks done becomes knowledge for the next similar ticket.
 
 For the demo, any ticket can be triaged **live**: the screen shows each step as it happens
 (retrieval, three AI votes side by side, the priority rules, the confidence, the assignment, the draft).
@@ -39,20 +39,21 @@ For the demo, any ticket can be triaged **live**: the screen shows each step as 
 |---|---|
 | **Intake values** | What the ticket arrived with (service, urgency…). Often wrong on purpose |
 | **Proposal** | The AI's suggested answer for a ticket (a `triage_result` row) |
-| **Review** | An analyst's decision on a proposal: approve, edit or reject |
+| **Review** | An analyst's decision on a proposal: approve or edit (both dispatch it) or reject |
+| **Work status** | Where the ticket is: open (with the analysts) → assigned → in progress / waiting → done |
 | **Facts** | Five observable properties the AI extracts: scope, outage, workaround, regulatory, deadline |
 | **Rubric** | Fixed rules that turn facts + service criticality into Impact and Urgency |
 | **Matrix** | The challenge's 5×5 table: Priority = matrix[Urgency][Impact] |
 | **Priority score** | A 0–1 number that orders tickets *within* the same priority. Never crosses priority levels |
 | **Votes** | The AI reads each ticket 3 times independently; how often the answers agree is measured |
 | **Confidence** | How sure the system is: the weaker of vote agreement and past-case match, lowered by warning flags |
-| **Route** | Where a proposal goes: `auto` (assigned, ≥ 80%), `review` (assigned, marked), `triage` (Needs review queue, < 50%) |
+| **Route** | How closely the analyst should look: `auto` (high confidence, ≥ 80%), `review` (check carefully), `triage` (low confidence, < 50%: shared Needs review queue). Never skips the analyst |
 | **Service card** | A short description of one service and its boundaries (20 in total) |
 | **Playbook** | The 21 real resolution notes found in the training data, each with its author |
-| **Learned ticket** | A ticket an analyst approved, stored as new knowledge |
+| **Learned ticket** | A ticket a specialist marked done, stored with their closing note as new knowledge |
 | **RAG** | Retrieval-augmented generation: find relevant documents first, then let the AI use them |
 | **Expert** | The person who resolved the matching past problem. Used for the challenge export |
-| **Recommended assignee** | The expert, unless overloaded; then the best available teammate |
+| **Recommended assignee** | The specialist the AI suggests: the expert, unless overloaded; then the best available specialist |
 | **SLA** | The response deadline, set by priority (e.g. Highest = 1 hour) |
 | **Heuristic mode** | Running without an AI model: intake values kept, confidence fixed at 20% |
 | **Staff-confirmed field** | A value someone filled in when creating a ticket; the AI must keep it |
@@ -67,11 +68,12 @@ There's no login. A **"View as"** switcher at the top lets you act as any person
 
 | Role | Sees | Can do |
 |---|---|---|
-| **Analyst** | Queue (mine, team, all), Messages, People & teams, Copilot | Approve / edit / reject, reassign, message, escalate |
-| **Team lead** | + Needs review, Escalations, New ticket, Team workload, Impact | + handle low-confidence tickets and escalations |
-| **Admin** | + Knowledge base, Intake & export, Settings | Everything |
+| **Team Lead / Analyst** (1 per department) | Triage inbox, Needs review, My department, Escalations, All · New ticket, Team workload, Impact | Approve / edit / reject AI proposals, dispatch and reassign, escalate |
+| **Specialist** | My work, My department, Escalations, All · Messages, People & teams, Copilot | Start, wait for info, resume, mark done with a closing note |
+| **Admin** | Everything + Knowledge base, Intake & export, Settings | Everything |
 
-Details: [Collaboration and Copilot](13-Collaboration-and-Copilot.md#personas-view-as).
+Details: [Roles and ticket lifecycle](15-Roles-and-Ticket-Lifecycle.md) and
+[Collaboration and Copilot](13-Collaboration-and-Copilot.md#personas-view-as).
 
 ## The pain points we solve
 
@@ -79,4 +81,4 @@ Misrouted tickets, "everything is urgent", knowledge stuck in people's heads, sl
 one expert getting all the tickets, escalations lost in email, distrust of black-box AI, and vague
 tickets. Each has a feature and a live number: see [Impact and demo data](14-Impact-and-Demo-Data.md).
 
-"Analyst" means a human. There is one AI system for the whole desk; the people use it.
+"Analyst" means a human: the team lead who checks the AI's triage. There is one AI system for the whole desk; the people use it.

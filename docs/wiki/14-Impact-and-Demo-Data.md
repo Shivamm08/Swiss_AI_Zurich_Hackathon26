@@ -3,7 +3,7 @@
 ## Why this screen exists
 
 The jury is business people. They don't need to see an API; they need to see **which everyday
-problems of a Jira service desk disappear**. The Impact screen (Manage → Impact, leads and admin)
+problems of a Jira service desk disappear**. The Impact screen (Manage → Impact, analysts and admin)
 is built around those problems.
 
 ## Pain points and the numbers behind them
@@ -12,11 +12,11 @@ is built around those problems.
 |---|---|---|---|
 | "Tickets bounce between teams" | Reads the content, not the intake field; re-routes with reasons | **misrouted tickets caught** | latest proposals whose service ≠ intake service |
 | "Everything is marked urgent" | Priority from an auditable rule and the matrix | **priorities corrected** | proposals whose priority ≠ submitted priority |
-| "Fixes live in people's heads" | Approved fixes become knowledge (learning loop) | **approved fixes now reusable** | `historical_ticket` documents in the knowledge base (real ones only) |
+| "Fixes live in people's heads" | Every ticket marked done becomes knowledge (learning loop) | **resolved fixes now reusable** | `historical_ticket` documents in the knowledge base (real ones only) |
 | "Tickets wait hours for first triage" | Full proposal in seconds, SLA timers | **seconds to a proposal** | average `latency_ms` of proposals |
 | "One expert gets all the tickets" | Expertise balanced with capacity | **busiest person's load** + people over capacity | open tickets ÷ capacity per person |
 | "Escalations get lost in email" | Automatic + AI-drafted escalations with the ticket attached | **escalations with full context** | tickets with `escalated = true` |
-| "Nobody trusts a black-box AI" | Live walkthrough, measured confidence, human approval | **confident enough to auto-assign** | share of proposals with route `auto` |
+| "Nobody trusts a black-box AI" | Live walkthrough, measured confidence, an analyst approves every ticket | **high confidence: one-click approval** | share of proposals with route `auto` |
 | "Vague tickets: pls fix asap" | Detected; the draft asks for what's missing | **vague tickets caught early** | proposals with resolution `clarification` |
 
 Above them, three headline numbers: **analyst time saved**, **drafts accepted as proposed** and
@@ -49,9 +49,9 @@ How it's generated (`backend/app/scripts/seed_demo.py`, fixed random seed, so ev
 | Facts → priority | Facts come from the template; the **real rubric** computes impact, urgency, priority and score. Severe events (full outage, regulatory breach) only occur on clear incident types |
 | Confidence and routing | Confidence depends on how clear the template is; routing uses the **real thresholds** |
 | Assignment | Expert if not clearly busier than the least-loaded teammate, like the real rule |
-| Reviews | Most tickets older than a day are reviewed. Low-confidence proposals are corrected or rejected more often (what a calibrated system implies). A mild improvement over the 4 weeks stands in for the learning loop. **Illustrative, not measured** |
-| Closed tickets | Reviewed tickets older than 2 days, and every ticket older than 3 days, are `status = done` (not counted as workload); only the last few days are open work |
-| Messages | Per department: a short realistic conversation (announcements, hand-offs, follow-ups), automatic escalation posts, and a few direct messages between leads, analysts and the admin |
+| Analyst decisions | Every ticket older than a day was decided by its department's Team Lead / Analyst (about half of today's are still waiting). Low-confidence proposals are corrected or rejected more often (what a calibrated system implies). A mild improvement over the 4 weeks stands in for the learning loop. **Illustrative, not measured** |
+| Work | Approved tickets go to a specialist. Everything older than 3 days is `done` (with resolution, closing note and who resolved it); about half of 2-day-old and a sixth of yesterday's are done; the rest are assigned, in progress or waiting for info |
+| Messages | Per department: a short realistic conversation (announcements, hand-offs, follow-ups), automatic escalation posts, and a few direct messages between analysts, specialists and the admin |
 
 The simulated tickets **don't enter the knowledge base**, so they can't affect how real tickets are triaged.
 

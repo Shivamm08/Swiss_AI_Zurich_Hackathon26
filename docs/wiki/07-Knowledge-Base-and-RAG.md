@@ -15,7 +15,7 @@ metadata, and an embedding (1,536 numbers from `text-embedding-3-small`).
 |---|---|---|---|---|
 | **Service card** | 20 | `kb/services.yaml` | `svc-trade-matching` | Description, typical keywords and **boundaries** of one service |
 | **Playbook entry** | 21 | `kb/playbook.jsonl` | `pb-trade-matching-2` | A real resolution note from the training data, with its author (`resolver`) |
-| **Learned ticket** | grows | created on approval | `tkt-22` | A ticket an analyst approved or edited, with the final decision and closing note |
+| **Learned ticket** | grows | created when a ticket is done | `tkt-22` | A ticket a specialist marked done, with the final decision and **their** closing note |
 
 ### Service cards
 
@@ -85,19 +85,22 @@ Without an embedding model, only step 1 runs. Everything still works, just less 
 
 ## The learning loop
 
-When an analyst **approves or edits** a proposal (`kb/learn.py`):
+When a specialist **marks a ticket done** (`POST /api/tickets/{id}/work` with `resolve`,
+then `kb/learn.py`):
 
 1. A document `tkt-<number>` is created or updated, with the ticket's summary and description,
-   the **final** decision, and the closing note.
-2. `meta.resolver` = the ticket's working assignee; `meta.quality` = approve or edit.
+   the final classification (the analyst's edit if there was one, else the approved proposal),
+   the resolution type, and the specialist's **own closing note**.
+2. `meta.resolver` = the specialist who resolved it; `meta.quality` = `resolved`.
 3. It is embedded immediately.
 
-The next similar ticket then retrieves this **human-approved** answer. It often ranks first,
+The next similar ticket then retrieves this **real, finished** fix. It often ranks first,
 above the playbook. This raises the past-case confidence, gives a better draft, and builds
-expertise for the resolver (see [assignment](06-Assignment-and-Workload.md)).
+expertise for the specialist (see [assignment](06-Assignment-and-Workload.md)).
 
-**Only human-approved results enter the knowledge base**, never raw AI output. Otherwise the
-system would learn from its own mistakes. Rejected proposals are never added.
+**Only finished work enters the knowledge base**: never raw AI output, and never a ticket that
+was only approved at triage and hasn't been worked yet. Otherwise the system would learn from
+guesses. See [Roles and ticket lifecycle](15-Roles-and-Ticket-Lifecycle.md).
 
 ## Copilot chat
 
