@@ -88,20 +88,54 @@ twin in `backend/migrations_sql/` for pasting into the Supabase SQL editor.
 |---|---|
 | `0001` | tickets, triage_results, reviews, kb_documents; enables `pgvector` |
 | `0002` | users table; queue columns on tickets; facts/confidence/routing/assignment columns on triage_results |
-| `0003_messaging` | messages table. The id is deliberately not `0003`, because Supabase already has a different `0003` from a teammate's branch |
+| `0003_messaging` | messages table |
 
-**The backend runs `alembic upgrade head` on every start.** On a local database that's all you
-need. On the **shared Supabase**, the first teammate who starts a newer version migrates it for
-everyone.
+**The backend runs `alembic upgrade head` on every start.** On the shared Supabase, the first
+teammate who starts a newer version migrates it for everyone.
+
+### Two migration histories can share one database
+
+Our migrations record their version in **`alembic_version_triage`**, not the default
+`alembic_version`. The shared Supabase also has a teammate's own Alembic history
+(`alembic_version` = `0003`, from Manan's branch, with extra ticket columns such as
+`service_team`, `assignee`, `resolution_status`). Because the two histories use different
+tables, **both apps can run against the same Supabase**.
+
+How it works (`backend/alembic/env.py`):
+- On the first run against a database without `alembic_version_triage`, the backend **adopts** it:
+  if `alembic_version` holds one of our revisions (older local databases), it continues from
+  there; if our base tables exist but the revision is someone else's, it starts from `0001`; an
+  empty database gets everything created.
+- Our migrations are **idempotent** (`IF NOT EXISTS`), so a column that already exists, like his
+  `tickets.assignee`, is simply skipped.
+
+### Current state of the shared Supabase (25 Sep 2026)
+
+| Table | Value | Owner |
+|---|---|---|
+| `alembic_version` | `0003` | Manan's branch (untouched) |
+| `alembic_version_triage` | `0003_messaging` | this branch |
+
+Files kept for safety:
+
+| File | What |
+|---|---|
+| `migrations_sql/supabase_snapshot_before_triage_copilot.sql` | The exact schema before our migrations (Manan's state) |
+| `migrations_sql/rollback_triage_copilot.sql` | Removes only our additions; his tables, columns, data and version stay. Tested |
+
+Check the state any time in the Supabase SQL editor:
+
+```sql
+select 'ours' as history, version_num from alembic_version_triage
+union all select 'teammate', version_num from alembic_version;
+```
 
 ### Rules for the shared database
 
-1. **A migration is only applied to Supabase after its file is pushed to git.** If the database
-   is at a revision your code doesn't know, the backend refuses to start (`Can't locate revision`),
-   and it's the same for every teammate.
-2. **One person writes migrations at a time.** Two people both creating `0003` breaks the chain.
-3. **Keep migrations additive** (new tables, nullable or defaulted columns), so teammates on
-   older code keep working.
+1. **A migration is only applied to Supabase after its file is pushed to git.**
+2. **One person writes migrations at a time**, so revision ids don't collide.
+3. **Keep migrations additive and idempotent** (new tables, nullable or defaulted columns,
+   `if_not_exists=True`), so teammates on older code keep working.
 
 ### Creating a migration
 
@@ -109,9 +143,9 @@ everyone.
 # 1. edit backend/app/models.py
 # 2. generate it (against your LOCAL database, with the stack running via make up-local)
 DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/triage make migration m="add x"
-# 3. review the generated file in backend/alembic/versions/
+# 3. review the generated file; add if_not_exists=True to add_column / create_table / create_index
 # 4. make the SQL twin for Supabase
-docker compose run --rm --no-deps backend alembic upgrade 0002:0003 --sql > backend/migrations_sql/0003_add_x.sql
+docker compose run --rm --no-deps backend alembic upgrade 0003_messaging:<new_rev> --sql > backend/migrations_sql/<new_rev>.sql
 # 5. commit both, push, tell the team
 ```
 
@@ -119,14 +153,5 @@ CI checks that `models.py` and the migrations match (`alembic check`).
 
 ### Applying to Supabase
 
-Either start the app against Supabase (`make up` applies it automatically), or paste the SQL
-file into the Supabase SQL editor (it also records the version, so the automatic step then does
-nothing).
-
-> **Status on 25 Sep 2026:** Supabase is at revision `0003`, applied from a teammate's branch that
-> isn't in git yet. Until that file is pushed and our `0002` is renumbered to follow it, use
-> `make up-local`. Check the current state with the query below.
-
-```sql
-select version_num from alembic_version;   -- in the Supabase SQL editor
-```
+Start the app against Supabase (`docker compose up --build`, or `make up`); it applies pending
+migrations automatically. Or paste the SQL files into the Supabase SQL editor in order.

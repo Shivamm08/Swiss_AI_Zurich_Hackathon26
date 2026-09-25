@@ -79,6 +79,7 @@ docker compose exec backend sh -c 'python -m app.scripts.import_tickets /data/ra
 | Where the data lives | A Docker volume on your laptop | The team's shared Supabase project |
 | Who sees it | Only you | Everyone |
 | Needs | Nothing extra | `DATABASE_URL` in `.env` (the **Session pooler** URI) |
+| Start with | `make up-local` | `make up`, or plain `docker compose up --build` |
 | Good for | Development and experiments | The shared demo data |
 
 Supabase details:
@@ -93,8 +94,8 @@ Supabase details:
 | Symptom | Cause | Fix |
 |---|---|---|
 | `service "backend" is not running` on `make import-challenge` | The app isn't started | Run `make up-local` first and wait for `Application startup complete` |
-| Backend exits with `Can't locate revision identified by '000X'` | The database has a migration your code doesn't have (someone applied theirs) | Pull the branch that contains it; see [Migrations](08-Data-and-Database.md#migrations) |
-| Frontend shows `Failed to resolve import "lucide-react"` | Old `node_modules` in the container | `make down` then `make up-local` (it refreshes dependencies) |
+| Backend exits with `Can't locate revision identified by '000X'` | The database has one of *our* migrations your code doesn't have yet | Pull the latest `triage-copilot`; see [Migrations](08-Data-and-Database.md#migrations) |
+| Frontend shows `Failed to resolve import "lucide-react"` (or another package) | Old `node_modules` in the container after a dependency change | `make down` then `make up` / `make up-local` (they refresh dependencies). With plain docker: `docker compose up --build --renew-anon-volumes` |
 | Top bar says **Heuristic mode** | No model configured | Set `OPENAI_API_KEY` in `.env`, then `make down && make up-local` |
 | `Bind for 0.0.0.0:5173 failed: port is already allocated` | Another app uses the port | Stop it, or stop an older copy of this stack (`docker ps`) |
 | Model picker lists 50+ models | `LLM_MODEL_CHOICES` missing in your `.env` | Add the line and restart |
