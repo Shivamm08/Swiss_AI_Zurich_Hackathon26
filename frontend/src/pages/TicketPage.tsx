@@ -13,15 +13,17 @@ import {
   Pencil,
   Play,
   PlayCircle,
+  Undo2,
   Scale,
   Siren,
+  ShieldCheck,
   Sparkles,
   UserCheck,
   X,
 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { useAssignTicket, useLlmModels, useReference, useReviewTriage, useSettings, useTicket, useUsers, useWorkUpdate } from '../api/hooks'
+import { useAssignTicket, useDeescalate, useLlmModels, useReference, useReviewTriage, useSettings, useTicket, useUsers, useWorkUpdate } from '../api/hooks'
 import { useTriageStream } from '../api/stream'
 import type { DecisionEdit, Level, ReviewCreate, TicketDetail, TriageResult, WorkUpdate } from '../api/types'
 import {
@@ -39,7 +41,7 @@ import Walkthrough from '../components/Walkthrough'
 import { useCopilot } from '../copilot/context'
 import { Button, Card, ErrorBox, Field, Loading, Pill, PriorityPill, StatePill, WorkStatusPill, inputClass } from '../components/ui'
 import { HEURISTIC, useSelectedModel } from '../model/context'
-import { canDispatch, useViewer } from '../viewas/context'
+import { canDispatch, canEscalateTicket, canManageTicket, useViewer } from '../viewas/context'
 
 const short = (email?: string | null) => (email ? email.split('@')[0] : '–')
 
@@ -67,10 +69,10 @@ function ConfidencePanel({ result }: { result: TriageResult }) {
 
 function AssigneePanel({ ticket, result }: { ticket: TicketDetail; result: TriageResult }) {
   const assign = useAssignTicket()
-  const { user, role } = useViewer()
+  const { user } = useViewer()
   const { data: users } = useUsers()
   const s = result.assignee_suggestion
-  const canAssign = canDispatch(role) && ticket.work_status !== 'done'
+  const canAssign = canManageTicket(user, ticket) && ticket.work_status !== 'done'
   // Only specialists take work (proposals saved before a roster change may list others).
   const specialists = new Set(users?.filter((u) => u.role === 'specialist').map((u) => u.email))
   const candidates = s?.candidates.filter((c) => !users || specialists.has(c.user)) ?? []
@@ -193,7 +195,15 @@ function ProposalPanels({ ticket, result, editing, edits, setEdit }: {
 }
 
 /** The analyst's decision on the AI proposal. Approving dispatches the ticket to the specialist. */
-function DecisionBar({ result, editing, setEditing, edits, reset }: {
+/** Who "Approve" dispatches to: the best suggested specialist who hasn't handed the ticket back (mirrors the backend). */
+function dispatchTarget(ticket: TicketDetail, result: TriageResult) {
+  const skip = new Set(ticket.activity.filter((a) => a.action === 'handback').map((a) => a.by))
+  const s = result.assignee_suggestion
+  return [s?.recommended, ...(s?.candidates.map((c) => c.user) ?? [])].find((e) => e && !skip.has(e)) ?? null
+}
+
+function DecisionBar({ ticket, result, editing, setEditing, edits, reset }: {
+  ticket: TicketDetail
   result: TriageResult
   editing: boolean
   setEditing: (v: boolean) => void
@@ -251,7 +261,7 @@ function DecisionBar({ result, editing, setEditing, edits, reset }: {
       ) : (
         <>
           <Button icon={<Check size={15} />} onClick={() => submit('approve')} disabled={review.isPending}>
-            Approve & dispatch{result.assignee_suggestion?.recommended ? ` to ${short(result.assignee_suggestion.recommended)}` : ''}
+            Approve & dispatch{dispatchTarget(ticket, result) ? ` to ${short(dispatchTarget(ticket, result))}` : ''}
             <kbd className="ml-1 rounded bg-white/20 px-1 text-[10px]">A</kbd>
           </Button>
           <Button variant="secondary" icon={<Pencil size={14} />} onClick={() => setEditing(true)}>Edit <kbd className="ml-1 rounded bg-canvas px-1 text-[10px]">E</kbd></Button>
@@ -269,7 +279,7 @@ function WorkBar({ ticket, result }: { ticket: TicketDetail; result: TriageResul
   const work = useWorkUpdate()
   const { user } = useViewer()
   const { data: ref } = useReference()
-  const [mode, setMode] = useState<'idle' | 'wait' | 'resolve'>('idle')
+  const [mode, setMode] = useState<'idle' | 'wait' | 'resolve' | 'handback'>('idle')
   const [note, setNote] = useState('')
   const [resolution, setResolution] = useState<string>(result?.resolution ?? 'done')
   const [comment, setComment] = useState(result?.resolution_comment ?? '')
@@ -301,6 +311,16 @@ function WorkBar({ ticket, result }: { ticket: TicketDetail; result: TriageResul
             <span className="text-xs text-muted">Done tickets are added to the knowledge base, so the next similar ticket finds your fix.</span>
           </div>
         </div>
+      ) : mode === 'handback' ? (
+        <>
+          <label className="sr-only" htmlFor="work-handback">Why</label>
+          <input id="work-handback" autoFocus value={note} onChange={(e) => setNote(e.target.value)}
+            placeholder="Why can't you take it? (wrong department, at capacity, needs other skills…)" className={`${inputClass} min-w-0 flex-1`} />
+          <Button variant="secondary" icon={<Undo2 size={14} />} disabled={work.isPending || !note.trim()} onClick={() => send({ action: 'handback', note })}>
+            Hand back to the analyst
+          </Button>
+          <Button variant="ghost" onClick={() => setMode('idle')}>Cancel</Button>
+        </>
       ) : mode === 'wait' ? (
         <>
           <label className="sr-only" htmlFor="work-note">What's missing</label>
@@ -315,6 +335,7 @@ function WorkBar({ ticket, result }: { ticket: TicketDetail; result: TriageResul
           {status === 'waiting' && <Button icon={<PlayCircle size={15} />} disabled={work.isPending} onClick={() => send({ action: 'resume' })}>Resume</Button>}
           <Button variant={status === 'in_progress' ? 'primary' : 'secondary'} icon={<CircleCheck size={15} />} onClick={() => setMode('resolve')}>Mark done…</Button>
           {status !== 'waiting' && <Button variant="secondary" icon={<Hourglass size={14} />} onClick={() => setMode('wait')}>Waiting for info…</Button>}
+          <Button variant="ghost" icon={<Undo2 size={14} />} onClick={() => { setNote(''); setMode('handback') }}>Hand back…</Button>
         </>
       )}
       <span className="ml-auto text-xs text-muted">Working as <b className="text-ink">{user?.name ?? '–'}</b></span>
@@ -324,8 +345,9 @@ function WorkBar({ ticket, result }: { ticket: TicketDetail; result: TriageResul
 }
 
 const ACTIVITY_LABEL: Record<string, string> = {
-  triaged: 'AI triaged it', approved: 'approved and dispatched', edited: 'edited and dispatched', rejected: 'rejected the proposal',
+  triaged: 'triaged it', approved: 'approved and dispatched', edited: 'edited and dispatched', rejected: 'rejected the proposal',
   assigned: 'assigned it to', start: 'started work', wait: 'is waiting for information', resume: 'resumed work', resolve: 'marked it done',
+  handback: 'handed it back', escalated: 'escalated it', deescalated: 'de-escalated it',
 }
 
 function ActivityCard({ ticket }: { ticket: TicketDetail }) {
@@ -334,9 +356,10 @@ function ActivityCard({ ticket }: { ticket: TicketDetail }) {
       <ol className="relative flex flex-col gap-3 border-l border-line pl-4 text-sm">
         {ticket.activity.map((a, i) => (
           <li key={i} className="relative">
-            <span className={`absolute top-1.5 -left-[21px] h-2.5 w-2.5 rounded-full ring-2 ring-surface ${a.action === 'resolve' ? 'bg-emerald-500' : a.action === 'rejected' ? 'bg-red-500' : a.action === 'triaged' ? 'bg-ai' : 'bg-slate-400'}`} />
-            {a.action === 'triaged' ? <b>AI</b> : <b>{short(a.by)}</b>} {ACTIVITY_LABEL[a.action] ?? a.action}
-            {a.note && <span className="text-muted"> {a.action === 'assigned' || a.action === 'approved' || a.action === 'edited' ? short(a.note) : `· ${a.note}`}</span>}
+            <span className={`absolute top-1.5 -left-[21px] h-2.5 w-2.5 rounded-full ring-2 ring-surface ${a.action === 'resolve' ? 'bg-emerald-500' : a.action === 'rejected' || a.action === 'escalated' ? 'bg-red-500' : a.action === 'handback' ? 'bg-orange-400' : a.action === 'triaged' ? 'bg-ai' : 'bg-slate-400'}`} />
+            {a.action === 'triaged' ? <b>AI</b> : a.by === 'triage-copilot' ? <b>Triage Copilot</b> : <b>{short(a.by)}</b>} {ACTIVITY_LABEL[a.action] ?? a.action}
+            {a.note && <span className="text-muted"> {a.action === 'assigned' || a.action === 'approved' || a.action === 'edited' ? short(a.note)
+              : a.action === 'escalated' ? a.note.replace(/@\S+/, '') : `· ${a.note}`}</span>}
             <p className="text-xs text-muted">{new Date(a.at).toLocaleString()}</p>
           </li>
         ))}
@@ -370,7 +393,8 @@ export default function TicketPage() {
   const [showWalkthrough, setShowWalkthrough] = useState(true)
   const [editing, setEditing] = useState(false)
   const [edits, setEdits] = useState<DecisionEdit>({})
-  const [compose, setCompose] = useState<'escalate' | 'handoff' | 'question' | null>(null)
+  const [compose, setCompose] = useState<'escalate' | 'question' | null>(null)
+  const deescalate = useDeescalate()
   const autoStarted = useRef(false)
   const copilot = useCopilot()
   const { user, role } = useViewer()
@@ -421,7 +445,7 @@ export default function TicketPage() {
               {ticket.manual_fields.length > 0 && <Pill className="bg-accent-soft text-accent">{ticket.manual_fields.length} fields set by staff</Pill>}
             </div>
           </div>
-          {(canDispatch(role) || !result) && <div className="flex flex-wrap items-center gap-2">
+          {(canManageTicket(user, ticket) || (!result && canDispatch(role))) && <div className="flex flex-wrap items-center gap-2">
             <label className="sr-only" htmlFor="run-model">Model</label>
             <select id="run-model" value={runModel} onChange={(e) => setRunModel(e.target.value)} className="rounded-lg border border-line bg-surface px-2 py-1.5 text-sm">
               <option value="">{model ? `Model: ${model}` : 'Default model'}</option>
@@ -434,10 +458,17 @@ export default function TicketPage() {
           </div>}
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3">
-          <Button variant="secondary" className="text-red-600" icon={<Siren size={14} />} onClick={() => setCompose('escalate')} disabled={!result}>Escalate</Button>
-          <Button variant="secondary" icon={<MessagesSquare size={14} />} onClick={() => setCompose('handoff')} disabled={!result}>Message about this ticket</Button>
+          {!ticket.escalated && canEscalateTicket(user, ticket) && ticket.work_status !== 'done' && (
+            <Button variant="secondary" className="text-red-600" icon={<Siren size={14} />} onClick={() => setCompose('escalate')} disabled={!result}>Escalate</Button>
+          )}
+          {ticket.escalated && canManageTicket(user, ticket) && (
+            <Button variant="secondary" icon={<ShieldCheck size={14} />} disabled={deescalate.isPending}
+              onClick={() => deescalate.mutate({ ticketId: ticket.id, by: user?.email ?? '' })}>De-escalate</Button>
+          )}
+          <Button variant="secondary" icon={<MessagesSquare size={14} />} onClick={() => setCompose('question')} disabled={!result}>Message about this ticket</Button>
           <Button variant="ghost" icon={<Sparkles size={14} />} onClick={() => copilot.ask(`Summarise ticket #${ticket.number} and suggest the next step.`)}>Ask Copilot</Button>
-          {!result && <span className="text-xs text-muted">Triage first to escalate or hand off with full context.</span>}
+          {!result && <span className="text-xs text-muted">Triage first to escalate or message with full context.</span>}
+          <ErrorBox error={deescalate.error} />
         </div>
       </div>
 
@@ -527,8 +558,8 @@ export default function TicketPage() {
 
       {compose && <ComposeDialog ticket={ticket} initialPurpose={compose} onClose={() => setCompose(null)} />}
 
-      {result && !stream.running && ticket.work_status === 'open' && canDispatch(role) && (
-        <DecisionBar key={result.id} result={result} editing={editing} setEditing={setEditing} edits={edits} reset={() => setEdits({})} />
+      {result && !stream.running && ticket.work_status === 'open' && canManageTicket(user, ticket) && (
+        <DecisionBar key={result.id} ticket={ticket} result={result} editing={editing} setEditing={setEditing} edits={edits} reset={() => setEdits({})} />
       )}
       {!stream.running && ['assigned', 'in_progress', 'waiting'].includes(ticket.work_status) && (user?.email === ticket.assignee || role === 'admin') && (
         <WorkBar key={`${ticket.id}-${ticket.work_status}`} ticket={ticket} result={result ?? null} />

@@ -59,7 +59,7 @@ function MessageItem({ m, mine }: { m: Message; mine: boolean }) {
   }
   const tag = m.kind === 'escalation'
     ? <Pill className="bg-red-50 text-red-700 ring-1 ring-red-200"><Siren size={11} />escalation</Pill>
-    : m.kind === 'handoff' ? <Pill className="bg-ai-soft text-ai"><ArrowRightLeft size={11} />hand-off</Pill> : null
+    : m.kind === 'handoff' ? <Pill className="bg-ai-soft text-ai"><ArrowRightLeft size={11} />handed back</Pill> : null
   return (
     <div className={`animate-rise flex gap-2.5 ${mine ? 'flex-row-reverse' : ''}`}>
       <Avatar name={m.sender_name} email={m.sender} size="sm" />
