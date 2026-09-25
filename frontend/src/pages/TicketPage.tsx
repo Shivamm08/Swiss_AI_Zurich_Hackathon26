@@ -11,6 +11,7 @@ import {
   Pencil,
   Play,
   Scale,
+  Siren,
   Sparkles,
   UserCheck,
   X,
@@ -30,7 +31,9 @@ import {
   ScoreBar,
   SlaTimer,
 } from '../components/triage'
+import ComposeDialog from '../components/ComposeDialog'
 import Walkthrough from '../components/Walkthrough'
+import { useCopilot } from '../copilot/context'
 import { Button, Card, ErrorBox, Field, Loading, Pill, PriorityPill, StatePill, inputClass } from '../components/ui'
 import { HEURISTIC, useSelectedModel } from '../model/context'
 import { useViewer } from '../viewas/context'
@@ -268,7 +271,18 @@ export default function TicketPage() {
   const [showWalkthrough, setShowWalkthrough] = useState(true)
   const [editing, setEditing] = useState(false)
   const [edits, setEdits] = useState<DecisionEdit>({})
+  const [compose, setCompose] = useState<'escalate' | 'handoff' | 'question' | null>(null)
   const autoStarted = useRef(false)
+  const copilot = useCopilot()
+  const { setTicket } = copilot
+  const [tid, tnum, tsum] = [ticket?.id, ticket?.number, ticket?.summary]
+
+  // Give the Copilot this ticket as context while it's on screen.
+  useEffect(() => {
+    if (!tid || tnum === undefined || tsum === undefined) return
+    setTicket({ id: tid, number: tnum, summary: tsum })
+    return () => setTicket(null)
+  }, [tid, tnum, tsum, setTicket])
 
   const run = () => {
     setShowWalkthrough(true)
@@ -317,6 +331,12 @@ export default function TicketPage() {
               {stream.running ? 'Triaging…' : result ? 'Re-run live' : 'Watch the AI triage it'}
             </Button>
           </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+          <Button variant="secondary" className="text-red-600" icon={<Siren size={14} />} onClick={() => setCompose('escalate')} disabled={!result}>Escalate</Button>
+          <Button variant="secondary" icon={<MessagesSquare size={14} />} onClick={() => setCompose('handoff')} disabled={!result}>Message about this ticket</Button>
+          <Button variant="ghost" icon={<Sparkles size={14} />} onClick={() => copilot.ask(`Summarise ticket #${ticket.number} and suggest the next step.`)}>Ask Copilot</Button>
+          {!result && <span className="text-xs text-muted">Triage first to escalate or hand off with full context.</span>}
         </div>
       </div>
 
@@ -392,11 +412,10 @@ export default function TicketPage() {
               </ul>
             </Card>
           )}
-          <Link to={`/assistant?ticket=${ticket.id}`} className="inline-flex items-center gap-1.5 text-sm text-accent hover:underline">
-            <MessagesSquare size={14} />Ask the assistant about this ticket
-          </Link>
         </div>
       </div>
+
+      {compose && <ComposeDialog ticket={ticket} initialPurpose={compose} onClose={() => setCompose(null)} />}
 
       {result && !stream.running && (
         <ActionBar key={result.id} result={result} editing={editing} setEditing={setEditing} edits={edits} reset={() => setEdits({})} />
