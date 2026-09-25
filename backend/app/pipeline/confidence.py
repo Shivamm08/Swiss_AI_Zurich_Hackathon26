@@ -19,6 +19,7 @@ FLAG_MULTIPLIERS = {
     "generic_service": 0.6,   # resolved to the "Emailed Support Tickets" bucket
     "unclear_input": 0.7,     # request type says the input is nonsense / unclear
     "staff_disagreement": 0.75,  # a value staff set disagrees with the blind AI reading or the rules
+    "no_precedent": 1.0,      # informational: no past fix matched (the retrieval part is already capped at 0.30)
 }
 HEURISTIC_OVERALL = 0.2
 

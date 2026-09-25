@@ -70,12 +70,18 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
                                  elapsed_ms=int((time.perf_counter() - started) * 1000))
 
     # 2. retrieve (embed once, reuse for search and confidence)
-    yield event("retrieve", "started", "Searching service cards, the resolution playbook and approved past tickets")
+    yield event("retrieve", "started", "Searching service cards, the resolution playbook and resolved past tickets")
     text = ticket_text(ticket)
     query_vector = retrieve.embed_query(text)
+    # Up to 6, but only documents that are actually relevant (see retrieve.RELEVANCE_MIN / _BAND).
     evidence = retrieve.search(db, text, k=6, query_vector=query_vector)
-    yield event("retrieve", "completed", f"Found {len(evidence)} relevant documents",
-                {"evidence": [e.model_dump() for e in evidence], "hybrid": query_vector is not None})
+    precedents = [e for e in evidence if e.kind != "service_card"]
+    found = (f"Found {len(evidence)} relevant document{'s' if len(evidence) != 1 else ''}"
+             + ("" if precedents else ": no similar past fix, this looks like a new kind of problem") if evidence
+             else "Nothing in the knowledge base is relevant: a new kind of problem")
+    yield event("retrieve", "completed", found,
+                {"evidence": [e.model_dump() for e in evidence], "hybrid": query_vector is not None,
+                 "min_similarity": retrieve.RELEVANCE_MIN, "no_precedent": not precedents})
 
     # 3. extract facts with votes
     votes = max(1, settings.llm_votes)
@@ -131,7 +137,8 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
         if person is None or person.role != "specialist" or team not in (person.teams or []):
             staff_checks.append({"field": "assignee", "staff": manual["assignee"], "checked": f"a {team} specialist",
                                  "by": "rules", "note": f"{team} owns {ex.service}; this person isn't one of its specialists"})
-    flags = _flags(ticket, ex.service) + (["staff_disagreement"] if staff_checks else [])
+    flags = (_flags(ticket, ex.service) + (["staff_disagreement"] if staff_checks else [])
+             + ([] if reference else ["no_precedent"]))
     conf = confidence.score(
         cls.votes_score,
         confidence.retrieval_score(similarity, matched=reference is not None),

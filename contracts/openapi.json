@@ -1175,6 +1175,7 @@
           "knowledge"
         ],
         "summary": "Ask Assistant",
+        "description": "One-shot Copilot answer (same grounding and scope rules as the chat).",
         "operationId": "ask_assistant",
         "requestBody": {
           "content": {
@@ -1216,7 +1217,7 @@
           "knowledge"
         ],
         "summary": "Stream Copilot",
-        "description": "Copilot chat: retrieves knowledge for the latest question, then streams the answer token by token.",
+        "description": "Copilot chat: retrieves relevant knowledge for the latest question (refusing off-topic questions),\nthen streams the answer token by token. See app/pipeline/copilot.py.",
         "operationId": "stream_copilot",
         "requestBody": {
           "content": {
@@ -1875,6 +1876,17 @@
           "model": {
             "type": "string",
             "title": "Model"
+          },
+          "grounding": {
+            "type": "string",
+            "enum": [
+              "sources",
+              "ticket",
+              "no_knowledge",
+              "off_topic"
+            ],
+            "title": "Grounding",
+            "default": "sources"
           }
         },
         "type": "object",
@@ -2242,6 +2254,24 @@
               }
             ],
             "title": "Model"
+          },
+          "grounding": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "sources",
+                  "ticket",
+                  "no_knowledge",
+                  "off_topic"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grounding",
+            "description": "On 'sources' and 'done': what the answer rests on. off_topic = refused, nothing generated"
           }
         },
         "type": "object",
@@ -2849,7 +2879,20 @@
           },
           "score": {
             "type": "number",
-            "title": "Score"
+            "title": "Score",
+            "description": "Hybrid rank score, normalised so the best hit = 1.0 (ordering only)"
+          },
+          "similarity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similarity",
+            "description": "Cosine similarity to the query (absolute relevance); None without embeddings"
           }
         },
         "type": "object",

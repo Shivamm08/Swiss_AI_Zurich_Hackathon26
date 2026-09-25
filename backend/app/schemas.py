@@ -216,7 +216,8 @@ class Evidence(BaseModel):
     ref_id: str
     title: str
     snippet: str
-    score: float
+    score: float = Field(description="Hybrid rank score, normalised so the best hit = 1.0 (ordering only)")
+    similarity: float | None = Field(None, description="Cosine similarity to the query (absolute relevance); None without embeddings")
 
 
 class Decision(BaseModel):
@@ -422,6 +423,7 @@ class AssistantAnswer(BaseModel):
     answer: str
     citations: list[Evidence]
     model: str
+    grounding: Literal["sources", "ticket", "no_knowledge", "off_topic"] = "sources"
 
 
 # ---------------------------------------------------------------- metrics
@@ -596,6 +598,8 @@ class CopilotEvent(BaseModel):
     text: str | None = None
     citations: list[Evidence] = []
     model: str | None = None
+    grounding: Literal["sources", "ticket", "no_knowledge", "off_topic"] | None = Field(
+        None, description="On 'sources' and 'done': what the answer rests on. off_topic = refused, nothing generated")
 
 
 # ---------------------------------------------------------------- impact / trends

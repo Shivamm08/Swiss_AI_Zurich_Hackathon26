@@ -396,7 +396,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Ask Assistant */
+        /**
+         * Ask Assistant
+         * @description One-shot Copilot answer (same grounding and scope rules as the chat).
+         */
         post: operations["ask_assistant"];
         delete?: never;
         options?: never;
@@ -415,7 +418,8 @@ export interface paths {
         put?: never;
         /**
          * Stream Copilot
-         * @description Copilot chat: retrieves knowledge for the latest question, then streams the answer token by token.
+         * @description Copilot chat: retrieves relevant knowledge for the latest question (refusing off-topic questions),
+         *     then streams the answer token by token. See app/pipeline/copilot.py.
          */
         post: operations["stream_copilot"];
         delete?: never;
@@ -685,6 +689,12 @@ export interface components {
             citations: components["schemas"]["Evidence"][];
             /** Model */
             model: string;
+            /**
+             * Grounding
+             * @default sources
+             * @enum {string}
+             */
+            grounding: "sources" | "ticket" | "no_knowledge" | "off_topic";
         };
         /** AssistantRequest */
         AssistantRequest: {
@@ -835,6 +845,11 @@ export interface components {
             citations: components["schemas"]["Evidence"][];
             /** Model */
             model?: string | null;
+            /**
+             * Grounding
+             * @description On 'sources' and 'done': what the answer rests on. off_topic = refused, nothing generated
+             */
+            grounding?: ("sources" | "ticket" | "no_knowledge" | "off_topic") | null;
         };
         /** CopilotRequest */
         CopilotRequest: {
@@ -1028,8 +1043,16 @@ export interface components {
             title: string;
             /** Snippet */
             snippet: string;
-            /** Score */
+            /**
+             * Score
+             * @description Hybrid rank score, normalised so the best hit = 1.0 (ordering only)
+             */
             score: number;
+            /**
+             * Similarity
+             * @description Cosine similarity to the query (absolute relevance); None without embeddings
+             */
+            similarity?: number | null;
         };
         /** Facts */
         Facts: {
