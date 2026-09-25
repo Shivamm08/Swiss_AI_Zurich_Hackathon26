@@ -1,160 +1,125 @@
-# Swiss Life Triage Agent: Swiss {ai} Weeks Zurich 2026
+# Triage Copilot
 
-An AI agent that triages Jira service-desk tickets the way an L2 analyst would.
-It works out the real service, team, assignee, priority and resolution, then
-drafts a resolution comment. A human analyst approves, edits or rejects each proposal.
+**An AI assistant for service-desk analysts.** Built for the Swiss Life challenge at Swiss {ai} Weeks, Zurich 2026.
 
+A Jira ticket arrives. Triage Copilot works out what it really is (incident or request), which
+service and team own it, how urgent it is, who should handle it and how it will probably be
+resolved. It shows its reasoning step by step and lets a human **approve, edit or reject** every
+proposal.
+
+```mermaid
+flowchart LR
+  A[Ticket or email] --> B[Find similar<br/>past solutions]
+  B --> C[AI reads the ticket<br/>3 independent votes]
+  C --> D[Rules decide<br/>priority]
+  D --> E[Confidence +<br/>routing]
+  E --> F[Pick the right<br/>person]
+  F --> G[Draft the<br/>resolution]
+  G --> H[Analyst approves,<br/>edits or rejects]
+  H -->|approved answers| B
 ```
-ticket/email ─▶ retrieve (RAG) ─▶ classify (LLM) ─▶ rules (code) ─▶ draft (LLM) ─▶ analyst review ─▶ export
-                 service cards     work type,        team = map        resolution     approve/edit/
-                 + playbook        service, U/I,     priority = matrix comment        reject + metrics
-                                   resolution        assignee = resolver
-```
-
-| Layer    | Stack |
-|----------|-------|
-| Backend  | Python 3.12, FastAPI, SQLAlchemy 2, Alembic, Pydantic v2 |
-| Database | PostgreSQL + pgvector (shared **Supabase**, or local Docker) |
-| AI       | Azure OpenAI (chat + embeddings). Without keys the app runs in *heuristic mode* |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS v4, TanStack Query, React Router |
-| Contract | OpenAPI → generated TypeScript types (`openapi-typescript` + `openapi-fetch`) |
 
 ---
 
-## Quick start
+## Quick start (local, about 5 minutes)
 
-Needs Docker Desktop. Node and Python are only needed if you run things outside Docker.
+**You need:** Docker Desktop (running), `git`, `make`, and ideally an OpenAI API key.
 
 ```bash
-cp .env.example .env              # then fill in DATABASE_URL (Supabase) and Azure keys if you have them
-# copy the challenge JSON file into data/raw/  (see data/README.md)
+git clone https://github.com/Shivamm08/Swiss_AI_Zurich_Hackathon26.git
+cd Swiss_AI_Zurich_Hackathon26
+git switch triage-copilot
 
-make up                           # shared Supabase DB from .env
-# or
-make up-local                     # throwaway local Postgres, no Supabase needed
+cp .env.example .env          # then open .env and paste your OPENAI_API_KEY
+# put the challenge file into data/raw/ (see data/README.md)
 
-make import-challenge             # in a second terminal: load the 20 challenge tickets
+make up-local                 # start everything with a local database (keep this terminal open)
 ```
 
-- App: http://localhost:5173
-- API docs (Swagger, try every endpoint): http://localhost:8000/docs
-
-On start the backend applies DB migrations and loads the knowledge base
-(`backend/app/kb/`) automatically. Run `make help` for all commands.
-
-### Supabase (shared team database)
-
-1. One person creates the Supabase project and invites the others.
-2. Project Settings → Database → **Connect** → copy the **Session pooler** URI
-   (the direct connection is IPv6-only and usually fails from Docker).
-3. Share it privately. Everyone puts it in their own `.env` as `DATABASE_URL`.
-   **Never commit it. This repo is public.**
-4. `make up`. The first start creates the tables and enables `pgvector`.
-
-**Schema changes on the shared database.** The backend runs `alembic upgrade head` on every
-start, so the first teammate who starts a newer version migrates Supabase for everyone.
-Migrations are additive (new tables, nullable or defaulted columns), so teammates on older
-code keep working. To apply one by hand instead, paste the matching file from
-`backend/migrations_sql/` into the Supabase SQL Editor; it also bumps `alembic_version`, so
-the automatic step then does nothing. Generate that file for a new migration with
-`docker compose run --rm --no-deps backend alembic upgrade <from>:<to> --sql`.
-
-On start the backend also loads `backend/app/kb/roster.yaml` into the `users` table. It's a
-generated roster (the data has no real team membership); edit the YAML to change teams,
-roles or capacity.
-
----
-
-## Keeping frontend and backend compatible
-
-The backend is the source of truth for the API. The frontend never hand-writes request or response types.
-
-```
-backend/app/schemas.py + routes ──▶ contracts/openapi.json ──▶ frontend/src/api/schema.d.ts
-          (you edit)                 (generated, committed)       (generated, committed)
-```
-
-1. Change a Pydantic model in `backend/app/schemas.py` or a route in `backend/app/api/`.
-2. Run **`make contract`**. It regenerates both files.
-3. Run `npm run build` in `frontend/` (or `make test`). TypeScript now flags every
-   frontend call that no longer matches.
-4. Commit the code **and** both generated files in the same PR.
-
-CI fails if a PR changes the API without regenerating the contract, or changes
-`models.py` without a migration. Frontend work can start before an endpoint
-exists: agree on the Pydantic model first, run `make contract`, then build
-against the generated types while the backend implements it.
-
-Frontend rules: pages use hooks from `src/api/hooks.ts`, hooks use the typed `api`
-client, and nothing calls `fetch` directly. All routes are under `/api`, and Vite
-proxies `/api` to the backend, so there's no CORS setup or hard-coded URLs.
-
----
-
-## API
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET  | `/api/health` | DB and LLM status |
-| GET  | `/api/reference` | Enums, service catalogue, priority matrix (for dropdowns) |
-| POST | `/api/reference/priority` | Urgency + Impact → Priority |
-| GET  | `/api/tickets` | Queue (filter by `state`, `source`, `q`) |
-| POST | `/api/tickets` | Create a ticket manually |
-| POST | `/api/tickets/from-email` | Create a ticket from an email |
-| POST | `/api/tickets/import` | Upload a Jira export JSON |
-| GET / DELETE | `/api/tickets/{id}` | Ticket + latest proposal + review history |
-| POST | `/api/tickets/{id}/triage` | Run the pipeline on one ticket |
-| POST | `/api/triage/batch` | Triage all `new` tickets (or a list) |
-| GET  | `/api/triage/{result_id}` | One proposal |
-| POST | `/api/triage/{result_id}/review` | Analyst approve / edit / reject |
-| GET  | `/api/kb/documents` | Knowledge base contents |
-| POST | `/api/kb/search` | Retrieval test (hybrid BM25 + vector) |
-| POST | `/api/kb/sync` | Reload KB files into the DB (+ embeddings) |
-| POST | `/api/assistant/ask` | RAG Q&A with citations |
-| GET  | `/api/metrics` | Acceptance rate, review time, most-corrected fields |
-| GET  | `/api/export/submission` | Challenge-format JSON with our answers |
-
-## Where things live
-
-```
-backend/app/
-  domain.py        enums, service→team map, priority matrix (from the challenge README)
-  schemas.py       API contract (request/response models)
-  models.py        DB tables (+ alembic/versions for migrations)
-  api/             routes
-  pipeline/        retrieve.py, classify.py (LLM), rules.py (code), draft.py (LLM), pipeline.py
-  kb/              services.yaml (service cards), playbook.jsonl (resolution playbook), sync.py
-  scripts/         import_tickets, build_playbook, sync_kb, export_openapi
-frontend/src/
-  api/             generated types, typed client, hooks
-  pages/           Dashboard, Ticket queue, Ticket detail + review, Knowledge base, Assistant, Import/export
-contracts/         openapi.json (generated)
-data/raw/          challenge files (git-ignored)
-```
-
-**Plugging in work**
-- *Data / model work:* improve `kb/services.yaml`, `kb/playbook.jsonl`, the
-  assignee fallback in `pipeline/rules.py`, and add an evaluation set.
-- *AI:* prompts live in `pipeline/classify.py` and `pipeline/draft.py`.
-- *Frontend:* `frontend/src/pages/*` are working starting points wired to every endpoint.
-
-## Team conventions
-
-- Branch from `main` and open a PR. Keep PRs small, and pull often.
-- DB change: edit `models.py`, then `make migration m="what changed"`, then commit the migration.
-  Pull before creating one so we don't end up with two parallel migrations.
-- API change: run `make contract` and commit the generated files.
-- Never commit `.env`, keys or `data/raw/*`.
-
-## Running without Docker
+In a **second terminal**, once the logs show `Application startup complete`:
 
 ```bash
-# backend
-cd backend && python -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt
-alembic upgrade head && python -m app.scripts.sync_kb
-uvicorn app.main:app --reload            # reads ../.env
-
-# frontend
-cd frontend && npm install && npm run dev
+make import-challenge         # load the 20 challenge tickets (once)
+make seed-demo                # optional: a clearly labelled, simulated 4-week history for demos
 ```
+
+Open **http://localhost:5173**. Click **▶ Triage** on any ticket to watch the AI work through it live,
+press **⌘K / Ctrl+K** to ask the Copilot, and use the persona button (top right) to see the app as an
+analyst, a team lead or the admin.
+
+| Address | What |
+|---|---|
+| http://localhost:5173 | The app |
+| http://localhost:8000/docs | API documentation (try every endpoint) |
+
+No OpenAI key? The app still runs in **heuristic mode**: it keeps the intake values and marks
+everything low-confidence. Stop the app with `Ctrl+C` or `make down`.
+
+---
+
+## Documentation
+
+The full guide is in the **[project wiki](docs/wiki/Home.md)**:
+
+| Page | Read it when you want to… |
+|---|---|
+| [What and why](docs/wiki/01-What-and-Why.md) | understand the challenge, the product and the key terms |
+| [Setup and running](docs/wiki/02-Setup-and-Running.md) | install, run, switch databases, fix common problems |
+| [Architecture](docs/wiki/03-Architecture.md) | see how the pieces fit together |
+| [Triage pipeline](docs/wiki/04-Triage-Pipeline.md) | follow one ticket through every step |
+| [Priority and confidence](docs/wiki/05-Priority-and-Confidence.md) | know exactly how priority, confidence and routing are decided |
+| [Assignment and workload](docs/wiki/06-Assignment-and-Workload.md) | know who gets a ticket and why |
+| [Knowledge base and RAG](docs/wiki/07-Knowledge-Base-and-RAG.md) | understand retrieval and the learning loop |
+| [Data and database](docs/wiki/08-Data-and-Database.md) | learn the dataset facts, tables and migrations |
+| [API reference](docs/wiki/09-API-Reference.md) | call the backend |
+| [Frontend guide](docs/wiki/10-Frontend-Guide.md) | work on the UI |
+| [Configuration](docs/wiki/11-Configuration.md) | change settings in `.env` |
+| [Development workflow](docs/wiki/12-Development-Workflow.md) | contribute without breaking things |
+| [Collaboration and Copilot](docs/wiki/13-Collaboration-and-Copilot.md) | use the Copilot, messages, escalations and personas |
+| [Impact and demo data](docs/wiki/14-Impact-and-Demo-Data.md) | see the pain points we solve and how the demo history is made |
+
+---
+
+## What's inside
+
+- **Live triage walkthrough:** watch retrieval, 3 AI votes, the priority rules, confidence and assignment happen step by step.
+- **A human approves everything:** approve, edit or reject; low-confidence tickets go to a Needs-review queue.
+- **Learning loop:** every approved fix becomes knowledge the next similar ticket reuses.
+- **Copilot:** a streaming chat assistant on every screen that answers from team knowledge, with sources.
+- **Messages and escalations:** department channels, direct messages, and AI-drafted escalations with the ticket attached.
+- **People & teams, workload balancing, Impact dashboard:** built around the everyday pain points of a service desk.
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2, Alembic, Pydantic v2 |
+| AI | OpenAI (default) or Azure OpenAI, chosen per request in the UI. Embeddings: `text-embedding-3-small` |
+| Database | PostgreSQL 16/17 + pgvector: local in Docker, or the shared Supabase project |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS v4, TanStack Query, React Router, lucide icons |
+| Contract | OpenAPI → generated TypeScript types, so frontend and backend can't drift apart |
+| Tooling | Docker Compose, Makefile, GitHub Actions CI |
+
+## Everyday commands
+
+| Command | What it does |
+|---|---|
+| `make up-local` | Start everything with a **local** database |
+| `make up` | Start everything against `DATABASE_URL` in `.env` (**shared Supabase**) |
+| `make down` | Stop everything (data is kept) |
+| `make import-challenge` | Load the 20 challenge tickets (once per database) |
+| `make seed-demo` / `make clear-demo` | Add / remove the simulated 4-week demo history |
+| `make test` | Backend tests + frontend lint and build |
+| `make contract` | Regenerate API types after changing the backend API |
+| `make logs` | Follow the backend logs |
+| `make help` | List all commands |
+
+## Team rules (short version)
+
+1. **Never commit secrets.** Keys live only in `.env`, and this repo is public.
+2. **Changed the API?** Run `make contract` and commit the generated files.
+3. **Changed `models.py`?** Create a migration, and push it **before** applying it to Supabase.
+4. **Never tune prompts or models on the 20 challenge tickets.** The challenge forbids it.
+5. Work on a branch and open a pull request. Never force-push shared branches.
+
+Details: [Development workflow](docs/wiki/12-Development-Workflow.md).

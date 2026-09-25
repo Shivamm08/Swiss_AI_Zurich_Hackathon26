@@ -1,0 +1,90 @@
+# 13 · Collaboration and Copilot
+
+Service desks lose time **between** tools: the ticket is in Jira, the discussion in email or chat,
+the knowledge in someone's head. Triage Copilot keeps all three next to the ticket.
+
+## Copilot (the chat assistant)
+
+A chat panel that slides in from the right on **every screen**. Open it with the **Copilot** button
+in the top bar, **Ask Copilot** in the sidebar, or **⌘K / Ctrl+K**. Close it with Esc.
+
+| Feature | How it works |
+|---|---|
+| **Grounded answers** | For each question it retrieves the 5 most relevant knowledge documents (service cards, playbook, learned tickets) and answers only from them |
+| **Citations** | Answers cite sources as `[ref_id]`; each shows as a chip under the answer. Click a chip to see the source |
+| **Streaming** | Words appear as they're generated, with a typing indicator and a caret. **Stop** interrupts |
+| **Conversation memory** | The last 10 messages are sent with each question, so follow-ups work ("and who usually fixes that?") |
+| **Ticket context** | On a ticket page the ticket is attached automatically ("#21 in context"); remove it with ×. Suggestions change to ticket-specific ones |
+| **Model** | Uses the model picked in the top bar |
+
+API: `POST /api/assistant/stream` with `{messages: [{role, content}], ticket_id?, model?}` returns
+server-sent events: one `sources` event (the citations), many `token` events, then `done` (or `error`).
+Code: `backend/app/api/knowledge.py` (`stream_copilot`), `frontend/src/copilot/`, `frontend/src/api/copilot.ts`.
+
+Without an AI model the Copilot lists the most relevant sources instead of answering.
+
+## Messages
+
+Real team chat stored in the database (`messages` table), refreshed every few seconds.
+
+| Channel | Id format | Who |
+|---|---|---|
+| **Department channel** | `team:<Team name>` | One per team (11); everyone in the roster team |
+| **Direct message** | `dm:<email>\|<email>` (sorted) | Two people. Start one with the ✚ button, or from People & teams |
+
+Messages have a **kind** that changes how they look:
+
+| Kind | Looks like | Created by |
+|---|---|---|
+| `message` | Normal chat bubble | Anyone |
+| `handoff` | Bubble with a violet "hand-off" tag | "Message about this ticket" → Hand off |
+| `escalation` | Bubble with a red "escalation" tag. **Sets the ticket's `escalated` flag** | "Escalate" on a ticket |
+| automatic escalation | Red card "Automatic escalation" | The pipeline, when a ticket becomes Highest on a critical service |
+
+A message can carry a ticket: it's shown as a card linking to the ticket.
+
+API: `GET /api/chat/channels?as_user=`, `GET /api/chat/messages?channel=`, `POST /api/chat/messages`.
+Code: `backend/app/chat.py`, `backend/app/api/chat.py`, `frontend/src/pages/MessagesPage.tsx`.
+
+## Escalate / hand off from a ticket (AI-drafted)
+
+On a triaged ticket, **Escalate** or **Message about this ticket** opens a dialog:
+
+1. Pick the purpose: **Escalate** (take ownership now), **Hand off** (pass it on with context) or
+   **Ask a question** (get missing information).
+2. Pick the recipient: the owning team's **lead**, the person **working on it**, or the whole **team channel**.
+3. **Draft with Copilot.** The AI writes 3–5 sentences with the ticket number, what's affected,
+   the priority, the SLA deadline and one concrete ask (`POST /api/chat/draft`).
+4. Messages opens on the right conversation with the draft ready. **Edit it, then send.** Nothing
+   is sent without a human.
+
+## Automatic escalation
+
+When triage decides a ticket is **Highest priority on a critical service**, it's marked
+`escalated`, and a red **automatic escalation** is posted to the owning team's channel, with the
+ticket, the working assignee and the SLA. It also appears in the Escalations tab and on the Team
+workload screen.
+
+## People & teams (directory)
+
+Every department as a card: the services it owns (critical ones marked), open tickets, people,
+messages in the last 7 days, the lead, and the members. **View team** opens a panel with each
+person's load (open tickets vs capacity) and a message button; **Message** opens the team channel.
+API: `GET /api/directory`.
+
+## Personas ("View as")
+
+There is no login. The **persona button** (top right) opens a panel with:
+- **Demo personas:** the admin, the busiest team lead, the busiest analyst. One click to switch.
+- **Everyone, grouped by department**, with role and current load, plus a search box.
+
+The role changes what the sidebar shows:
+
+| Role | Workspace | Manage | Administration |
+|---|---|---|---|
+| Analyst | Queue, Messages, People & teams | – | – |
+| Team lead | ✓ | New ticket, Team workload, Impact | – |
+| Admin | ✓ | ✓ | Knowledge base, Intake & export, Settings |
+
+The knowledge base is admin-only because analysts get knowledge where they need it (the
+evidence on each ticket and the Copilot) instead of browsing documents.
