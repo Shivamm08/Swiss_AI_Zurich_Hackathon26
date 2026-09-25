@@ -15,6 +15,11 @@ The challenge is about the **service-desk analyst**, the person who triages. The
 person's first pass. The analyst stays in charge, and specialists never get work the analyst
 hasn't approved.
 
+**Every department has exactly one Team Lead / Analyst** and at least one specialist (the roster
+builder guarantees it, and a test checks `roster.yaml`). If a department ever loses its lead, the
+admin covers it: the admin's Triage inbox shows every department, and "ticket done" notices go to
+the admin instead.
+
 There's no login. Use the **View as** switcher (top right) to act as anyone. Its three demo picks
 are the admin, the analyst with the busiest department, and the busiest specialist.
 

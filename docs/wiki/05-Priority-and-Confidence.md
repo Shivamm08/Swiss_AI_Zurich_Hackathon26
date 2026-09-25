@@ -105,6 +105,20 @@ overall = min(votes, past-case match) × flag multipliers
 Taking the **weaker** part means that if either part is unsure, a human looks. In heuristic mode
 (no model), overall is fixed at **20%**.
 
+### Staff disagreement
+
+Values staff set on the New-ticket form are kept, but they are **checked**:
+
+- the AI reads the ticket **without seeing** the staff values, so its reading of work type, service
+  and resolution is an independent second opinion;
+- the rules compute urgency and impact from the facts as usual;
+- a staff-chosen specialist is checked against the roster (must be a specialist of the owning team).
+
+Every disagreement becomes a **staff check** (`confidence_detail.staff_checks`: field, staff value,
+checked value, by `ai` or `rules`, and why), adds the flag `staff_disagreement` (× 0.75) and is shown
+to the analyst as "Second opinion disagrees with a value set by staff" before they dispatch. The
+staff value is never overwritten: a person decides.
+
 ## Routing
 
 | Overall confidence | Route | What happens |

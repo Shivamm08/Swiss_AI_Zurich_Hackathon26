@@ -138,6 +138,45 @@ from their own closing note: see [Roles and ticket lifecycle](15-Roles-and-Ticke
 
 The time spent (`review_seconds`) and the changed fields are recorded; the dashboard uses them.
 
+## Which fields use the AI, and which don't
+
+The ticket screen and the New-ticket form tag every field **AI reads**, **Rule** or **Lookup**, with
+an (i) that explains the calculation (`frontend/src/components/fields.ts`).
+
+| Field | How | Why |
+|---|---|---|
+| Work type | **AI reads** (3 votes, 2 options) | Titles lie on purpose; only reading the description works |
+| Service | **AI reads** (3 votes, 20 fixed options, guided by service cards) | Needs language understanding and service boundaries |
+| Facts (scope, outage, workaround, regulatory, deadline) | **AI reads** (3 votes, fixed options) | Observations only; the AI never picks a priority |
+| Resolution status | **AI reads** (3 votes, 4 options) | Prediction; the specialist sets the real one when closing |
+| Resolution comment | **AI drafts** from the matched past fix | Suggestion only; the specialist writes the real note |
+| Team | **Lookup** (service → team) | Fixed by the catalogue |
+| Impact, Urgency | **Rule** (rubric from facts + criticality) | Must follow the official definitions exactly |
+| Priority | **Rule** (official matrix) | Must follow the matrix exactly |
+| Priority score, SLA, confidence, route, escalation | **Rule** (formulas and thresholds) | Deterministic and auditable |
+| Suggested specialist | **Rule** (expert + workload formula) | The analyst decides |
+
+Guards against hallucination: answers are structured with fixed options only, 3 independent votes
+are compared, a matched fix must be one that was actually retrieved and belong to the chosen
+service, team and priority are always recomputed by code, and staff values are cross-checked
+([staff disagreement](05-Priority-and-Confidence.md#staff-disagreement)).
+
+### Why not the FinBERT classifiers from the data-cleaning branch?
+
+A teammate's experiment (FinBERT embeddings: nearest service name, nearest urgency/impact
+definition, CatBoost for work type) was evaluated for this:
+
+- **Urgency / impact by nearest definition** can't see the facts that decide them (is there a
+  workaround? is a deadline at risk?). Its reported 100% accuracy is against labels it produced
+  itself; the original training labels are random, so there's nothing real to score against.
+- **Service** uses the intake `Service Team(s)` field as an input, which is deliberately wrong in
+  the challenge, and the training texts contain the service name in the title (173 templates).
+- FinBERT is a financial *sentiment* model, and it would add PyTorch (about 2 GB) to the image.
+
+The same idea (compare the ticket with service descriptions by embeddings) is already in the
+pipeline through retrieval of the service cards with better embeddings, and it's used as evidence
+and in the confidence score.
+
 ## Three ways to run it
 
 | How | Endpoint | Used by |
