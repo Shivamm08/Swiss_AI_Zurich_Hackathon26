@@ -1,0 +1,865 @@
+template,service,entity,Work type,team,rep_ticket_id,tie_group_size,n_with_resolution,service_is_critical,rep_ticket_id_alt,signature_id
+New license requested for <SVC>,Trading Platform,Germany,Service Request,Investment Operations,T00003,8,2,True,T03428,0
+Access requested for <SVC>,SimCorp Dimension,Germany,Service Request,Enterprise Applications,T00004,6,2,True,T00013,1
+Access requested for <SVC>,Risk & Compliance Monitoring,Nordics,Service Request,Risk & Controls,T00017,7,2,True,T00076,2
+General request for <SVC> with unclear details,CRM & Client Portal,Luxembourg,Service Request,Client Services,T00020,5,2,False,T01145,3
+New license requested for <SVC>,Risk & Compliance Monitoring,Switzerland,Service Request,Risk & Controls,T00025,5,2,True,T00531,4
+Email notification received for <SVC>,Emailed Support Tickets,Luxembourg,Service Request,Service Desk,T00026,250,67,False,T00166,5
+Incorrect incident title for service request in <SVC>,Outlook & Email,Nordics,Service Request,Enterprise Applications,T00029,3,1,False,T01824,6
+Access requested for <SVC>,SimCorp Dimension,Switzerland,Service Request,Enterprise Applications,T00031,8,3,True,T01170,7
+New license requested for <SVC>,Outlook & Email,Nordics,Service Request,Enterprise Applications,T00033,7,1,False,T00211,8
+Access requested for <SVC>,SharePoint & File Storage,Switzerland,Service Request,Enterprise Applications,T00035,7,2,False,T03779,9
+General request for <SVC> with unclear details,NAV Calculation,Switzerland,Service Request,Valuation & Pricing,T00036,6,2,True,T01976,10
+Access requested for <SVC>,Trade Matching,Nordics,Service Request,Investment Operations,T00039,11,4,True,T00790,11
+Email notification received for <SVC>,Emailed Support Tickets,France,Service Request,Service Desk,T00049,238,62,False,T00084,12
+Incorrect incident title for service request in <SVC>,NAV Calculation,Nordics,Service Request,Valuation & Pricing,T00060,5,2,True,T03012,13
+New license requested for <SVC>,Fund Pricing,Switzerland,Service Request,Valuation & Pricing,T00061,5,3,True,T00325,14
+New license requested for <SVC>,Trading Platform,Luxembourg,Service Request,Investment Operations,T00065,13,6,True,T00326,15
+Email notification received for <SVC>,Emailed Support Tickets,Germany,Service Request,Service Desk,T00067,227,49,False,T00074,16
+Access requested for <SVC>,Trading Platform,Nordics,Service Request,Investment Operations,T00068,12,8,True,T00805,17
+New license requested for <SVC>,Fund Pricing,Nordics,Service Request,Valuation & Pricing,T00071,7,2,True,T01695,18
+General request for <SVC> with unclear details,NAV Calculation,Luxembourg,Service Request,Valuation & Pricing,T00073,6,2,True,T03142,19
+New license requested for <SVC>,Cash Management,Nordics,Service Request,Treasury & Cash,T00077,8,3,True,T00407,20
+Access removal requested for <SVC>,Rimes Data Feed,Germany,Service Request,Market Data Services,T00079,2,2,True,T00967,21
+New license requested for <SVC>,NAV Calculation,Switzerland,Service Request,Valuation & Pricing,T00083,8,1,True,T00319,22
+New license requested for <SVC>,Regulatory Reporting,Germany,Service Request,Risk & Controls,T00090,7,3,True,T00210,23
+New license requested for <SVC>,Trading Platform,France,Service Request,Investment Operations,T00094,9,2,True,T01775,24
+Incorrect incident title for service request in <SVC>,Regulatory Reporting,Luxembourg,Service Request,Risk & Controls,T00096,8,2,True,T03753,25
+Email notification received for <SVC>,Emailed Support Tickets,Nordics,Service Request,Service Desk,T00099,269,57,False,T00259,26
+Incorrect incident title for service request in <SVC>,Order Management,Switzerland,Service Request,Trading Support,T00105,6,1,True,T00235,27
+Access requested for <SVC>,Identity & Access Management,Germany,Service Request,Enterprise Applications,T00116,6,1,False,T01259,28
+New license requested for <SVC>,Tax Reporting,Nordics,Service Request,Tax & Reporting,T00120,9,2,False,T00606,29
+Access removal requested for <SVC>,Outlook & Email,Nordics,Service Request,Enterprise Applications,T00132,4,2,False,T01090,30
+General request for <SVC> with unclear details,SimCorp Dimension,Switzerland,Service Request,Enterprise Applications,T00142,5,3,True,T00844,31
+Access requested for <SVC>,CRM & Client Portal,France,Service Request,Client Services,T00151,9,1,False,T01335,32
+New license requested for <SVC>,CRM & Client Portal,Germany,Service Request,Client Services,T00156,11,4,False,T01878,33
+Incorrect incident title for service request in <SVC>,Outlook & Email,Switzerland,Service Request,Enterprise Applications,T00171,9,3,False,T02820,34
+Access requested for <SVC>,CRM & Client Portal,Nordics,Service Request,Client Services,T00184,10,3,False,T02627,35
+General request for <SVC> with unclear details,Trade Matching,Nordics,Service Request,Investment Operations,T00192,5,4,True,T00621,36
+General request for <SVC> with unclear details,Securities Settlement,Nordics,Service Request,Securities Operations,T00195,6,1,True,T01003,37
+Access removal requested for <SVC>,Trade Matching,Luxembourg,Service Request,Investment Operations,T00196,6,1,True,T00410,38
+Access requested for <SVC>,Securities Settlement,France,Service Request,Securities Operations,T00197,14,3,True,T00836,39
+Access requested for <SVC>,Securities Settlement,Germany,Service Request,Securities Operations,T00199,12,3,True,T01159,40
+Access requested for <SVC>,Regulatory Reporting,France,Service Request,Risk & Controls,T00202,8,4,True,T00309,41
+New license requested for <SVC>,Securities Settlement,France,Service Request,Securities Operations,T00205,13,3,True,T00745,42
+New license requested for <SVC>,Cash Management,Luxembourg,Service Request,Treasury & Cash,T00206,10,3,True,T01349,43
+Access requested for <SVC>,CRM & Client Portal,Luxembourg,Service Request,Client Services,T00223,8,2,False,T01711,44
+New license requested for <SVC>,Cash Management,Germany,Service Request,Treasury & Cash,T00224,6,2,True,T01496,45
+New license requested for <SVC>,SimCorp Dimension,Germany,Service Request,Enterprise Applications,T00228,9,3,True,T02176,46
+New license requested for <SVC>,Fund Pricing,Luxembourg,Service Request,Valuation & Pricing,T00237,9,3,True,T00931,47
+Access requested for <SVC>,Outlook & Email,Nordics,Service Request,Enterprise Applications,T00258,12,4,False,T01275,48
+Email notification received for <SVC>,Emailed Support Tickets,Switzerland,Service Request,Service Desk,T00261,227,56,False,T00271,49
+New license requested for <SVC>,Tax Reporting,Switzerland,Service Request,Tax & Reporting,T00264,14,4,False,T00512,50
+New license requested for <SVC>,Risk & Compliance Monitoring,Nordics,Service Request,Risk & Controls,T00268,8,2,True,T02644,51
+New license requested for <SVC>,Securities Settlement,Switzerland,Service Request,Securities Operations,T00275,4,2,True,T01178,52
+Incorrect incident title for service request in <SVC>,Identity & Access Management,Luxembourg,Service Request,Enterprise Applications,T00279,4,1,False,T01870,53
+Access requested for <SVC>,NAV Calculation,France,Service Request,Valuation & Pricing,T00284,10,1,True,T00135,54
+New license requested for <SVC>,CRM & Client Portal,Switzerland,Service Request,Client Services,T00285,11,3,False,T01306,55
+Access requested for <SVC>,CRM & Client Portal,Germany,Service Request,Client Services,T00307,11,4,False,T01428,56
+Access requested for <SVC>,Rimes Data Feed,Germany,Service Request,Market Data Services,T00320,6,1,True,T00997,57
+New license requested for <SVC>,Identity & Access Management,France,Service Request,Enterprise Applications,T00322,2,1,False,T00234,58
+New license requested for <SVC>,Regulatory Reporting,Luxembourg,Service Request,Risk & Controls,T00348,9,2,True,T02672,59
+Incorrect incident title for service request in <SVC>,SharePoint & File Storage,Nordics,Service Request,Enterprise Applications,T00355,3,1,False,T00579,60
+Access requested for <SVC>,Portfolio Accounting,Switzerland,Service Request,Investment Operations,T00359,8,2,True,T01676,61
+Access requested for <SVC>,Trading Platform,Switzerland,Service Request,Investment Operations,T00361,9,5,True,T00732,62
+New license requested for <SVC>,Regulatory Reporting,Nordics,Service Request,Risk & Controls,T00374,9,5,True,T01206,63
+General request for <SVC> with unclear details,Outlook & Email,Switzerland,Service Request,Enterprise Applications,T00394,5,2,False,T01984,64
+Access requested for <SVC>,Tax Reporting,France,Service Request,Tax & Reporting,T00398,8,2,False,T02171,65
+General request for <SVC> with unclear details,Risk & Compliance Monitoring,Luxembourg,Service Request,Risk & Controls,T00404,5,1,True,T00136,66
+New license requested for <SVC>,Trading Platform,Nordics,Service Request,Investment Operations,T00405,12,2,True,T03236,67
+Access removal requested for <SVC>,Risk & Compliance Monitoring,Luxembourg,Service Request,Risk & Controls,T00413,6,2,True,T02519,68
+New license requested for <SVC>,Corporate Actions,Germany,Service Request,Securities Operations,T00415,12,1,True,T00479,69
+New license requested for <SVC>,SimCorp Dimension,Nordics,Service Request,Enterprise Applications,T00418,8,4,True,T01324,70
+New license requested for <SVC>,Outlook & Email,Germany,Service Request,Enterprise Applications,T00426,9,5,False,T00934,71
+Access requested for <SVC>,Identity & Access Management,Nordics,Service Request,Enterprise Applications,T00430,11,3,False,T00622,72
+Access requested for <SVC>,SimCorp Dimension,Luxembourg,Service Request,Enterprise Applications,T00433,11,4,True,T00640,73
+New license requested for <SVC>,Portfolio Accounting,Switzerland,Service Request,Investment Operations,T00434,12,3,True,T00903,74
+Access requested for <SVC>,Outlook & Email,France,Service Request,Enterprise Applications,T00439,5,3,False,T01914,75
+Incorrect incident title for service request in <SVC>,Trade Matching,Switzerland,Service Request,Investment Operations,T00442,7,1,True,T00287,76
+Access requested for <SVC>,Regulatory Reporting,Germany,Service Request,Risk & Controls,T00451,7,2,True,T01406,77
+General request for <SVC> with unclear details,Regulatory Reporting,France,Service Request,Risk & Controls,T00458,3,3,True,T00660,78
+General request for <SVC> with unclear details,Regulatory Reporting,Nordics,Service Request,Risk & Controls,T00460,3,2,True,T01672,79
+Incorrect incident title for service request in <SVC>,Client Reporting,Switzerland,Service Request,Client Services,T00470,4,1,True,T00602,80
+New license requested for <SVC>,Risk & Compliance Monitoring,Luxembourg,Service Request,Risk & Controls,T00473,10,4,True,T00655,81
+General request for <SVC> with unclear details,Trading Platform,Switzerland,Service Request,Investment Operations,T00484,6,1,True,T00006,82
+Access requested for <SVC>,Trade Matching,Switzerland,Service Request,Investment Operations,T00489,12,8,True,T00798,83
+General request for <SVC> with unclear details,Order Management,Germany,Service Request,Trading Support,T00506,8,2,True,T03950,84
+General request for <SVC> with unclear details,Identity & Access Management,France,Service Request,Enterprise Applications,T00507,7,2,False,T03383,85
+Access removal requested for <SVC>,Regulatory Reporting,Luxembourg,Service Request,Risk & Controls,T00508,3,1,True,T01368,86
+Access removal requested for <SVC>,Risk & Compliance Monitoring,Switzerland,Service Request,Risk & Controls,T00513,6,3,True,T01007,87
+New license requested for <SVC>,CRM & Client Portal,Luxembourg,Service Request,Client Services,T00520,12,3,False,T02602,88
+Incorrect incident title for service request in <SVC>,Fund Pricing,Luxembourg,Service Request,Valuation & Pricing,T00526,9,4,True,T00944,89
+Access removal requested for <SVC>,Securities Settlement,Nordics,Service Request,Securities Operations,T00529,5,1,True,T00522,90
+Access removal requested for <SVC>,Cash Management,Switzerland,Service Request,Treasury & Cash,T00536,7,2,True,T01294,91
+New license requested for <SVC>,SharePoint & File Storage,Germany,Service Request,Enterprise Applications,T00546,7,2,False,T01231,92
+Access requested for <SVC>,Fund Pricing,Switzerland,Service Request,Valuation & Pricing,T00556,9,3,True,T01427,93
+New license requested for <SVC>,NAV Calculation,Nordics,Service Request,Valuation & Pricing,T00557,8,3,True,T02678,94
+Access requested for <SVC>,Regulatory Reporting,Nordics,Service Request,Risk & Controls,T00566,14,7,True,T00850,95
+General request for <SVC> with unclear details,SharePoint & File Storage,Luxembourg,Service Request,Enterprise Applications,T00572,9,1,False,T00109,96
+Access requested for <SVC>,Trading Platform,Luxembourg,Service Request,Investment Operations,T00577,9,3,True,T02318,97
+General request for <SVC> with unclear details,Client Reporting,France,Service Request,Client Services,T00584,2,1,True,T00162,98
+Access requested for <SVC>,Trade Matching,France,Service Request,Investment Operations,T00613,10,2,True,T00963,99
+Access removal requested for <SVC>,Regulatory Reporting,Germany,Service Request,Risk & Controls,T00637,5,2,True,T00643,100
+New license requested for <SVC>,Trade Matching,Switzerland,Service Request,Investment Operations,T00647,9,2,True,T01174,101
+Incorrect incident title for service request in <SVC>,Tax Reporting,Germany,Service Request,Tax & Reporting,T00648,10,3,False,T01144,102
+New license requested for <SVC>,Cash Management,Switzerland,Service Request,Treasury & Cash,T00650,7,1,True,T00161,103
+Access requested for <SVC>,Rimes Data Feed,Nordics,Service Request,Market Data Services,T00665,3,1,True,T02386,104
+Access removal requested for <SVC>,Rimes Data Feed,France,Service Request,Market Data Services,T00674,4,1,True,T00057,105
+New license requested for <SVC>,Order Management,France,Service Request,Trading Support,T00685,9,3,True,T02153,106
+Access removal requested for <SVC>,Order Management,Germany,Service Request,Trading Support,T00695,5,2,True,T03586,107
+Access removal requested for <SVC>,Corporate Actions,Luxembourg,Service Request,Securities Operations,T00705,5,2,True,T00872,108
+Access requested for <SVC>,Cash Management,Germany,Service Request,Treasury & Cash,T00706,9,2,True,T00721,109
+New license requested for <SVC>,Identity & Access Management,Germany,Service Request,Enterprise Applications,T00709,10,3,False,T03069,110
+Access removal requested for <SVC>,Cash Management,Luxembourg,Service Request,Treasury & Cash,T00710,3,2,True,T00833,111
+Access requested for <SVC>,Risk & Compliance Monitoring,France,Service Request,Risk & Controls,T00714,9,1,True,T00542,112
+Access removal requested for <SVC>,Identity & Access Management,Luxembourg,Service Request,Enterprise Applications,T00720,8,2,False,T01723,113
+General request for <SVC> with unclear details,Order Management,Switzerland,Service Request,Trading Support,T00735,9,2,True,T01066,114
+Access removal requested for <SVC>,Tax Reporting,Switzerland,Service Request,Tax & Reporting,T00740,6,1,False,T00005,115
+Incorrect incident title for service request in <SVC>,Portfolio Accounting,Switzerland,Service Request,Investment Operations,T00746,6,1,True,T00002,116
+Access removal requested for <SVC>,Trade Matching,Switzerland,Service Request,Investment Operations,T00757,4,1,True,T00016,117
+General request for <SVC> with unclear details,Tax Reporting,Nordics,Service Request,Tax & Reporting,T00763,8,3,False,T01634,118
+General request for <SVC> with unclear details,Risk & Compliance Monitoring,Switzerland,Service Request,Risk & Controls,T00775,4,1,True,T01236,119
+General request for <SVC> with unclear details,Trade Matching,Germany,Service Request,Investment Operations,T00783,5,2,True,T01777,120
+General request for <SVC> with unclear details,CRM & Client Portal,France,Service Request,Client Services,T00796,5,1,False,T00983,121
+Incorrect incident title for service request in <SVC>,Trading Platform,Switzerland,Service Request,Investment Operations,T00813,7,1,True,T00483,122
+New license requested for <SVC>,Client Reporting,Luxembourg,Service Request,Client Services,T00823,11,4,True,T01203,123
+Incorrect incident title for service request in <SVC>,Rimes Data Feed,Luxembourg,Service Request,Market Data Services,T00827,4,3,True,T01092,124
+New license requested for <SVC>,Tax Reporting,France,Service Request,Tax & Reporting,T00842,6,4,False,T01369,125
+General request for <SVC> with unclear details,SimCorp Dimension,Luxembourg,Service Request,Enterprise Applications,T00847,4,1,True,T00247,126
+General request for <SVC> with unclear details,SharePoint & File Storage,France,Service Request,Enterprise Applications,T00862,3,1,False,T03434,127
+Access removal requested for <SVC>,Fund Pricing,France,Service Request,Valuation & Pricing,T00863,6,1,True,T00632,128
+Incorrect incident title for service request in <SVC>,Client Reporting,France,Service Request,Client Services,T00870,5,3,True,T01185,129
+Access requested for <SVC>,Order Management,Luxembourg,Service Request,Trading Support,T00874,12,1,True,T00023,130
+Access requested for <SVC>,Outlook & Email,Germany,Service Request,Enterprise Applications,T00875,7,2,False,T02971,131
+Access requested for <SVC>,Rimes Data Feed,Luxembourg,Service Request,Market Data Services,T00879,9,3,True,T00935,132
+Access requested for <SVC>,Securities Settlement,Nordics,Service Request,Securities Operations,T00880,8,1,True,T00387,133
+Access requested for <SVC>,SharePoint & File Storage,Luxembourg,Service Request,Enterprise Applications,T00886,14,5,False,T01196,134
+Incorrect incident title for service request in <SVC>,CRM & Client Portal,Switzerland,Service Request,Client Services,T00900,4,1,False,T00654,135
+New license requested for <SVC>,Corporate Actions,Switzerland,Service Request,Securities Operations,T00907,7,3,True,T01198,136
+General request for <SVC> with unclear details,CRM & Client Portal,Switzerland,Service Request,Client Services,T00919,4,1,False,T00979,137
+Access removal requested for <SVC>,Tax Reporting,France,Service Request,Tax & Reporting,T00939,6,3,False,T01173,138
+General request for <SVC> with unclear details,Corporate Actions,Switzerland,Service Request,Securities Operations,T00943,6,3,True,T02653,139
+Access requested for <SVC>,Client Reporting,Germany,Service Request,Client Services,T00953,8,1,True,T00730,140
+New license requested for <SVC>,Order Management,Switzerland,Service Request,Trading Support,T00968,9,1,True,T00169,141
+Access requested for <SVC>,Corporate Actions,Nordics,Service Request,Securities Operations,T00973,8,1,True,T00581,142
+Access removal requested for <SVC>,CRM & Client Portal,France,Service Request,Client Services,T00977,1,1,False,,143
+General request for <SVC> with unclear details,Cash Management,Switzerland,Service Request,Treasury & Cash,T00995,2,1,True,T03673,144
+General request for <SVC> with unclear details,Trading Platform,Nordics,Service Request,Investment Operations,T01001,5,1,True,T01060,145
+Incorrect incident title for service request in <SVC>,Regulatory Reporting,Switzerland,Service Request,Risk & Controls,T01017,4,2,True,T03964,146
+Access removal requested for <SVC>,Order Management,Luxembourg,Service Request,Trading Support,T01018,8,4,True,T01085,147
+New license requested for <SVC>,Identity & Access Management,Switzerland,Service Request,Enterprise Applications,T01021,7,4,False,T01912,148
+Access requested for <SVC>,Cash Management,Nordics,Service Request,Treasury & Cash,T01031,9,2,True,T01220,149
+New license requested for <SVC>,Corporate Actions,Nordics,Service Request,Securities Operations,T01033,12,4,True,T01269,150
+Access requested for <SVC>,Corporate Actions,Switzerland,Service Request,Securities Operations,T01040,8,3,True,T02169,151
+Access removal requested for <SVC>,SimCorp Dimension,Switzerland,Service Request,Enterprise Applications,T01049,6,1,True,T00463,152
+Access removal requested for <SVC>,Corporate Actions,Switzerland,Service Request,Securities Operations,T01076,6,1,True,T01668,153
+New license requested for <SVC>,Client Reporting,France,Service Request,Client Services,T01082,11,2,True,T01722,154
+Access removal requested for <SVC>,SimCorp Dimension,Germany,Service Request,Enterprise Applications,T01099,6,1,True,T01875,155
+New license requested for <SVC>,Portfolio Accounting,Nordics,Service Request,Investment Operations,T01105,7,2,True,T03646,156
+Access requested for <SVC>,NAV Calculation,Nordics,Service Request,Valuation & Pricing,T01107,5,1,True,T00932,157
+Incorrect incident title for service request in <SVC>,Order Management,Germany,Service Request,Trading Support,T01125,4,2,True,T03816,158
+New license requested for <SVC>,Securities Settlement,Germany,Service Request,Securities Operations,T01128,7,1,True,T00914,159
+Access requested for <SVC>,Client Reporting,Luxembourg,Service Request,Client Services,T01134,12,3,True,T02155,160
+New license requested for <SVC>,Trade Matching,France,Service Request,Investment Operations,T01146,8,3,True,T02253,161
+General request for <SVC> with unclear details,Securities Settlement,Switzerland,Service Request,Securities Operations,T01227,5,3,True,T02733,162
+Access removal requested for <SVC>,Portfolio Accounting,Nordics,Service Request,Investment Operations,T01229,6,2,True,T01716,163
+Incorrect incident title for service request in <SVC>,CRM & Client Portal,Nordics,Service Request,Client Services,T01237,5,1,False,T00778,164
+New license requested for <SVC>,Portfolio Accounting,France,Service Request,Investment Operations,T01245,9,2,True,T02988,165
+Access removal requested for <SVC>,Fund Pricing,Luxembourg,Service Request,Valuation & Pricing,T01279,5,1,True,T00846,166
+Access removal requested for <SVC>,Securities Settlement,Switzerland,Service Request,Securities Operations,T01280,6,3,True,T02619,167
+Access removal requested for <SVC>,NAV Calculation,Luxembourg,Service Request,Valuation & Pricing,T01283,4,1,True,T00693,168
+Access requested for <SVC>,Risk & Compliance Monitoring,Switzerland,Service Request,Risk & Controls,T01293,12,4,True,T01746,169
+New license requested for <SVC>,Trade Matching,Germany,Service Request,Investment Operations,T01295,12,5,True,T01954,170
+Access requested for <SVC>,Outlook & Email,Luxembourg,Service Request,Enterprise Applications,T01303,14,3,False,T02665,171
+Access requested for <SVC>,Corporate Actions,Germany,Service Request,Securities Operations,T01317,6,2,True,T02817,172
+New license requested for <SVC>,SharePoint & File Storage,France,Service Request,Enterprise Applications,T01342,5,3,False,T01413,173
+General request for <SVC> with unclear details,Fund Pricing,Switzerland,Service Request,Valuation & Pricing,T01350,3,1,True,T00564,174
+Incorrect incident title for service request in <SVC>,Portfolio Accounting,Germany,Service Request,Investment Operations,T01351,4,1,True,T01621,175
+New license requested for <SVC>,SharePoint & File Storage,Nordics,Service Request,Enterprise Applications,T01358,11,3,False,T01771,176
+General request for <SVC> with unclear details,NAV Calculation,Nordics,Service Request,Valuation & Pricing,T01361,4,3,True,T02564,177
+Access removal requested for <SVC>,Tax Reporting,Nordics,Service Request,Tax & Reporting,T01375,5,2,False,T03847,178
+New license requested for <SVC>,Fund Pricing,France,Service Request,Valuation & Pricing,T01376,7,2,True,T02443,179
+New license requested for <SVC>,Trade Matching,Luxembourg,Service Request,Investment Operations,T01395,13,2,True,T03426,180
+Access requested for <SVC>,Rimes Data Feed,France,Service Request,Market Data Services,T01398,14,4,True,T02124,181
+New license requested for <SVC>,Corporate Actions,France,Service Request,Securities Operations,T01436,9,2,True,T01780,182
+Incorrect incident title for service request in <SVC>,NAV Calculation,Switzerland,Service Request,Valuation & Pricing,T01437,4,1,True,T00780,183
+General request for <SVC> with unclear details,Risk & Compliance Monitoring,France,Service Request,Risk & Controls,T01443,5,1,True,T00663,184
+New license requested for <SVC>,Rimes Data Feed,Switzerland,Service Request,Market Data Services,T01445,9,1,True,T01504,185
+New license requested for <SVC>,Securities Settlement,Luxembourg,Service Request,Securities Operations,T01455,14,2,True,T01988,186
+New license requested for <SVC>,Rimes Data Feed,Nordics,Service Request,Market Data Services,T01475,10,1,True,T00055,187
+Access requested for <SVC>,Fund Pricing,Nordics,Service Request,Valuation & Pricing,T01479,9,2,True,T03326,188
+Access removal requested for <SVC>,SimCorp Dimension,Luxembourg,Service Request,Enterprise Applications,T01481,6,1,True,T01792,189
+New license requested for <SVC>,NAV Calculation,Germany,Service Request,Valuation & Pricing,T01486,8,3,True,T01717,190
+New license requested for <SVC>,Client Reporting,Nordics,Service Request,Client Services,T01492,6,2,True,T02537,191
+General request for <SVC> with unclear details,Portfolio Accounting,France,Service Request,Investment Operations,T01499,4,1,True,T00841,192
+Incorrect incident title for service request in <SVC>,Rimes Data Feed,France,Service Request,Market Data Services,T01513,6,2,True,T03447,193
+Access requested for <SVC>,Tax Reporting,Nordics,Service Request,Tax & Reporting,T01515,5,2,False,T03644,194
+New license requested for <SVC>,Corporate Actions,Luxembourg,Service Request,Securities Operations,T01519,18,2,True,T03667,195
+Access removal requested for <SVC>,Trading Platform,Luxembourg,Service Request,Investment Operations,T01524,5,4,True,T01937,196
+Incorrect incident title for service request in <SVC>,Tax Reporting,France,Service Request,Tax & Reporting,T01542,8,2,False,T02800,197
+Access removal requested for <SVC>,Client Reporting,France,Service Request,Client Services,T01545,6,2,True,T02009,198
+Incorrect incident title for service request in <SVC>,Securities Settlement,France,Service Request,Securities Operations,T01565,6,2,True,T02902,199
+Access requested for <SVC>,Client Reporting,Switzerland,Service Request,Client Services,T01566,4,2,True,T03593,200
+General request for <SVC> with unclear details,SimCorp Dimension,Nordics,Service Request,Enterprise Applications,T01567,5,2,True,T03807,201
+New license requested for <SVC>,Securities Settlement,Nordics,Service Request,Securities Operations,T01569,12,4,True,T02513,202
+New license requested for <SVC>,Portfolio Accounting,Luxembourg,Service Request,Investment Operations,T01572,8,1,True,T00066,203
+New license requested for <SVC>,Client Reporting,Germany,Service Request,Client Services,T01577,9,1,True,T00358,204
+Access requested for <SVC>,Securities Settlement,Switzerland,Service Request,Securities Operations,T01583,9,2,True,T03010,205
+General request for <SVC> with unclear details,Corporate Actions,France,Service Request,Securities Operations,T01588,3,1,True,T01329,206
+Access requested for <SVC>,Order Management,Germany,Service Request,Trading Support,T01602,2,1,True,T00304,207
+New license requested for <SVC>,Outlook & Email,Switzerland,Service Request,Enterprise Applications,T01607,10,3,False,T02217,208
+Access removal requested for <SVC>,Securities Settlement,France,Service Request,Securities Operations,T01648,3,1,True,T00765,209
+Access requested for <SVC>,NAV Calculation,Luxembourg,Service Request,Valuation & Pricing,T01651,6,2,True,T02309,210
+Access removal requested for <SVC>,Corporate Actions,France,Service Request,Securities Operations,T01657,6,1,True,T00377,211
+Incorrect incident title for service request in <SVC>,Rimes Data Feed,Germany,Service Request,Market Data Services,T01660,5,1,True,T01034,212
+Access removal requested for <SVC>,Identity & Access Management,Nordics,Service Request,Enterprise Applications,T01664,8,2,False,T02477,213
+General request for <SVC> with unclear details,Portfolio Accounting,Germany,Service Request,Investment Operations,T01667,9,1,True,T00270,214
+Incorrect incident title for service request in <SVC>,SharePoint & File Storage,Luxembourg,Service Request,Enterprise Applications,T01669,5,1,False,T00574,215
+General request for <SVC> with unclear details,SharePoint & File Storage,Nordics,Service Request,Enterprise Applications,T01671,5,3,False,T01825,216
+Access requested for <SVC>,Fund Pricing,Germany,Service Request,Valuation & Pricing,T01684,8,2,True,T02388,217
+Access requested for <SVC>,Portfolio Accounting,Germany,Service Request,Investment Operations,T01689,7,2,True,T03199,218
+Access requested for <SVC>,Cash Management,Switzerland,Service Request,Treasury & Cash,T01690,7,1,True,T00010,219
+New license requested for <SVC>,Regulatory Reporting,Switzerland,Service Request,Risk & Controls,T01694,7,1,True,T00305,220
+New license requested for <SVC>,SimCorp Dimension,Switzerland,Service Request,Enterprise Applications,T01725,13,3,True,T02651,221
+General request for <SVC> with unclear details,SimCorp Dimension,Germany,Service Request,Enterprise Applications,T01734,6,2,True,T03592,222
+Access requested for <SVC>,Identity & Access Management,Switzerland,Service Request,Enterprise Applications,T01749,14,2,False,T02312,223
+Incorrect incident title for service request in <SVC>,Cash Management,France,Service Request,Treasury & Cash,T01755,6,2,True,T03396,224
+Access requested for <SVC>,Regulatory Reporting,Luxembourg,Service Request,Risk & Controls,T01778,8,2,True,T03721,225
+New license requested for <SVC>,Client Reporting,Switzerland,Service Request,Client Services,T01798,7,2,True,T02581,226
+Incorrect incident title for service request in <SVC>,Corporate Actions,Germany,Service Request,Securities Operations,T01843,2,1,True,T02796,227
+Incorrect incident title for service request in <SVC>,Fund Pricing,France,Service Request,Valuation & Pricing,T01856,4,1,True,T02200,228
+Access removal requested for <SVC>,NAV Calculation,Nordics,Service Request,Valuation & Pricing,T01857,4,1,True,T00803,229
+Access removal requested for <SVC>,NAV Calculation,France,Service Request,Valuation & Pricing,T01882,1,1,True,,230
+New license requested for <SVC>,NAV Calculation,Luxembourg,Service Request,Valuation & Pricing,T01895,9,1,True,T00321,231
+Access removal requested for <SVC>,Rimes Data Feed,Switzerland,Service Request,Market Data Services,T01896,2,1,True,T03183,232
+Access requested for <SVC>,Tax Reporting,Germany,Service Request,Tax & Reporting,T01911,5,3,False,T03382,233
+Access requested for <SVC>,SimCorp Dimension,France,Service Request,Enterprise Applications,T01920,8,2,True,T03555,234
+Access removal requested for <SVC>,Rimes Data Feed,Nordics,Service Request,Market Data Services,T01923,6,1,True,T00854,235
+Access requested for <SVC>,Risk & Compliance Monitoring,Germany,Service Request,Risk & Controls,T01924,13,4,True,T02856,236
+Access requested for <SVC>,Identity & Access Management,Luxembourg,Service Request,Enterprise Applications,T01925,8,1,False,T00314,237
+Access removal requested for <SVC>,Order Management,Nordics,Service Request,Trading Support,T01932,2,2,True,T02245,238
+New license requested for <SVC>,CRM & Client Portal,France,Service Request,Client Services,T01958,10,1,False,T00095,239
+Access removal requested for <SVC>,Securities Settlement,Germany,Service Request,Securities Operations,T01972,1,1,True,,240
+Access requested for <SVC>,Regulatory Reporting,Switzerland,Service Request,Risk & Controls,T02007,9,3,True,T02156,241
+New license requested for <SVC>,Order Management,Nordics,Service Request,Trading Support,T02008,7,1,True,T00278,242
+Incorrect incident title for service request in <SVC>,Risk & Compliance Monitoring,Germany,Service Request,Risk & Controls,T02010,4,1,True,T00175,243
+General request for <SVC> with unclear details,Client Reporting,Luxembourg,Service Request,Client Services,T02013,5,1,True,T01188,244
+General request for <SVC> with unclear details,Order Management,France,Service Request,Trading Support,T02015,3,1,True,T00631,245
+Access requested for <SVC>,Trading Platform,France,Service Request,Investment Operations,T02021,5,2,True,T03533,246
+General request for <SVC> with unclear details,Risk & Compliance Monitoring,Germany,Service Request,Risk & Controls,T02025,4,2,True,T02500,247
+Access removal requested for <SVC>,Rimes Data Feed,Luxembourg,Service Request,Market Data Services,T02028,7,1,True,T00081,248
+Access removal requested for <SVC>,SharePoint & File Storage,Luxembourg,Service Request,Enterprise Applications,T02031,6,2,False,T02966,249
+Access removal requested for <SVC>,Tax Reporting,Germany,Service Request,Tax & Reporting,T02033,5,1,False,T00323,250
+General request for <SVC> with unclear details,Cash Management,Luxembourg,Service Request,Treasury & Cash,T02039,7,2,True,T02533,251
+Incorrect incident title for service request in <SVC>,Risk & Compliance Monitoring,Nordics,Service Request,Risk & Controls,T02045,10,2,True,T02761,252
+New license requested for <SVC>,Order Management,Luxembourg,Service Request,Trading Support,T02053,11,4,True,T02732,253
+General request for <SVC> with unclear details,Rimes Data Feed,Switzerland,Service Request,Market Data Services,T02070,5,1,True,T00127,254
+General request for <SVC> with unclear details,NAV Calculation,France,Service Request,Valuation & Pricing,T02074,6,1,True,T00112,255
+Access requested for <SVC>,SharePoint & File Storage,Nordics,Service Request,Enterprise Applications,T02081,10,1,False,T00101,256
+New license requested for <SVC>,Regulatory Reporting,France,Service Request,Risk & Controls,T02086,12,1,True,T00054,257
+New license requested for <SVC>,SharePoint & File Storage,Luxembourg,Service Request,Enterprise Applications,T02142,10,1,False,T00164,258
+Incorrect incident title for service request in <SVC>,SharePoint & File Storage,France,Service Request,Enterprise Applications,T02187,6,2,False,T02701,259
+General request for <SVC> with unclear details,Securities Settlement,Germany,Service Request,Securities Operations,T02196,5,2,True,T02784,260
+General request for <SVC> with unclear details,Corporate Actions,Nordics,Service Request,Securities Operations,T02213,5,2,True,T02965,261
+Access removal requested for <SVC>,Risk & Compliance Monitoring,France,Service Request,Risk & Controls,T02220,4,1,True,T01582,262
+Incorrect incident title for service request in <SVC>,Cash Management,Switzerland,Service Request,Treasury & Cash,T02275,3,1,True,T02091,263
+General request for <SVC> with unclear details,SharePoint & File Storage,Switzerland,Service Request,Enterprise Applications,T02286,5,1,False,T00126,264
+General request for <SVC> with unclear details,Rimes Data Feed,Luxembourg,Service Request,Market Data Services,T02305,5,1,True,T00930,265
+Incorrect incident title for service request in <SVC>,Order Management,France,Service Request,Trading Support,T02325,5,1,True,T00386,266
+Access removal requested for <SVC>,Trade Matching,France,Service Request,Investment Operations,T02347,3,1,True,T02419,267
+Access removal requested for <SVC>,Regulatory Reporting,France,Service Request,Risk & Controls,T02352,3,1,True,T02412,268
+Access removal requested for <SVC>,Identity & Access Management,Switzerland,Service Request,Enterprise Applications,T02362,3,1,False,T00214,269
+General request for <SVC> with unclear details,SharePoint & File Storage,Germany,Service Request,Enterprise Applications,T02364,7,2,False,T03368,270
+Access requested for <SVC>,Trade Matching,Luxembourg,Service Request,Investment Operations,T02372,8,1,True,T00687,271
+Incorrect incident title for service request in <SVC>,Fund Pricing,Germany,Service Request,Valuation & Pricing,T02390,3,1,True,T02565,272
+Access removal requested for <SVC>,CRM & Client Portal,Luxembourg,Service Request,Client Services,T02407,5,4,False,T02563,273
+Access requested for <SVC>,Cash Management,Luxembourg,Service Request,Treasury & Cash,T02415,10,3,True,T02509,274
+Incorrect incident title for service request in <SVC>,Identity & Access Management,Germany,Service Request,Enterprise Applications,T02441,4,1,False,T02861,275
+Incorrect incident title for service request in <SVC>,Cash Management,Nordics,Service Request,Treasury & Cash,T02466,2,1,True,T02987,276
+General request for <SVC> with unclear details,Portfolio Accounting,Nordics,Service Request,Investment Operations,T02471,7,1,True,T00239,277
+Access removal requested for <SVC>,Outlook & Email,Germany,Service Request,Enterprise Applications,T02499,3,2,False,T03578,278
+Access removal requested for <SVC>,Portfolio Accounting,Germany,Service Request,Investment Operations,T02510,5,1,True,T00038,279
+General request for <SVC> with unclear details,Fund Pricing,Nordics,Service Request,Valuation & Pricing,T02517,3,1,True,T02969,280
+General request for <SVC> with unclear details,Cash Management,Germany,Service Request,Treasury & Cash,T02572,6,1,True,T01276,281
+New license requested for <SVC>,Risk & Compliance Monitoring,France,Service Request,Risk & Controls,T02578,8,1,True,T00340,282
+General request for <SVC> with unclear details,Securities Settlement,France,Service Request,Securities Operations,T02582,5,2,True,T03848,283
+New license requested for <SVC>,Rimes Data Feed,France,Service Request,Market Data Services,T02601,3,1,True,T03397,284
+New license requested for <SVC>,Cash Management,France,Service Request,Treasury & Cash,T02622,3,1,True,T01928,285
+Access removal requested for <SVC>,Fund Pricing,Nordics,Service Request,Valuation & Pricing,T02624,5,1,True,T01075,286
+Incorrect incident title for service request in <SVC>,Corporate Actions,France,Service Request,Securities Operations,T02646,4,1,True,T02302,287
+New license requested for <SVC>,Outlook & Email,Luxembourg,Service Request,Enterprise Applications,T02670,11,1,False,T00028,288
+New license requested for <SVC>,Tax Reporting,Luxembourg,Service Request,Tax & Reporting,T02671,8,3,False,T03000,289
+General request for <SVC> with unclear details,Corporate Actions,Germany,Service Request,Securities Operations,T02686,5,1,True,T00102,290
+Incorrect incident title for service request in <SVC>,Regulatory Reporting,Nordics,Service Request,Risk & Controls,T02745,5,1,True,T01004,291
+Access requested for <SVC>,CRM & Client Portal,Switzerland,Service Request,Client Services,T02760,9,2,False,T03194,292
+New license requested for <SVC>,Trading Platform,Switzerland,Service Request,Investment Operations,T02793,7,2,True,T03491,293
+General request for <SVC> with unclear details,Client Reporting,Nordics,Service Request,Client Services,T02795,3,1,True,T00496,294
+New license requested for <SVC>,Rimes Data Feed,Germany,Service Request,Market Data Services,T02803,6,1,True,T02707,295
+Incorrect incident title for service request in <SVC>,Trade Matching,Germany,Service Request,Investment Operations,T02805,1,1,True,,296
+New license requested for <SVC>,Outlook & Email,France,Service Request,Enterprise Applications,T02809,11,6,False,T02952,297
+General request for <SVC> with unclear details,Client Reporting,Switzerland,Service Request,Client Services,T02819,2,1,True,T03704,298
+Access requested for <SVC>,Trading Platform,Germany,Service Request,Investment Operations,T02825,8,2,True,T03273,299
+Access removal requested for <SVC>,NAV Calculation,Switzerland,Service Request,Valuation & Pricing,T02837,5,1,True,T00018,300
+Incorrect incident title for service request in <SVC>,Securities Settlement,Switzerland,Service Request,Securities Operations,T02851,3,1,True,T02880,301
+General request for <SVC> with unclear details,Regulatory Reporting,Germany,Service Request,Risk & Controls,T02863,3,1,True,T02580,302
+Access requested for <SVC>,SharePoint & File Storage,France,Service Request,Enterprise Applications,T02875,8,1,False,T00246,303
+General request for <SVC> with unclear details,Trade Matching,Switzerland,Service Request,Investment Operations,T02876,5,1,True,T00056,304
+Access requested for <SVC>,Securities Settlement,Luxembourg,Service Request,Securities Operations,T02881,4,2,True,T03759,305
+Incorrect incident title for service request in <SVC>,SimCorp Dimension,France,Service Request,Enterprise Applications,T02890,6,2,True,T03768,306
+Incorrect incident title for service request in <SVC>,Rimes Data Feed,Switzerland,Service Request,Market Data Services,T02919,3,1,True,T00272,307
+Incorrect incident title for service request in <SVC>,Risk & Compliance Monitoring,Luxembourg,Service Request,Risk & Controls,T02927,4,1,True,T00152,308
+New license requested for <SVC>,SimCorp Dimension,France,Service Request,Enterprise Applications,T02949,8,2,True,T03751,309
+General request for <SVC> with unclear details,NAV Calculation,Germany,Service Request,Valuation & Pricing,T03013,3,1,True,T02207,310
+Access removal requested for <SVC>,Outlook & Email,France,Service Request,Enterprise Applications,T03046,2,1,False,T03123,311
+General request for <SVC> with unclear details,SimCorp Dimension,France,Service Request,Enterprise Applications,T03077,5,1,True,T00311,312
+General request for <SVC> with unclear details,Cash Management,Nordics,Service Request,Treasury & Cash,T03078,3,1,True,T01469,313
+Incorrect incident title for service request in <SVC>,CRM & Client Portal,Germany,Service Request,Client Services,T03101,4,1,False,T02357,314
+Incorrect incident title for service request in <SVC>,Risk & Compliance Monitoring,France,Service Request,Risk & Controls,T03110,6,1,True,T00726,315
+General request for <SVC> with unclear details,Trading Platform,France,Service Request,Investment Operations,T03117,5,1,True,T00980,316
+New license requested for <SVC>,Rimes Data Feed,Luxembourg,Service Request,Market Data Services,T03141,8,1,True,T00750,317
+Access requested for <SVC>,Client Reporting,France,Service Request,Client Services,T03150,4,1,True,T02014,318
+Incorrect incident title for service request in <SVC>,Risk & Compliance Monitoring,Switzerland,Service Request,Risk & Controls,T03159,3,1,True,T01308,319
+General request for <SVC> with unclear details,Corporate Actions,Luxembourg,Service Request,Securities Operations,T03202,4,1,True,T01123,320
+General request for <SVC> with unclear details,Client Reporting,Germany,Service Request,Client Services,T03216,3,1,True,T00596,321
+Access requested for <SVC>,Trade Matching,Germany,Service Request,Investment Operations,T03224,9,2,True,T03420,322
+Access requested for <SVC>,Fund Pricing,France,Service Request,Valuation & Pricing,T03261,8,2,True,T03901,323
+Access removal requested for <SVC>,Risk & Compliance Monitoring,Germany,Service Request,Risk & Controls,T03275,4,1,True,T00814,324
+General request for <SVC> with unclear details,Identity & Access Management,Nordics,Service Request,Enterprise Applications,T03292,3,1,False,T01408,325
+Access requested for <SVC>,Order Management,France,Service Request,Trading Support,T03297,8,3,True,T03488,326
+Access removal requested for <SVC>,SharePoint & File Storage,France,Service Request,Enterprise Applications,T03302,5,1,False,T00091,327
+Incorrect incident title for service request in <SVC>,Order Management,Luxembourg,Service Request,Trading Support,T03333,8,2,True,T03450,328
+Access removal requested for <SVC>,Client Reporting,Luxembourg,Service Request,Client Services,T03384,3,1,True,T02129,329
+Incorrect incident title for service request in <SVC>,Trade Matching,France,Service Request,Investment Operations,T03402,7,1,True,T01311,330
+Incorrect incident title for service request in <SVC>,SimCorp Dimension,Germany,Service Request,Enterprise Applications,T03409,3,1,True,T02037,331
+General request for <SVC> with unclear details,Tax Reporting,Luxembourg,Service Request,Tax & Reporting,T03449,5,1,False,T01153,332
+Access removal requested for <SVC>,Trading Platform,Germany,Service Request,Investment Operations,T03543,4,1,True,T01909,333
+General request for <SVC> with unclear details,Fund Pricing,Germany,Service Request,Valuation & Pricing,T03569,3,1,True,T01637,334
+New license requested for <SVC>,Trade Matching,Nordics,Service Request,Investment Operations,T03616,8,1,True,T00297,335
+Access removal requested for <SVC>,Regulatory Reporting,Switzerland,Service Request,Risk & Controls,T03623,4,1,True,T00392,336
+New license requested for <SVC>,SimCorp Dimension,Luxembourg,Service Request,Enterprise Applications,T03634,10,1,True,T00186,337
+Access removal requested for <SVC>,SharePoint & File Storage,Nordics,Service Request,Enterprise Applications,T03645,6,1,False,T01258,338
+General request for <SVC> with unclear details,CRM & Client Portal,Germany,Service Request,Client Services,T03655,6,1,False,T00409,339
+Incorrect incident title for service request in <SVC>,Securities Settlement,Luxembourg,Service Request,Securities Operations,T03671,6,1,True,T00996,340
+Access removal requested for <SVC>,Cash Management,France,Service Request,Treasury & Cash,T03683,5,1,True,T01740,341
+New license requested for <SVC>,Identity & Access Management,Luxembourg,Service Request,Enterprise Applications,T03725,7,1,False,T00381,342
+Incorrect incident title for service request in <SVC>,Securities Settlement,Nordics,Service Request,Securities Operations,T03731,6,1,True,T00538,343
+Access removal requested for <SVC>,Fund Pricing,Germany,Service Request,Valuation & Pricing,T03777,4,2,True,T03842,344
+Incorrect incident title for service request in <SVC>,SimCorp Dimension,Switzerland,Service Request,Enterprise Applications,T03786,7,1,True,T00250,345
+Access removal requested for <SVC>,Trading Platform,France,Service Request,Investment Operations,T03817,3,1,True,T00928,346
+Access removal requested for <SVC>,Client Reporting,Switzerland,Service Request,Client Services,T03852,4,1,True,T02113,347
+Incorrect incident title for service request in <SVC>,NAV Calculation,Germany,Service Request,Valuation & Pricing,T03863,4,1,True,T00267,348
+Incorrect incident title for service request in <SVC>,Identity & Access Management,Switzerland,Service Request,Enterprise Applications,T03877,3,1,False,T00086,349
+General request for <SVC> with unclear details,Rimes Data Feed,Nordics,Service Request,Market Data Services,T03880,7,1,True,T01037,350
+Access requested for <SVC>,Order Management,Nordics,Service Request,Trading Support,T03882,5,1,True,T00266,351
+Access removal requested for <SVC>,Client Reporting,Nordics,Service Request,Client Services,T03904,4,1,True,T01738,352
+New license requested for <SVC>,CRM & Client Portal,Nordics,Service Request,Client Services,T03906,5,1,False,T01405,353
+Access removal requested for <SVC>,Portfolio Accounting,France,Service Request,Investment Operations,T03958,4,1,True,T00249,354
+New license requested for <SVC>,Portfolio Accounting,Germany,Service Request,Investment Operations,T03977,5,1,True,T01074,355
+Operational issue reported for <SVC>,Tax Reporting,Luxembourg,Incident,Tax & Reporting,T04007,17,3,False,T06285,356
+Automated alert triggered for <SVC>,Identity & Access Management,Germany,Incident,Enterprise Applications,T04013,77,18,False,T04521,357
+Automated alert triggered for <SVC>,NAV Calculation,Germany,Incident,Valuation & Pricing,T04016,64,18,True,T06789,358
+Incident mislabelled as service request in <SVC>,SharePoint & File Storage,France,Incident,Enterprise Applications,T04034,12,3,False,T12050,359
+External email warning received for <SVC>,Emailed Support Tickets,Luxembourg,Incident,Service Desk,T04035,805,206,False,T04094,360
+Operational issue reported for <SVC>,Risk & Compliance Monitoring,Luxembourg,Incident,Risk & Controls,T04045,18,6,True,T04866,361
+Automated alert triggered for <SVC>,CRM & Client Portal,Nordics,Incident,Client Services,T04051,75,24,False,T06567,362
+External email warning received for <SVC>,Emailed Support Tickets,Switzerland,Incident,Service Desk,T04052,892,211,False,T04134,363
+Automated alert triggered for <SVC>,Portfolio Accounting,Switzerland,Incident,Investment Operations,T04063,72,16,True,T04613,364
+Automated alert triggered for <SVC>,Outlook & Email,Nordics,Incident,Enterprise Applications,T04070,75,19,False,T04296,365
+External email warning received for <SVC>,Emailed Support Tickets,France,Incident,Service Desk,T04072,822,196,False,T04113,366
+Unclear incident input for <SVC>,Tax Reporting,Luxembourg,Incident,Tax & Reporting,T04075,14,2,False,T08568,367
+Automated alert triggered for <SVC>,Securities Settlement,Nordics,Incident,Securities Operations,T04076,65,13,True,T04586,368
+Automated alert triggered for <SVC>,Tax Reporting,Nordics,Incident,Tax & Reporting,T04077,76,21,False,T04336,369
+Automated alert triggered for <SVC>,Corporate Actions,Switzerland,Incident,Securities Operations,T04080,72,23,True,T04089,370
+Unclear incident input for <SVC>,Fund Pricing,Germany,Incident,Valuation & Pricing,T04087,14,6,True,T04997,371
+External email warning received for <SVC>,Emailed Support Tickets,Germany,Incident,Service Desk,T04093,873,209,False,T04145,372
+Automated alert triggered for <SVC>,Client Reporting,France,Incident,Client Services,T04100,74,17,True,T04173,373
+Operational issue reported for <SVC>,Corporate Actions,Germany,Incident,Securities Operations,T04112,30,10,True,T06837,374
+Automated alert triggered for <SVC>,Trading Platform,France,Incident,Investment Operations,T04120,101,25,True,T04833,375
+Automated alert triggered for <SVC>,Order Management,Switzerland,Incident,Trading Support,T04122,78,22,True,T04235,376
+Automated alert triggered for <SVC>,Outlook & Email,France,Incident,Enterprise Applications,T04126,81,20,False,T04309,377
+Automated alert triggered for <SVC>,Outlook & Email,Switzerland,Incident,Enterprise Applications,T04133,86,20,False,T04994,378
+Automated alert triggered for <SVC>,NAV Calculation,Nordics,Incident,Valuation & Pricing,T04135,76,19,True,T05490,379
+Automated alert triggered for <SVC>,NAV Calculation,Switzerland,Incident,Valuation & Pricing,T04136,79,18,True,T06485,380
+Automated alert triggered for <SVC>,Client Reporting,Nordics,Incident,Client Services,T04143,80,20,True,T05429,381
+External email warning received for <SVC>,Emailed Support Tickets,Nordics,Incident,Service Desk,T04144,820,183,False,T04279,382
+Automated alert triggered for <SVC>,Securities Settlement,Switzerland,Incident,Securities Operations,T04148,76,17,True,T05419,383
+Incident mislabelled as service request in <SVC>,Risk & Compliance Monitoring,Luxembourg,Incident,Risk & Controls,T04149,17,4,True,T08995,384
+Automated alert triggered for <SVC>,Risk & Compliance Monitoring,Luxembourg,Incident,Risk & Controls,T04160,77,16,True,T06005,385
+Operational issue reported for <SVC>,Securities Settlement,Nordics,Incident,Securities Operations,T04161,26,4,True,T08652,386
+Unclear incident input for <SVC>,Identity & Access Management,Nordics,Incident,Enterprise Applications,T04163,13,5,False,T05532,387
+Automated alert triggered for <SVC>,Portfolio Accounting,Nordics,Incident,Investment Operations,T04169,78,27,True,T04632,388
+Automated alert triggered for <SVC>,CRM & Client Portal,Switzerland,Incident,Client Services,T04175,76,23,False,T04617,389
+Automated alert triggered for <SVC>,Cash Management,Luxembourg,Incident,Treasury & Cash,T04182,64,16,True,T04531,390
+Operational issue reported for <SVC>,Risk & Compliance Monitoring,Nordics,Incident,Risk & Controls,T04183,20,6,True,T06868,391
+Automated alert triggered for <SVC>,Securities Settlement,Germany,Incident,Securities Operations,T04186,75,19,True,T05050,392
+Automated alert triggered for <SVC>,Portfolio Accounting,Germany,Incident,Investment Operations,T04193,90,20,True,T05119,393
+Unclear incident input for <SVC>,Rimes Data Feed,Luxembourg,Incident,Market Data Services,T04197,10,3,True,T18573,394
+Unclear incident input for <SVC>,Client Reporting,France,Incident,Client Services,T04212,15,6,True,T07011,395
+Unclear incident input for <SVC>,Portfolio Accounting,Germany,Incident,Investment Operations,T04214,17,8,True,T05269,396
+Incident mislabelled as service request in <SVC>,Trading Platform,Switzerland,Incident,Investment Operations,T04219,11,4,True,T08044,397
+Operational issue reported for <SVC>,Corporate Actions,Luxembourg,Incident,Securities Operations,T04225,21,3,True,T14868,398
+Automated alert triggered for <SVC>,Cash Management,Nordics,Incident,Treasury & Cash,T04228,66,15,True,T04321,399
+Automated alert triggered for <SVC>,Corporate Actions,France,Incident,Securities Operations,T04242,82,15,True,T04644,400
+Incident mislabelled as service request in <SVC>,SimCorp Dimension,Nordics,Incident,Enterprise Applications,T04248,15,4,True,T05420,401
+Automated alert triggered for <SVC>,Securities Settlement,Luxembourg,Incident,Securities Operations,T04272,68,18,True,T05175,402
+Automated alert triggered for <SVC>,NAV Calculation,France,Incident,Valuation & Pricing,T04274,67,21,True,T05567,403
+Automated alert triggered for <SVC>,Tax Reporting,Luxembourg,Incident,Tax & Reporting,T04277,84,21,False,T07299,404
+Automated alert triggered for <SVC>,Identity & Access Management,Luxembourg,Incident,Enterprise Applications,T04281,93,28,False,T04316,405
+Automated alert triggered for <SVC>,Fund Pricing,Germany,Incident,Valuation & Pricing,T04288,69,20,True,T04846,406
+Incident mislabelled as service request in <SVC>,Risk & Compliance Monitoring,Nordics,Incident,Risk & Controls,T04304,10,4,True,T05979,407
+Automated alert triggered for <SVC>,SimCorp Dimension,Luxembourg,Incident,Enterprise Applications,T04306,79,17,True,T04664,408
+Automated alert triggered for <SVC>,CRM & Client Portal,France,Incident,Client Services,T04317,80,19,False,T04380,409
+Automated alert triggered for <SVC>,CRM & Client Portal,Germany,Incident,Client Services,T04320,74,16,False,T06341,410
+Unclear incident input for <SVC>,Regulatory Reporting,Nordics,Incident,Risk & Controls,T04327,23,6,True,T08764,411
+Incident mislabelled as service request in <SVC>,Outlook & Email,Nordics,Incident,Enterprise Applications,T04328,14,6,False,T09515,412
+Unclear incident input for <SVC>,SimCorp Dimension,Nordics,Incident,Enterprise Applications,T04330,18,4,True,T06992,413
+Operational issue reported for <SVC>,Regulatory Reporting,France,Incident,Risk & Controls,T04338,23,6,True,T08727,414
+Automated alert triggered for <SVC>,CRM & Client Portal,Luxembourg,Incident,Client Services,T04347,76,20,False,T04418,415
+Automated alert triggered for <SVC>,Tax Reporting,Switzerland,Incident,Tax & Reporting,T04359,73,16,False,T04397,416
+Automated alert triggered for <SVC>,Trading Platform,Luxembourg,Incident,Investment Operations,T04362,82,23,True,T05066,417
+Automated alert triggered for <SVC>,Regulatory Reporting,France,Incident,Risk & Controls,T04384,61,14,True,T05555,418
+Automated alert triggered for <SVC>,Fund Pricing,France,Incident,Valuation & Pricing,T04386,78,15,True,T04932,419
+Automated alert triggered for <SVC>,Risk & Compliance Monitoring,Switzerland,Incident,Risk & Controls,T04390,70,12,True,T04974,420
+Automated alert triggered for <SVC>,Trade Matching,Germany,Incident,Investment Operations,T04399,87,19,True,T05630,421
+Unclear incident input for <SVC>,Portfolio Accounting,Switzerland,Incident,Investment Operations,T04404,16,4,True,T09183,422
+Automated alert triggered for <SVC>,SimCorp Dimension,France,Incident,Enterprise Applications,T04415,95,18,True,T06611,423
+Incident mislabelled as service request in <SVC>,Corporate Actions,Luxembourg,Incident,Securities Operations,T04429,17,6,True,T04651,424
+Automated alert triggered for <SVC>,Rimes Data Feed,Luxembourg,Incident,Market Data Services,T04465,96,25,True,T05375,425
+Operational issue reported for <SVC>,CRM & Client Portal,Germany,Incident,Client Services,T04474,15,6,False,T04642,426
+Operational issue reported for <SVC>,Identity & Access Management,France,Incident,Enterprise Applications,T04483,16,2,False,T17136,427
+Unclear incident input for <SVC>,CRM & Client Portal,Nordics,Incident,Client Services,T04502,21,6,False,T04519,428
+Automated alert triggered for <SVC>,SharePoint & File Storage,Switzerland,Incident,Enterprise Applications,T04506,77,16,False,T06224,429
+Automated alert triggered for <SVC>,Corporate Actions,Nordics,Incident,Securities Operations,T04507,65,23,True,T04587,430
+Incident mislabelled as service request in <SVC>,Identity & Access Management,Germany,Incident,Enterprise Applications,T04509,20,3,False,T15689,431
+Unclear incident input for <SVC>,SharePoint & File Storage,Germany,Incident,Enterprise Applications,T04511,9,3,False,T12014,432
+Unclear incident input for <SVC>,Client Reporting,Germany,Incident,Client Services,T04530,25,7,True,T04659,433
+Unclear incident input for <SVC>,Identity & Access Management,Switzerland,Incident,Enterprise Applications,T04542,13,3,False,T06754,434
+Unclear incident input for <SVC>,Securities Settlement,Switzerland,Incident,Securities Operations,T04557,22,5,True,T06647,435
+Automated alert triggered for <SVC>,Trade Matching,Luxembourg,Incident,Investment Operations,T04558,86,23,True,T04861,436
+Automated alert triggered for <SVC>,Trade Matching,Nordics,Incident,Investment Operations,T04580,76,18,True,T05043,437
+Automated alert triggered for <SVC>,NAV Calculation,Luxembourg,Incident,Valuation & Pricing,T04581,76,15,True,T07924,438
+Unclear incident input for <SVC>,Regulatory Reporting,Luxembourg,Incident,Risk & Controls,T04585,11,2,True,T15758,439
+Automated alert triggered for <SVC>,Cash Management,France,Incident,Treasury & Cash,T04591,84,19,True,T06050,440
+Automated alert triggered for <SVC>,Regulatory Reporting,Luxembourg,Incident,Risk & Controls,T04596,93,20,True,T06599,441
+Automated alert triggered for <SVC>,Trading Platform,Switzerland,Incident,Investment Operations,T04611,68,12,True,T04714,442
+Automated alert triggered for <SVC>,SharePoint & File Storage,Nordics,Incident,Enterprise Applications,T04615,74,25,False,T05331,443
+Automated alert triggered for <SVC>,Identity & Access Management,Nordics,Incident,Enterprise Applications,T04616,67,17,False,T04777,444
+Automated alert triggered for <SVC>,Order Management,France,Incident,Trading Support,T04623,77,18,True,T05008,445
+Automated alert triggered for <SVC>,Portfolio Accounting,Luxembourg,Incident,Investment Operations,T04624,82,19,True,T05627,446
+Operational issue reported for <SVC>,Corporate Actions,Nordics,Incident,Securities Operations,T04633,19,5,True,T06104,447
+Incident mislabelled as service request in <SVC>,Order Management,Germany,Incident,Trading Support,T04635,17,3,True,T13556,448
+Unclear incident input for <SVC>,Fund Pricing,Nordics,Incident,Valuation & Pricing,T04649,22,4,True,T06498,449
+Unclear incident input for <SVC>,SharePoint & File Storage,Luxembourg,Incident,Enterprise Applications,T04655,22,6,False,T05840,450
+Operational issue reported for <SVC>,Fund Pricing,Germany,Incident,Valuation & Pricing,T04656,15,3,True,T09133,451
+Incident mislabelled as service request in <SVC>,Portfolio Accounting,Nordics,Incident,Investment Operations,T04661,13,6,True,T08270,452
+Automated alert triggered for <SVC>,Order Management,Germany,Incident,Trading Support,T04679,63,17,True,T04778,453
+Unclear incident input for <SVC>,NAV Calculation,Switzerland,Incident,Valuation & Pricing,T04686,12,6,True,T05101,454
+Automated alert triggered for <SVC>,Trading Platform,Nordics,Incident,Investment Operations,T04688,78,24,True,T04919,455
+Automated alert triggered for <SVC>,Corporate Actions,Luxembourg,Incident,Securities Operations,T04694,82,24,True,T04711,456
+Automated alert triggered for <SVC>,Securities Settlement,France,Incident,Securities Operations,T04697,72,17,True,T05427,457
+Automated alert triggered for <SVC>,Order Management,Luxembourg,Incident,Trading Support,T04699,83,16,True,T04726,458
+Automated alert triggered for <SVC>,SimCorp Dimension,Switzerland,Incident,Enterprise Applications,T04718,100,22,True,T04799,459
+Automated alert triggered for <SVC>,SimCorp Dimension,Germany,Incident,Enterprise Applications,T04729,75,15,True,T05298,460
+Operational issue reported for <SVC>,Client Reporting,France,Incident,Client Services,T04733,18,4,True,T07897,461
+Unclear incident input for <SVC>,Order Management,Nordics,Incident,Trading Support,T04738,12,3,True,T06210,462
+Automated alert triggered for <SVC>,Identity & Access Management,France,Incident,Enterprise Applications,T04739,72,14,False,T04944,463
+Incident mislabelled as service request in <SVC>,Tax Reporting,Germany,Incident,Tax & Reporting,T04747,18,3,False,T05389,464
+Unclear incident input for <SVC>,Client Reporting,Luxembourg,Incident,Client Services,T04750,15,4,True,T06946,465
+Operational issue reported for <SVC>,Trading Platform,Luxembourg,Incident,Investment Operations,T04772,14,8,True,T05776,466
+Incident mislabelled as service request in <SVC>,Fund Pricing,Luxembourg,Incident,Valuation & Pricing,T04774,11,3,True,T18699,467
+Unclear incident input for <SVC>,Corporate Actions,Switzerland,Incident,Securities Operations,T04780,13,3,True,T13572,468
+Automated alert triggered for <SVC>,Trading Platform,Germany,Incident,Investment Operations,T04786,91,20,True,T05731,469
+Incident mislabelled as service request in <SVC>,Risk & Compliance Monitoring,Germany,Incident,Risk & Controls,T04790,17,4,True,T07358,470
+Incident mislabelled as service request in <SVC>,Corporate Actions,Switzerland,Incident,Securities Operations,T04830,19,2,True,T05617,471
+Incident mislabelled as service request in <SVC>,Trade Matching,France,Incident,Investment Operations,T04834,16,3,True,T08369,472
+Incident mislabelled as service request in <SVC>,NAV Calculation,Nordics,Incident,Valuation & Pricing,T04849,17,7,True,T08573,473
+Incident mislabelled as service request in <SVC>,Tax Reporting,Nordics,Incident,Tax & Reporting,T04875,19,6,False,T09522,474
+Automated alert triggered for <SVC>,Regulatory Reporting,Switzerland,Incident,Risk & Controls,T04890,93,18,True,T05056,475
+Unclear incident input for <SVC>,Cash Management,Germany,Incident,Treasury & Cash,T04896,18,4,True,T06089,476
+Automated alert triggered for <SVC>,SharePoint & File Storage,Luxembourg,Incident,Enterprise Applications,T04897,79,19,False,T07169,477
+Operational issue reported for <SVC>,SimCorp Dimension,Switzerland,Incident,Enterprise Applications,T04898,14,1,True,T04329,478
+Automated alert triggered for <SVC>,Rimes Data Feed,Germany,Incident,Market Data Services,T04902,68,14,True,T07179,479
+Operational issue reported for <SVC>,Identity & Access Management,Germany,Incident,Enterprise Applications,T04906,10,1,False,T06531,480
+Automated alert triggered for <SVC>,Outlook & Email,Luxembourg,Incident,Enterprise Applications,T04914,103,26,False,T05929,481
+Automated alert triggered for <SVC>,Risk & Compliance Monitoring,Germany,Incident,Risk & Controls,T04923,79,20,True,T05228,482
+Automated alert triggered for <SVC>,Regulatory Reporting,Germany,Incident,Risk & Controls,T04939,62,14,True,T05408,483
+Automated alert triggered for <SVC>,Fund Pricing,Switzerland,Incident,Valuation & Pricing,T04941,86,21,True,T05521,484
+Operational issue reported for <SVC>,Fund Pricing,Nordics,Incident,Valuation & Pricing,T04959,20,4,True,T07083,485
+Automated alert triggered for <SVC>,Fund Pricing,Luxembourg,Incident,Valuation & Pricing,T04976,90,20,True,T06770,486
+Automated alert triggered for <SVC>,Rimes Data Feed,France,Incident,Market Data Services,T04989,78,17,True,T05548,487
+Automated alert triggered for <SVC>,Trade Matching,Switzerland,Incident,Investment Operations,T04990,81,23,True,T05668,488
+Operational issue reported for <SVC>,NAV Calculation,Luxembourg,Incident,Valuation & Pricing,T04995,25,7,True,T07378,489
+Incident mislabelled as service request in <SVC>,Risk & Compliance Monitoring,Switzerland,Incident,Risk & Controls,T05010,20,6,True,T08474,490
+Automated alert triggered for <SVC>,Cash Management,Switzerland,Incident,Treasury & Cash,T05012,67,10,True,T07274,491
+Automated alert triggered for <SVC>,Client Reporting,Switzerland,Incident,Client Services,T05018,61,17,True,T09126,492
+Incident mislabelled as service request in <SVC>,Securities Settlement,France,Incident,Securities Operations,T05025,16,7,True,T06035,493
+Unclear incident input for <SVC>,Tax Reporting,Germany,Incident,Tax & Reporting,T05033,15,3,False,T18298,494
+Incident mislabelled as service request in <SVC>,Rimes Data Feed,France,Incident,Market Data Services,T05054,12,5,True,T07858,495
+Unclear incident input for <SVC>,Rimes Data Feed,Switzerland,Incident,Market Data Services,T05064,17,5,True,T10247,496
+Automated alert triggered for <SVC>,Rimes Data Feed,Nordics,Incident,Market Data Services,T05073,79,20,True,T06162,497
+Automated alert triggered for <SVC>,Client Reporting,Luxembourg,Incident,Client Services,T05086,77,17,True,T05884,498
+Automated alert triggered for <SVC>,Outlook & Email,Germany,Incident,Enterprise Applications,T05095,69,8,False,T10914,499
+Incident mislabelled as service request in <SVC>,Tax Reporting,Switzerland,Incident,Tax & Reporting,T05132,11,5,False,T08710,500
+Incident mislabelled as service request in <SVC>,SharePoint & File Storage,Germany,Incident,Enterprise Applications,T05134,17,7,False,T08467,501
+Automated alert triggered for <SVC>,SharePoint & File Storage,France,Incident,Enterprise Applications,T05143,78,14,False,T05683,502
+Incident mislabelled as service request in <SVC>,Outlook & Email,Germany,Incident,Enterprise Applications,T05161,14,6,False,T05195,503
+Incident mislabelled as service request in <SVC>,Fund Pricing,Switzerland,Incident,Valuation & Pricing,T05165,22,5,True,T05694,504
+Operational issue reported for <SVC>,NAV Calculation,France,Incident,Valuation & Pricing,T05169,16,5,True,T09824,505
+Incident mislabelled as service request in <SVC>,Trading Platform,Luxembourg,Incident,Investment Operations,T05176,22,5,True,T08486,506
+Automated alert triggered for <SVC>,Cash Management,Germany,Incident,Treasury & Cash,T05179,64,14,True,T06045,507
+Unclear incident input for <SVC>,NAV Calculation,Luxembourg,Incident,Valuation & Pricing,T05234,11,3,True,T09975,508
+Operational issue reported for <SVC>,Fund Pricing,France,Incident,Valuation & Pricing,T05256,20,6,True,T07749,509
+Automated alert triggered for <SVC>,SharePoint & File Storage,Germany,Incident,Enterprise Applications,T05278,85,26,False,T05620,510
+Operational issue reported for <SVC>,Fund Pricing,Luxembourg,Incident,Valuation & Pricing,T05279,19,10,True,T06748,511
+Unclear incident input for <SVC>,Cash Management,Luxembourg,Incident,Treasury & Cash,T05282,19,6,True,T13596,512
+Automated alert triggered for <SVC>,Regulatory Reporting,Nordics,Incident,Risk & Controls,T05303,78,16,True,T06861,513
+Automated alert triggered for <SVC>,Order Management,Nordics,Incident,Trading Support,T05334,68,15,True,T05559,514
+Unclear incident input for <SVC>,Securities Settlement,Germany,Incident,Securities Operations,T05358,22,5,True,T05746,515
+Operational issue reported for <SVC>,NAV Calculation,Germany,Incident,Valuation & Pricing,T05367,22,6,True,T06077,516
+Unclear incident input for <SVC>,NAV Calculation,France,Incident,Valuation & Pricing,T05387,19,6,True,T10394,517
+Unclear incident input for <SVC>,Identity & Access Management,France,Incident,Enterprise Applications,T05390,17,4,False,T07956,518
+Operational issue reported for <SVC>,Portfolio Accounting,Germany,Incident,Investment Operations,T05407,16,6,True,T12181,519
+Unclear incident input for <SVC>,Identity & Access Management,Germany,Incident,Enterprise Applications,T05423,29,14,False,T06902,520
+Operational issue reported for <SVC>,Regulatory Reporting,Luxembourg,Incident,Risk & Controls,T05428,17,4,True,T10024,521
+Automated alert triggered for <SVC>,Tax Reporting,France,Incident,Tax & Reporting,T05493,76,19,False,T06399,522
+Incident mislabelled as service request in <SVC>,Fund Pricing,Nordics,Incident,Valuation & Pricing,T05500,18,1,True,T04400,523
+Operational issue reported for <SVC>,Regulatory Reporting,Nordics,Incident,Risk & Controls,T05550,17,4,True,T05877,524
+Unclear incident input for <SVC>,Portfolio Accounting,Nordics,Incident,Investment Operations,T05570,18,4,True,T08501,525
+Operational issue reported for <SVC>,Client Reporting,Germany,Incident,Client Services,T05588,19,3,True,T09641,526
+Incident mislabelled as service request in <SVC>,Trading Platform,Nordics,Incident,Investment Operations,T05608,19,4,True,T11934,527
+Automated alert triggered for <SVC>,Corporate Actions,Germany,Incident,Securities Operations,T05654,86,17,True,T05736,528
+Operational issue reported for <SVC>,Securities Settlement,France,Incident,Securities Operations,T05658,12,3,True,T07134,529
+Incident mislabelled as service request in <SVC>,Portfolio Accounting,Luxembourg,Incident,Investment Operations,T05661,22,13,True,T09068,530
+Incident mislabelled as service request in <SVC>,Regulatory Reporting,Switzerland,Incident,Risk & Controls,T05709,11,2,True,T06817,531
+Incident mislabelled as service request in <SVC>,CRM & Client Portal,Nordics,Incident,Client Services,T05714,13,3,False,T05831,532
+Incident mislabelled as service request in <SVC>,Identity & Access Management,Switzerland,Incident,Enterprise Applications,T05759,15,6,False,T05793,533
+Incident mislabelled as service request in <SVC>,Identity & Access Management,Nordics,Incident,Enterprise Applications,T05763,14,5,False,T06212,534
+Unclear incident input for <SVC>,Risk & Compliance Monitoring,France,Incident,Risk & Controls,T05779,17,5,True,T05948,535
+Operational issue reported for <SVC>,CRM & Client Portal,Switzerland,Incident,Client Services,T05847,14,3,False,T16278,536
+Incident mislabelled as service request in <SVC>,CRM & Client Portal,Luxembourg,Incident,Client Services,T05855,9,3,False,T12268,537
+Incident mislabelled as service request in <SVC>,Regulatory Reporting,Germany,Incident,Risk & Controls,T05867,10,4,True,T08733,538
+Automated alert triggered for <SVC>,SimCorp Dimension,Nordics,Incident,Enterprise Applications,T05873,85,18,True,T06176,539
+Automated alert triggered for <SVC>,Client Reporting,Germany,Incident,Client Services,T05885,79,18,True,T06227,540
+Automated alert triggered for <SVC>,Trade Matching,France,Incident,Investment Operations,T05886,77,17,True,T07346,541
+Operational issue reported for <SVC>,Securities Settlement,Luxembourg,Incident,Securities Operations,T05960,19,4,True,T08357,542
+Automated alert triggered for <SVC>,Tax Reporting,Germany,Incident,Tax & Reporting,T05969,81,16,False,T06379,543
+Operational issue reported for <SVC>,SharePoint & File Storage,Luxembourg,Incident,Enterprise Applications,T05985,10,2,False,T17470,544
+Automated alert triggered for <SVC>,Portfolio Accounting,France,Incident,Investment Operations,T06000,87,21,True,T06209,545
+Unclear incident input for <SVC>,Trade Matching,Switzerland,Incident,Investment Operations,T06002,11,4,True,T14878,546
+Incident mislabelled as service request in <SVC>,Outlook & Email,Luxembourg,Incident,Enterprise Applications,T06006,14,7,False,T08228,547
+Operational issue reported for <SVC>,Rimes Data Feed,Germany,Incident,Market Data Services,T06008,15,2,True,T09625,548
+Operational issue reported for <SVC>,SimCorp Dimension,Luxembourg,Incident,Enterprise Applications,T06026,10,1,True,T04528,549
+Incident mislabelled as service request in <SVC>,Trade Matching,Germany,Incident,Investment Operations,T06039,14,3,True,T07273,550
+Incident mislabelled as service request in <SVC>,Securities Settlement,Germany,Incident,Securities Operations,T06047,13,4,True,T09302,551
+Operational issue reported for <SVC>,Securities Settlement,Switzerland,Incident,Securities Operations,T06049,8,3,True,T06451,552
+Unclear incident input for <SVC>,Client Reporting,Switzerland,Incident,Client Services,T06103,14,7,True,T07867,553
+Automated alert triggered for <SVC>,Fund Pricing,Nordics,Incident,Valuation & Pricing,T06122,85,18,True,T06761,554
+Unclear incident input for <SVC>,Cash Management,Switzerland,Incident,Treasury & Cash,T06126,20,3,True,T09548,555
+Unclear incident input for <SVC>,Trade Matching,France,Incident,Investment Operations,T06208,14,3,True,T16107,556
+Unclear incident input for <SVC>,CRM & Client Portal,Switzerland,Incident,Client Services,T06235,13,1,False,T06583,557
+Operational issue reported for <SVC>,Identity & Access Management,Switzerland,Incident,Enterprise Applications,T06253,16,4,False,T07534,558
+Operational issue reported for <SVC>,NAV Calculation,Switzerland,Incident,Valuation & Pricing,T06310,23,7,True,T08693,559
+Unclear incident input for <SVC>,SimCorp Dimension,Switzerland,Incident,Enterprise Applications,T06319,15,5,True,T08212,560
+Operational issue reported for <SVC>,Client Reporting,Switzerland,Incident,Client Services,T06352,20,6,True,T09629,561
+Incident mislabelled as service request in <SVC>,Identity & Access Management,Luxembourg,Incident,Enterprise Applications,T06421,19,9,False,T06793,562
+Unclear incident input for <SVC>,Outlook & Email,Luxembourg,Incident,Enterprise Applications,T06432,16,3,False,T13933,563
+Incident mislabelled as service request in <SVC>,Fund Pricing,Germany,Incident,Valuation & Pricing,T06484,12,2,True,T07117,564
+Unclear incident input for <SVC>,Trading Platform,Germany,Incident,Investment Operations,T06508,14,5,True,T11509,565
+Automated alert triggered for <SVC>,Risk & Compliance Monitoring,France,Incident,Risk & Controls,T06513,81,21,True,T06594,566
+Incident mislabelled as service request in <SVC>,Securities Settlement,Switzerland,Incident,Securities Operations,T06522,10,2,True,T13078,567
+Incident mislabelled as service request in <SVC>,Securities Settlement,Luxembourg,Incident,Securities Operations,T06547,17,7,True,T09289,568
+Operational issue reported for <SVC>,SharePoint & File Storage,Nordics,Incident,Enterprise Applications,T06586,11,2,False,T09224,569
+Operational issue reported for <SVC>,Order Management,Nordics,Incident,Trading Support,T06613,11,4,True,T18397,570
+Unclear incident input for <SVC>,NAV Calculation,Nordics,Incident,Valuation & Pricing,T06642,18,6,True,T11487,571
+Unclear incident input for <SVC>,CRM & Client Portal,Germany,Incident,Client Services,T06652,25,7,False,T08813,572
+Operational issue reported for <SVC>,SharePoint & File Storage,France,Incident,Enterprise Applications,T06672,15,4,False,T07637,573
+Incident mislabelled as service request in <SVC>,Client Reporting,Switzerland,Incident,Client Services,T06695,23,5,True,T15066,574
+Operational issue reported for <SVC>,Outlook & Email,France,Incident,Enterprise Applications,T06721,17,4,False,T11027,575
+Operational issue reported for <SVC>,SimCorp Dimension,Germany,Incident,Enterprise Applications,T06747,19,3,True,T16603,576
+Operational issue reported for <SVC>,CRM & Client Portal,France,Incident,Client Services,T06829,13,4,False,T10746,577
+Unclear incident input for <SVC>,Trading Platform,Luxembourg,Incident,Investment Operations,T06882,15,6,True,T13225,578
+Incident mislabelled as service request in <SVC>,Order Management,France,Incident,Trading Support,T06918,14,5,True,T07319,579
+Incident mislabelled as service request in <SVC>,Cash Management,France,Incident,Treasury & Cash,T06930,21,7,True,T06973,580
+Automated alert triggered for <SVC>,Risk & Compliance Monitoring,Nordics,Incident,Risk & Controls,T06995,75,14,True,T07676,581
+Operational issue reported for <SVC>,Fund Pricing,Switzerland,Incident,Valuation & Pricing,T07009,16,5,True,T08425,582
+Automated alert triggered for <SVC>,Rimes Data Feed,Switzerland,Incident,Market Data Services,T07032,80,18,True,T07455,583
+Incident mislabelled as service request in <SVC>,CRM & Client Portal,France,Incident,Client Services,T07045,19,3,False,T08189,584
+Incident mislabelled as service request in <SVC>,Order Management,Nordics,Incident,Trading Support,T07047,28,5,True,T15444,585
+Unclear incident input for <SVC>,Trade Matching,Nordics,Incident,Investment Operations,T07063,19,3,True,T12793,586
+Incident mislabelled as service request in <SVC>,Tax Reporting,France,Incident,Tax & Reporting,T07073,13,2,False,T08285,587
+Unclear incident input for <SVC>,Corporate Actions,France,Incident,Securities Operations,T07076,14,3,True,T10696,588
+Operational issue reported for <SVC>,SimCorp Dimension,Nordics,Incident,Enterprise Applications,T07081,12,4,True,T11230,589
+Incident mislabelled as service request in <SVC>,Cash Management,Switzerland,Incident,Treasury & Cash,T07088,17,5,True,T07213,590
+Incident mislabelled as service request in <SVC>,Trading Platform,Germany,Incident,Investment Operations,T07091,16,3,True,T08080,591
+Unclear incident input for <SVC>,Securities Settlement,France,Incident,Securities Operations,T07113,15,4,True,T07609,592
+Unclear incident input for <SVC>,SimCorp Dimension,Germany,Incident,Enterprise Applications,T07145,11,5,True,T08245,593
+Operational issue reported for <SVC>,Portfolio Accounting,France,Incident,Investment Operations,T07166,17,5,True,T08346,594
+Operational issue reported for <SVC>,Rimes Data Feed,Switzerland,Incident,Market Data Services,T07195,20,2,True,T19151,595
+Incident mislabelled as service request in <SVC>,Portfolio Accounting,Germany,Incident,Investment Operations,T07220,13,4,True,T09511,596
+Operational issue reported for <SVC>,SharePoint & File Storage,Germany,Incident,Enterprise Applications,T07224,16,2,False,T08036,597
+Unclear incident input for <SVC>,Regulatory Reporting,Switzerland,Incident,Risk & Controls,T07246,14,6,True,T11739,598
+Operational issue reported for <SVC>,Risk & Compliance Monitoring,France,Incident,Risk & Controls,T07256,19,4,True,T14402,599
+Incident mislabelled as service request in <SVC>,SimCorp Dimension,Germany,Incident,Enterprise Applications,T07263,18,5,True,T07331,600
+Incident mislabelled as service request in <SVC>,Rimes Data Feed,Germany,Incident,Market Data Services,T07281,13,7,True,T08416,601
+Operational issue reported for <SVC>,Order Management,Switzerland,Incident,Trading Support,T07342,16,5,True,T07634,602
+Operational issue reported for <SVC>,Corporate Actions,France,Incident,Securities Operations,T07351,9,5,True,T11267,603
+Incident mislabelled as service request in <SVC>,Client Reporting,Luxembourg,Incident,Client Services,T07362,10,2,True,T16558,604
+Unclear incident input for <SVC>,Risk & Compliance Monitoring,Nordics,Incident,Risk & Controls,T07392,16,4,True,T11564,605
+Operational issue reported for <SVC>,Risk & Compliance Monitoring,Germany,Incident,Risk & Controls,T07463,12,2,True,T17450,606
+Incident mislabelled as service request in <SVC>,SharePoint & File Storage,Nordics,Incident,Enterprise Applications,T07464,16,4,False,T12171,607
+Incident mislabelled as service request in <SVC>,NAV Calculation,Luxembourg,Incident,Valuation & Pricing,T07492,9,1,True,T05915,608
+Operational issue reported for <SVC>,Identity & Access Management,Luxembourg,Incident,Enterprise Applications,T07497,18,3,False,T10610,609
+Incident mislabelled as service request in <SVC>,CRM & Client Portal,Germany,Incident,Client Services,T07509,10,3,False,T13815,610
+Unclear incident input for <SVC>,Rimes Data Feed,Nordics,Incident,Market Data Services,T07513,16,4,True,T07773,611
+Operational issue reported for <SVC>,Tax Reporting,Nordics,Incident,Tax & Reporting,T07551,10,1,False,T04211,612
+Operational issue reported for <SVC>,Trade Matching,Luxembourg,Incident,Investment Operations,T07567,14,3,True,T16158,613
+Incident mislabelled as service request in <SVC>,NAV Calculation,Germany,Incident,Valuation & Pricing,T07584,18,4,True,T12955,614
+Automated alert triggered for <SVC>,Identity & Access Management,Switzerland,Incident,Enterprise Applications,T07610,60,15,False,T08116,615
+Incident mislabelled as service request in <SVC>,Trade Matching,Nordics,Incident,Investment Operations,T07645,20,6,True,T09731,616
+Unclear incident input for <SVC>,Order Management,Germany,Incident,Trading Support,T07671,20,5,True,T11993,617
+Unclear incident input for <SVC>,Fund Pricing,France,Incident,Valuation & Pricing,T07678,19,5,True,T08191,618
+Operational issue reported for <SVC>,Client Reporting,Luxembourg,Incident,Client Services,T07681,19,2,True,T12278,619
+Operational issue reported for <SVC>,Cash Management,France,Incident,Treasury & Cash,T07692,17,6,True,T11515,620
+Unclear incident input for <SVC>,Identity & Access Management,Luxembourg,Incident,Enterprise Applications,T07750,17,6,False,T10722,621
+Unclear incident input for <SVC>,Portfolio Accounting,Luxembourg,Incident,Investment Operations,T07795,11,5,True,T07809,622
+Incident mislabelled as service request in <SVC>,CRM & Client Portal,Switzerland,Incident,Client Services,T07832,14,4,False,T09226,623
+Unclear incident input for <SVC>,Corporate Actions,Germany,Incident,Securities Operations,T07916,17,4,True,T08201,624
+Incident mislabelled as service request in <SVC>,Cash Management,Germany,Incident,Treasury & Cash,T07954,17,2,True,T11608,625
+Unclear incident input for <SVC>,Fund Pricing,Luxembourg,Incident,Valuation & Pricing,T07997,15,3,True,T14060,626
+Unclear incident input for <SVC>,Corporate Actions,Nordics,Incident,Securities Operations,T08092,19,6,True,T08496,627
+Operational issue reported for <SVC>,Portfolio Accounting,Luxembourg,Incident,Investment Operations,T08110,10,3,True,T13442,628
+Unclear incident input for <SVC>,Outlook & Email,France,Incident,Enterprise Applications,T08134,15,5,False,T11760,629
+Incident mislabelled as service request in <SVC>,Regulatory Reporting,Nordics,Incident,Risk & Controls,T08146,17,2,True,T17108,630
+Unclear incident input for <SVC>,Regulatory Reporting,Germany,Incident,Risk & Controls,T08149,12,4,True,T09150,631
+Operational issue reported for <SVC>,Identity & Access Management,Nordics,Incident,Enterprise Applications,T08246,23,2,False,T18609,632
+Incident mislabelled as service request in <SVC>,SimCorp Dimension,Switzerland,Incident,Enterprise Applications,T08251,10,2,True,T11968,633
+Unclear incident input for <SVC>,Trading Platform,Nordics,Incident,Investment Operations,T08272,22,5,True,T11333,634
+Unclear incident input for <SVC>,SharePoint & File Storage,France,Incident,Enterprise Applications,T08331,14,4,False,T08941,635
+Incident mislabelled as service request in <SVC>,SimCorp Dimension,Luxembourg,Incident,Enterprise Applications,T08363,9,2,True,T13657,636
+Unclear incident input for <SVC>,CRM & Client Portal,Luxembourg,Incident,Client Services,T08390,19,2,False,T13908,637
+Operational issue reported for <SVC>,Trade Matching,Nordics,Incident,Investment Operations,T08413,18,2,True,T10712,638
+Incident mislabelled as service request in <SVC>,Trade Matching,Switzerland,Incident,Investment Operations,T08450,18,3,True,T10389,639
+Unclear incident input for <SVC>,Outlook & Email,Germany,Incident,Enterprise Applications,T08451,19,4,False,T14629,640
+Unclear incident input for <SVC>,Risk & Compliance Monitoring,Switzerland,Incident,Risk & Controls,T08455,14,6,True,T10225,641
+Incident mislabelled as service request in <SVC>,SharePoint & File Storage,Luxembourg,Incident,Enterprise Applications,T08466,12,5,False,T12479,642
+Operational issue reported for <SVC>,SimCorp Dimension,France,Incident,Enterprise Applications,T08497,17,5,True,T11062,643
+Unclear incident input for <SVC>,Rimes Data Feed,France,Incident,Market Data Services,T08637,12,2,True,T13936,644
+Unclear incident input for <SVC>,Securities Settlement,Nordics,Incident,Securities Operations,T08661,23,4,True,T09082,645
+Operational issue reported for <SVC>,Client Reporting,Nordics,Incident,Client Services,T08694,11,3,True,T08927,646
+Operational issue reported for <SVC>,Order Management,Germany,Incident,Trading Support,T08716,12,6,True,T10874,647
+Operational issue reported for <SVC>,Regulatory Reporting,Germany,Incident,Risk & Controls,T08778,17,5,True,T10657,648
+Unclear incident input for <SVC>,Client Reporting,Nordics,Incident,Client Services,T08785,17,5,True,T11987,649
+Incident mislabelled as service request in <SVC>,SharePoint & File Storage,Switzerland,Incident,Enterprise Applications,T08802,13,3,False,T14094,650
+Unclear incident input for <SVC>,Trading Platform,France,Incident,Investment Operations,T08829,11,2,True,T17047,651
+Unclear incident input for <SVC>,Tax Reporting,France,Incident,Tax & Reporting,T08893,12,4,False,T09879,652
+Incident mislabelled as service request in <SVC>,Tax Reporting,Luxembourg,Incident,Tax & Reporting,T08951,15,2,False,T13537,653
+Operational issue reported for <SVC>,Tax Reporting,France,Incident,Tax & Reporting,T09026,10,2,False,T15927,654
+Operational issue reported for <SVC>,Trade Matching,Germany,Incident,Investment Operations,T09055,18,2,True,T13048,655
+Operational issue reported for <SVC>,Cash Management,Switzerland,Incident,Treasury & Cash,T09276,14,2,True,T14086,656
+Unclear incident input for <SVC>,Outlook & Email,Switzerland,Incident,Enterprise Applications,T09295,14,5,False,T10164,657
+Operational issue reported for <SVC>,NAV Calculation,Nordics,Incident,Valuation & Pricing,T09299,12,2,True,T09606,658
+Unclear incident input for <SVC>,Cash Management,France,Incident,Treasury & Cash,T09349,8,4,True,T09729,659
+Incident mislabelled as service request in <SVC>,Outlook & Email,Switzerland,Incident,Enterprise Applications,T09437,17,4,False,T10146,660
+Incident mislabelled as service request in <SVC>,Securities Settlement,Nordics,Incident,Securities Operations,T09453,17,4,True,T11512,661
+Incident mislabelled as service request in <SVC>,Identity & Access Management,France,Incident,Enterprise Applications,T09471,11,4,False,T11682,662
+Unclear incident input for <SVC>,Order Management,Luxembourg,Incident,Trading Support,T09478,13,4,True,T09567,663
+Operational issue reported for <SVC>,Portfolio Accounting,Switzerland,Incident,Investment Operations,T09501,13,4,True,T09739,664
+Operational issue reported for <SVC>,Trading Platform,Nordics,Incident,Investment Operations,T09554,16,2,True,T12706,665
+Operational issue reported for <SVC>,Securities Settlement,Germany,Incident,Securities Operations,T09578,20,5,True,T10622,666
+Unclear incident input for <SVC>,Regulatory Reporting,France,Incident,Risk & Controls,T09620,11,2,True,T10603,667
+Incident mislabelled as service request in <SVC>,Regulatory Reporting,France,Incident,Risk & Controls,T09638,7,1,True,T04598,668
+Unclear incident input for <SVC>,Portfolio Accounting,France,Incident,Investment Operations,T09818,18,2,True,T17315,669
+Incident mislabelled as service request in <SVC>,Outlook & Email,France,Incident,Enterprise Applications,T09985,25,4,False,T11444,670
+Incident mislabelled as service request in <SVC>,Rimes Data Feed,Luxembourg,Incident,Market Data Services,T10061,18,3,True,T10475,671
+Operational issue reported for <SVC>,Rimes Data Feed,Nordics,Incident,Market Data Services,T10127,22,8,True,T14615,672
+Operational issue reported for <SVC>,Cash Management,Luxembourg,Incident,Treasury & Cash,T10153,19,4,True,T11477,673
+Operational issue reported for <SVC>,Rimes Data Feed,Luxembourg,Incident,Market Data Services,T10231,12,2,True,T16566,674
+Unclear incident input for <SVC>,Risk & Compliance Monitoring,Germany,Incident,Risk & Controls,T10239,15,5,True,T15031,675
+Incident mislabelled as service request in <SVC>,Order Management,Luxembourg,Incident,Trading Support,T10350,13,2,True,T15367,676
+Incident mislabelled as service request in <SVC>,Portfolio Accounting,France,Incident,Investment Operations,T10440,13,3,True,T11292,677
+Operational issue reported for <SVC>,Outlook & Email,Germany,Incident,Enterprise Applications,T10543,12,3,False,T11106,678
+Operational issue reported for <SVC>,Trading Platform,Switzerland,Incident,Investment Operations,T10588,15,2,True,T18778,679
+Unclear incident input for <SVC>,SimCorp Dimension,Luxembourg,Incident,Enterprise Applications,T10664,16,1,True,T05007,680
+Operational issue reported for <SVC>,Outlook & Email,Nordics,Incident,Enterprise Applications,T10724,18,2,False,T17052,681
+Incident mislabelled as service request in <SVC>,Risk & Compliance Monitoring,France,Incident,Risk & Controls,T10765,7,2,True,T18579,682
+Unclear incident input for <SVC>,Trading Platform,Switzerland,Incident,Investment Operations,T10836,13,6,True,T11224,683
+Operational issue reported for <SVC>,Risk & Compliance Monitoring,Switzerland,Incident,Risk & Controls,T10873,19,6,True,T12583,684
+Unclear incident input for <SVC>,Tax Reporting,Switzerland,Incident,Tax & Reporting,T10887,12,4,False,T14027,685
+Operational issue reported for <SVC>,Rimes Data Feed,France,Incident,Market Data Services,T10916,5,2,True,T11262,686
+Incident mislabelled as service request in <SVC>,Order Management,Switzerland,Incident,Trading Support,T10919,20,5,True,T12163,687
+Unclear incident input for <SVC>,SimCorp Dimension,France,Incident,Enterprise Applications,T10976,7,2,True,T17244,688
+Incident mislabelled as service request in <SVC>,Regulatory Reporting,Luxembourg,Incident,Risk & Controls,T11176,18,5,True,T12351,689
+Incident mislabelled as service request in <SVC>,Client Reporting,Germany,Incident,Client Services,T11331,20,4,True,T15626,690
+Unclear incident input for <SVC>,Securities Settlement,Luxembourg,Incident,Securities Operations,T11388,18,3,True,T11609,691
+Operational issue reported for <SVC>,Trade Matching,France,Incident,Investment Operations,T11435,9,1,True,T05677,692
+Operational issue reported for <SVC>,Cash Management,Nordics,Incident,Treasury & Cash,T11721,13,1,True,T05368,693
+Unclear incident input for <SVC>,Risk & Compliance Monitoring,Luxembourg,Incident,Risk & Controls,T11898,15,4,True,T15479,694
+Unclear incident input for <SVC>,Trade Matching,Germany,Incident,Investment Operations,T11964,9,2,True,T18717,695
+Operational issue reported for <SVC>,Tax Reporting,Switzerland,Incident,Tax & Reporting,T11996,20,3,False,T17506,696
+Operational issue reported for <SVC>,Regulatory Reporting,Switzerland,Incident,Risk & Controls,T12281,17,4,True,T12423,697
+Incident mislabelled as service request in <SVC>,Cash Management,Luxembourg,Incident,Treasury & Cash,T12337,15,2,True,T16584,698
+Incident mislabelled as service request in <SVC>,Fund Pricing,France,Incident,Valuation & Pricing,T12403,19,3,True,T14646,699
+Unclear incident input for <SVC>,Trade Matching,Luxembourg,Incident,Investment Operations,T12468,17,6,True,T12591,700
+Incident mislabelled as service request in <SVC>,Trade Matching,Luxembourg,Incident,Investment Operations,T12531,16,2,True,T13967,701
+Unclear incident input for <SVC>,NAV Calculation,Germany,Incident,Valuation & Pricing,T12795,10,5,True,T14444,702
+Operational issue reported for <SVC>,CRM & Client Portal,Luxembourg,Incident,Client Services,T13054,13,2,False,T16891,703
+Unclear incident input for <SVC>,Order Management,Switzerland,Incident,Trading Support,T13183,10,2,True,T13897,704
+Incident mislabelled as service request in <SVC>,Corporate Actions,Nordics,Incident,Securities Operations,T13343,13,2,True,T14493,705
+Operational issue reported for <SVC>,Trade Matching,Switzerland,Incident,Investment Operations,T13383,13,3,True,T15747,706
+Operational issue reported for <SVC>,Corporate Actions,Switzerland,Incident,Securities Operations,T13395,12,2,True,T16456,707
+Incident mislabelled as service request in <SVC>,Client Reporting,France,Incident,Client Services,T13535,14,4,True,T13609,708
+Operational issue reported for <SVC>,Portfolio Accounting,Nordics,Incident,Investment Operations,T13542,13,3,True,T14383,709
+Incident mislabelled as service request in <SVC>,Portfolio Accounting,Switzerland,Incident,Investment Operations,T13612,10,1,True,T05229,710
+Unclear incident input for <SVC>,Corporate Actions,Luxembourg,Incident,Securities Operations,T13713,12,5,True,T14002,711
+Operational issue reported for <SVC>,Trading Platform,Germany,Incident,Investment Operations,T13792,14,1,True,T05009,712
+Incident mislabelled as service request in <SVC>,Rimes Data Feed,Nordics,Incident,Market Data Services,T13973,14,4,True,T17068,713
+Incident mislabelled as service request in <SVC>,Rimes Data Feed,Switzerland,Incident,Market Data Services,T14107,13,2,True,T17516,714
+Operational issue reported for <SVC>,SharePoint & File Storage,Switzerland,Incident,Enterprise Applications,T14185,11,3,False,T15792,715
+Incident mislabelled as service request in <SVC>,SimCorp Dimension,France,Incident,Enterprise Applications,T14193,14,3,True,T14224,716
+Operational issue reported for <SVC>,Tax Reporting,Germany,Incident,Tax & Reporting,T14275,10,1,False,T04700,717
+Operational issue reported for <SVC>,Trading Platform,France,Incident,Investment Operations,T14421,17,2,True,T15651,718
+Incident mislabelled as service request in <SVC>,Client Reporting,Nordics,Incident,Client Services,T14431,10,2,True,T15070,719
+Incident mislabelled as service request in <SVC>,Corporate Actions,France,Incident,Securities Operations,T14600,11,4,True,T15269,720
+Unclear incident input for <SVC>,Tax Reporting,Nordics,Incident,Tax & Reporting,T14688,13,1,False,T04705,721
+Incident mislabelled as service request in <SVC>,NAV Calculation,France,Incident,Valuation & Pricing,T14771,14,3,True,T17466,722
+Incident mislabelled as service request in <SVC>,Corporate Actions,Germany,Incident,Securities Operations,T15273,15,2,True,T17716,723
+Incident mislabelled as service request in <SVC>,NAV Calculation,Switzerland,Incident,Valuation & Pricing,T15509,8,2,True,T19221,724
+Operational issue reported for <SVC>,CRM & Client Portal,Nordics,Incident,Client Services,T15532,14,2,False,T16627,725
+Unclear incident input for <SVC>,CRM & Client Portal,France,Incident,Client Services,T15668,20,4,False,T16075,726
+Operational issue reported for <SVC>,Outlook & Email,Switzerland,Incident,Enterprise Applications,T16002,15,2,False,T18489,727
+Unclear incident input for <SVC>,Cash Management,Nordics,Incident,Treasury & Cash,T16184,16,2,True,T16299,728
+Unclear incident input for <SVC>,SharePoint & File Storage,Nordics,Incident,Enterprise Applications,T16740,22,1,False,T04054,729
+Unclear incident input for <SVC>,SharePoint & File Storage,Switzerland,Incident,Enterprise Applications,T16741,14,2,False,T17555,730
+Operational issue reported for <SVC>,Order Management,France,Incident,Trading Support,T17019,10,3,True,T19202,731
+Operational issue reported for <SVC>,Order Management,Luxembourg,Incident,Trading Support,T17150,17,3,True,T19036,732
+Incident mislabelled as service request in <SVC>,Trading Platform,France,Incident,Investment Operations,T17398,11,3,True,T18307,733
+Unclear incident input for <SVC>,Order Management,France,Incident,Trading Support,T17485,18,2,True,T18583,734
+Unclear incident input for <SVC>,Outlook & Email,Nordics,Incident,Enterprise Applications,T17542,15,2,False,T19995,735
+Operational issue reported for <SVC>,Cash Management,Germany,Incident,Treasury & Cash,T18922,12,1,True,T04683,736
+Incident mislabelled as service request in <SVC>,Cash Management,Nordics,Incident,Treasury & Cash,T19188,15,1,True,T04024,737
+Incorrect incident title for service request in <SVC>,Securities Settlement,Germany,Service Request,Securities Operations,T00009,4,0,True,T02335,738
+General request for <SVC> with unclear details,Identity & Access Management,Switzerland,Service Request,Enterprise Applications,T00040,3,0,False,T00638,739
+Incorrect incident title for service request in <SVC>,Trade Matching,Nordics,Service Request,Investment Operations,T00047,5,0,True,T01603,740
+Access removal requested for <SVC>,Portfolio Accounting,Switzerland,Service Request,Investment Operations,T00064,8,0,True,T01219,741
+Incorrect incident title for service request in <SVC>,Regulatory Reporting,Germany,Service Request,Risk & Controls,T00070,3,0,True,T01835,742
+General request for <SVC> with unclear details,Portfolio Accounting,Switzerland,Service Request,Investment Operations,T00080,2,0,True,T01053,743
+Access removal requested for <SVC>,Trade Matching,Germany,Service Request,Investment Operations,T00088,7,0,True,T01347,744
+Incorrect incident title for service request in <SVC>,Portfolio Accounting,Luxembourg,Service Request,Investment Operations,T00128,4,0,True,T00618,745
+Access requested for <SVC>,NAV Calculation,Switzerland,Service Request,Valuation & Pricing,T00131,5,0,True,T01298,746
+Access requested for <SVC>,Client Reporting,Nordics,Service Request,Client Services,T00139,4,0,True,T00671,747
+Access removal requested for <SVC>,Fund Pricing,Switzerland,Service Request,Valuation & Pricing,T00153,5,0,True,T01500,748
+Access removal requested for <SVC>,Order Management,Switzerland,Service Request,Trading Support,T00163,3,0,True,T00684,749
+New license requested for <SVC>,SharePoint & File Storage,Switzerland,Service Request,Enterprise Applications,T00165,5,0,False,T00567,750
+General request for <SVC> with unclear details,Rimes Data Feed,France,Service Request,Market Data Services,T00172,4,0,True,T02127,751
+General request for <SVC> with unclear details,Outlook & Email,Nordics,Service Request,Enterprise Applications,T00173,3,0,False,T01390,752
+Incorrect incident title for service request in <SVC>,Corporate Actions,Nordics,Service Request,Securities Operations,T00177,5,0,True,T01019,753
+Access removal requested for <SVC>,Risk & Compliance Monitoring,Nordics,Service Request,Risk & Controls,T00180,3,0,True,T01938,754
+General request for <SVC> with unclear details,Portfolio Accounting,Luxembourg,Service Request,Investment Operations,T00182,2,0,True,T03861,755
+Incorrect incident title for service request in <SVC>,Corporate Actions,Switzerland,Service Request,Securities Operations,T00226,2,0,True,T02136,756
+Incorrect incident title for service request in <SVC>,Portfolio Accounting,Nordics,Service Request,Investment Operations,T00231,2,0,True,T01828,757
+Access requested for <SVC>,Fund Pricing,Luxembourg,Service Request,Valuation & Pricing,T00255,1,0,True,,758
+Access removal requested for <SVC>,CRM & Client Portal,Germany,Service Request,Client Services,T00256,9,0,False,T00269,759
+General request for <SVC> with unclear details,Tax Reporting,Germany,Service Request,Tax & Reporting,T00263,3,0,False,T00350,760
+Access requested for <SVC>,Portfolio Accounting,Nordics,Service Request,Investment Operations,T00299,7,0,True,T01263,761
+Incorrect incident title for service request in <SVC>,Trading Platform,France,Service Request,Investment Operations,T00301,5,0,True,T00585,762
+General request for <SVC> with unclear details,Outlook & Email,Germany,Service Request,Enterprise Applications,T00313,5,0,False,T00537,763
+Incorrect incident title for service request in <SVC>,CRM & Client Portal,Luxembourg,Service Request,Client Services,T00317,3,0,False,T00514,764
+Access removal requested for <SVC>,Outlook & Email,Luxembourg,Service Request,Enterprise Applications,T00333,9,0,False,T00356,765
+General request for <SVC> with unclear details,Rimes Data Feed,Germany,Service Request,Market Data Services,T00335,5,0,True,T00873,766
+Incorrect incident title for service request in <SVC>,SimCorp Dimension,Nordics,Service Request,Enterprise Applications,T00337,4,0,True,T02621,767
+Access requested for <SVC>,NAV Calculation,Germany,Service Request,Valuation & Pricing,T00338,10,0,True,T00441,768
+Incorrect incident title for service request in <SVC>,Client Reporting,Nordics,Service Request,Client Services,T00345,2,0,True,T03582,769
+General request for <SVC> with unclear details,Tax Reporting,France,Service Request,Tax & Reporting,T00347,2,0,False,T03184,770
+Access requested for <SVC>,Identity & Access Management,France,Service Request,Enterprise Applications,T00351,4,0,False,T01131,771
+New license requested for <SVC>,Order Management,Germany,Service Request,Trading Support,T00357,2,0,True,T00894,772
+Incorrect incident title for service request in <SVC>,Tax Reporting,Switzerland,Service Request,Tax & Reporting,T00364,5,0,False,T01385,773
+General request for <SVC> with unclear details,Trade Matching,Luxembourg,Service Request,Investment Operations,T00366,3,0,True,T01322,774
+Access requested for <SVC>,SimCorp Dimension,Nordics,Service Request,Enterprise Applications,T00370,6,0,True,T01281,775
+Access requested for <SVC>,Corporate Actions,France,Service Request,Securities Operations,T00383,8,0,True,T01169,776
+Incorrect incident title for service request in <SVC>,NAV Calculation,France,Service Request,Valuation & Pricing,T00395,3,0,True,T00992,777
+Incorrect incident title for service request in <SVC>,Fund Pricing,Switzerland,Service Request,Valuation & Pricing,T00425,3,0,True,T02399,778
+Incorrect incident title for service request in <SVC>,SharePoint & File Storage,Switzerland,Service Request,Enterprise Applications,T00429,4,0,False,T00611,779
+Incorrect incident title for service request in <SVC>,Cash Management,Luxembourg,Service Request,Treasury & Cash,T00432,2,0,True,T02234,780
+New license requested for <SVC>,NAV Calculation,France,Service Request,Valuation & Pricing,T00454,9,0,True,T00558,781
+Access removal requested for <SVC>,Regulatory Reporting,Nordics,Service Request,Risk & Controls,T00455,6,0,True,T02351,782
+Incorrect incident title for service request in <SVC>,Order Management,Nordics,Service Request,Trading Support,T00461,2,0,True,T01359,783
+Access requested for <SVC>,Portfolio Accounting,France,Service Request,Investment Operations,T00469,9,0,True,T00751,784
+Access requested for <SVC>,Risk & Compliance Monitoring,Luxembourg,Service Request,Risk & Controls,T00471,10,0,True,T00561,785
+Access removal requested for <SVC>,Identity & Access Management,France,Service Request,Enterprise Applications,T00492,2,0,False,T03133,786
+Access removal requested for <SVC>,Cash Management,Nordics,Service Request,Treasury & Cash,T00495,3,0,True,T01309,787
+New license requested for <SVC>,Risk & Compliance Monitoring,Germany,Service Request,Risk & Controls,T00499,7,0,True,T01164,788
+Incorrect incident title for service request in <SVC>,NAV Calculation,Luxembourg,Service Request,Valuation & Pricing,T00503,6,0,True,T00528,789
+General request for <SVC> with unclear details,Risk & Compliance Monitoring,Nordics,Service Request,Risk & Controls,T00591,2,0,True,T00959,790
+Incorrect incident title for service request in <SVC>,Outlook & Email,France,Service Request,Enterprise Applications,T00593,3,0,False,T02539,791
+Access removal requested for <SVC>,Corporate Actions,Germany,Service Request,Securities Operations,T00675,3,0,True,T01752,792
+Incorrect incident title for service request in <SVC>,Outlook & Email,Germany,Service Request,Enterprise Applications,T00700,4,0,False,T01048,793
+General request for <SVC> with unclear details,Fund Pricing,Luxembourg,Service Request,Valuation & Pricing,T00713,4,0,True,T03518,794
+Access requested for <SVC>,Tax Reporting,Switzerland,Service Request,Tax & Reporting,T00733,1,0,False,,795
+Incorrect incident title for service request in <SVC>,Fund Pricing,Nordics,Service Request,Valuation & Pricing,T00741,4,0,True,T01355,796
+General request for <SVC> with unclear details,Cash Management,France,Service Request,Treasury & Cash,T00753,1,0,True,,797
+Incorrect incident title for service request in <SVC>,CRM & Client Portal,France,Service Request,Client Services,T00789,1,0,False,,798
+Access requested for <SVC>,Rimes Data Feed,Switzerland,Service Request,Market Data Services,T00797,6,0,True,T00933,799
+New license requested for <SVC>,Identity & Access Management,Nordics,Service Request,Enterprise Applications,T00801,7,0,False,T01360,800
+Access removal requested for <SVC>,Portfolio Accounting,Luxembourg,Service Request,Investment Operations,T00811,3,0,True,T02625,801
+Incorrect incident title for service request in <SVC>,Corporate Actions,Luxembourg,Service Request,Securities Operations,T00817,2,0,True,T02630,802
+Incorrect incident title for service request in <SVC>,Identity & Access Management,Nordics,Service Request,Enterprise Applications,T00820,3,0,False,T03308,803
+Access requested for <SVC>,Portfolio Accounting,Luxembourg,Service Request,Investment Operations,T00831,6,0,True,T02334,804
+Access requested for <SVC>,Outlook & Email,Switzerland,Service Request,Enterprise Applications,T00839,6,0,False,T01384,805
+Incorrect incident title for service request in <SVC>,SharePoint & File Storage,Germany,Service Request,Enterprise Applications,T00843,2,0,False,T02473,806
+Access removal requested for <SVC>,Identity & Access Management,Germany,Service Request,Enterprise Applications,T00852,5,0,False,T01539,807
+Incorrect incident title for service request in <SVC>,Tax Reporting,Luxembourg,Service Request,Tax & Reporting,T00868,3,0,False,T01525,808
+General request for <SVC> with unclear details,Securities Settlement,Luxembourg,Service Request,Securities Operations,T00869,2,0,True,T03412,809
+Access removal requested for <SVC>,Order Management,France,Service Request,Trading Support,T00889,4,0,True,T01581,810
+Access requested for <SVC>,Cash Management,France,Service Request,Treasury & Cash,T00926,6,0,True,T01562,811
+Access removal requested for <SVC>,Trading Platform,Nordics,Service Request,Investment Operations,T00952,7,0,True,T01974,812
+Incorrect incident title for service request in <SVC>,Tax Reporting,Nordics,Service Request,Tax & Reporting,T00955,1,0,False,,813
+Incorrect incident title for service request in <SVC>,Regulatory Reporting,France,Service Request,Risk & Controls,T00999,3,0,True,T02105,814
+General request for <SVC> with unclear details,Regulatory Reporting,Luxembourg,Service Request,Risk & Controls,T01025,6,0,True,T01063,815
+General request for <SVC> with unclear details,Trade Matching,France,Service Request,Investment Operations,T01042,6,0,True,T01861,816
+General request for <SVC> with unclear details,Fund Pricing,France,Service Request,Valuation & Pricing,T01089,7,0,True,T01724,817
+Incorrect incident title for service request in <SVC>,Cash Management,Germany,Service Request,Treasury & Cash,T01138,4,0,True,T02452,818
+General request for <SVC> with unclear details,Outlook & Email,Luxembourg,Service Request,Enterprise Applications,T01168,2,0,False,T03351,819
+Access requested for <SVC>,Order Management,Switzerland,Service Request,Trading Support,T01232,4,0,True,T02141,820
+Access removal requested for <SVC>,SharePoint & File Storage,Germany,Service Request,Enterprise Applications,T01307,3,0,False,T02118,821
+Incorrect incident title for service request in <SVC>,Client Reporting,Luxembourg,Service Request,Client Services,T01330,2,0,True,T02396,822
+Access requested for <SVC>,Corporate Actions,Luxembourg,Service Request,Securities Operations,T01340,3,0,True,T02038,823
+Incorrect incident title for service request in <SVC>,Client Reporting,Germany,Service Request,Client Services,T01402,3,0,True,T02272,824
+Access removal requested for <SVC>,Securities Settlement,Luxembourg,Service Request,Securities Operations,T01432,4,0,True,T01462,825
+Access requested for <SVC>,SharePoint & File Storage,Germany,Service Request,Enterprise Applications,T01460,4,0,False,T02256,826
+General request for <SVC> with unclear details,Identity & Access Management,Germany,Service Request,Enterprise Applications,T01509,1,0,False,,827
+Access removal requested for <SVC>,CRM & Client Portal,Switzerland,Service Request,Client Services,T01526,2,0,False,T01710,828
+General request for <SVC> with unclear details,Trading Platform,Germany,Service Request,Investment Operations,T01531,2,0,True,T01934,829
+New license requested for <SVC>,Fund Pricing,Germany,Service Request,Valuation & Pricing,T01564,6,0,True,T02277,830
+Access removal requested for <SVC>,SharePoint & File Storage,Switzerland,Service Request,Enterprise Applications,T01576,2,0,False,T03055,831
+General request for <SVC> with unclear details,Order Management,Nordics,Service Request,Trading Support,T01584,1,0,True,,832
+General request for <SVC> with unclear details,Trading Platform,Luxembourg,Service Request,Investment Operations,T01610,4,0,True,T02681,833
+General request for <SVC> with unclear details,Outlook & Email,France,Service Request,Enterprise Applications,T01635,3,0,False,T02126,834
+Incorrect incident title for service request in <SVC>,Portfolio Accounting,France,Service Request,Investment Operations,T01658,1,0,True,,835
+Access removal requested for <SVC>,Outlook & Email,Switzerland,Service Request,Enterprise Applications,T01692,3,0,False,T01854,836
+Access requested for <SVC>,Tax Reporting,Luxembourg,Service Request,Tax & Reporting,T01781,2,0,False,T01805,837
+Incorrect incident title for service request in <SVC>,Outlook & Email,Luxembourg,Service Request,Enterprise Applications,T01795,4,0,False,T03293,838
+General request for <SVC> with unclear details,CRM & Client Portal,Nordics,Service Request,Client Services,T01817,2,0,False,T03489,839
+General request for <SVC> with unclear details,Regulatory Reporting,Switzerland,Service Request,Risk & Controls,T01891,3,0,True,T02117,840
+Incorrect incident title for service request in <SVC>,Trading Platform,Luxembourg,Service Request,Investment Operations,T01919,2,0,True,T03462,841
+Access removal requested for <SVC>,NAV Calculation,Germany,Service Request,Valuation & Pricing,T01986,2,0,True,T02348,842
+New license requested for <SVC>,Tax Reporting,Germany,Service Request,Tax & Reporting,T02069,3,0,False,T03270,843
+Access removal requested for <SVC>,Trading Platform,Switzerland,Service Request,Investment Operations,T02103,1,0,True,,844
+Incorrect incident title for service request in <SVC>,Trading Platform,Nordics,Service Request,Investment Operations,T02163,2,0,True,T03998,845
+Incorrect incident title for service request in <SVC>,SimCorp Dimension,Luxembourg,Service Request,Enterprise Applications,T02164,2,0,True,T03128,846
+Access removal requested for <SVC>,Client Reporting,Germany,Service Request,Client Services,T02165,1,0,True,,847
+Access removal requested for <SVC>,SimCorp Dimension,France,Service Request,Enterprise Applications,T02168,3,0,True,T02248,848
+General request for <SVC> with unclear details,Order Management,Luxembourg,Service Request,Trading Support,T02172,2,0,True,T03129,849
+Access removal requested for <SVC>,CRM & Client Portal,Nordics,Service Request,Client Services,T02268,3,0,False,T03064,850
+Incorrect incident title for service request in <SVC>,Identity & Access Management,France,Service Request,Enterprise Applications,T02270,3,0,False,T03618,851
+Access removal requested for <SVC>,Tax Reporting,Luxembourg,Service Request,Tax & Reporting,T02328,2,0,False,T03340,852
+Incorrect incident title for service request in <SVC>,Rimes Data Feed,Nordics,Service Request,Market Data Services,T02534,2,0,True,T02813,853
+Access removal requested for <SVC>,SimCorp Dimension,Nordics,Service Request,Enterprise Applications,T02740,3,0,True,T02954,854
+Access removal requested for <SVC>,Trade Matching,Nordics,Service Request,Investment Operations,T02742,3,0,True,T03372,855
+General request for <SVC> with unclear details,Identity & Access Management,Luxembourg,Service Request,Enterprise Applications,T02829,2,0,False,T03282,856
+Incorrect incident title for service request in <SVC>,Trade Matching,Luxembourg,Service Request,Investment Operations,T02893,1,0,True,,857
+General request for <SVC> with unclear details,Tax Reporting,Switzerland,Service Request,Tax & Reporting,T03499,2,0,False,T03804,858
+Access removal requested for <SVC>,Corporate Actions,Nordics,Service Request,Securities Operations,T03750,3,0,True,T03835,859
+Access removal requested for <SVC>,Cash Management,Germany,Service Request,Treasury & Cash,T03952,1,0,True,,860
+Operational issue reported for <SVC>,Outlook & Email,Luxembourg,Incident,Enterprise Applications,T04237,12,0,False,T06816,861
+Unclear incident input for <SVC>,Fund Pricing,Switzerland,Incident,Valuation & Pricing,T04269,12,0,True,T05816,862
+Unclear incident input for <SVC>,Rimes Data Feed,Germany,Incident,Market Data Services,T05124,10,0,True,T06236,863

@@ -1,0 +1,2438 @@
+{
+  "decae4bbc720e131": {
+    "variant_id": "decae4bbc720e131",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "50f4d08caa7dd4ca": {
+    "variant_id": "50f4d08caa7dd4ca",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "7f17df83552d9413": {
+    "variant_id": "7f17df83552d9413",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "cc6ea82e679ddc3c": {
+    "variant_id": "cc6ea82e679ddc3c",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "263d18f13a17117b": {
+    "variant_id": "263d18f13a17117b",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "9979352fb8a5a688": {
+    "variant_id": "9979352fb8a5a688",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "3548f7e80b9a6122": {
+    "variant_id": "3548f7e80b9a6122",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 2,
+    "vote_errors": [
+      "Model did not return JSON: {\n  \"deadline_pressure\": \"none\",\n  \"outage_extent\": \"none\",\n  \"regulatory_or_security\": false,\n  \"scope\": \"individual\",\n  \"work_type\": \"Service Request\"\n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n "
+    ]
+  },
+  "eae158fe35147f82": {
+    "variant_id": "eae158fe35147f82",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "96cf5fc4a0363efc": {
+    "variant_id": "96cf5fc4a0363efc",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "one_entity",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 0.9444,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "911390af49403d33": {
+    "variant_id": "911390af49403d33",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "f26510d7d92980a6": {
+    "variant_id": "f26510d7d92980a6",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a5c96a8cfe2c88c0": {
+    "variant_id": "a5c96a8cfe2c88c0",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "external_counterparty",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "23e50462670c2863": {
+    "variant_id": "23e50462670c2863",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "0fc693ec44a57cbe": {
+    "variant_id": "0fc693ec44a57cbe",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "adadf915e7999057": {
+    "variant_id": "adadf915e7999057",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "b357058ae0d75e05": {
+    "variant_id": "b357058ae0d75e05",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "26aa3ccf9e3b0004": {
+    "variant_id": "26aa3ccf9e3b0004",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "b837374c495d426c": {
+    "variant_id": "b837374c495d426c",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5a66c972aefe319c": {
+    "variant_id": "5a66c972aefe319c",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "19a9cdae80cf0d62": {
+    "variant_id": "19a9cdae80cf0d62",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a39be72244817f1c": {
+    "variant_id": "a39be72244817f1c",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "d47b507074d7f89e": {
+    "variant_id": "d47b507074d7f89e",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "b24c04e608e23fa4": {
+    "variant_id": "b24c04e608e23fa4",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "f9177fc3353e003c": {
+    "variant_id": "f9177fc3353e003c",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "fdb08d1b409afd81": {
+    "variant_id": "fdb08d1b409afd81",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "b2fe905967ced1a5": {
+    "variant_id": "b2fe905967ced1a5",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "db47182cf1837122": {
+    "variant_id": "db47182cf1837122",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "21ab6a0cc75dea7d": {
+    "variant_id": "21ab6a0cc75dea7d",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "dba7b94559756101": {
+    "variant_id": "dba7b94559756101",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "21cdc96ac8f78121": {
+    "variant_id": "21cdc96ac8f78121",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "4fe3d6d779d10169": {
+    "variant_id": "4fe3d6d779d10169",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "4de26b603213884d": {
+    "variant_id": "4de26b603213884d",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a621edbc353154e2": {
+    "variant_id": "a621edbc353154e2",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "44c6930890e5fd96": {
+    "variant_id": "44c6930890e5fd96",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "ad4bda61ec39b633": {
+    "variant_id": "ad4bda61ec39b633",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "6843b780f481d19c": {
+    "variant_id": "6843b780f481d19c",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "382259a2dc69cdb4": {
+    "variant_id": "382259a2dc69cdb4",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "6436f6abd1bc0116": {
+    "variant_id": "6436f6abd1bc0116",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "3ff7cdc99c734582": {
+    "variant_id": "3ff7cdc99c734582",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "one_entity",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "846d8b2f1ca75aea": {
+    "variant_id": "846d8b2f1ca75aea",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "953425a53175abcb": {
+    "variant_id": "953425a53175abcb",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "6a85e04380a44ff4": {
+    "variant_id": "6a85e04380a44ff4",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "9d6e12091e7b3691": {
+    "variant_id": "9d6e12091e7b3691",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "85d02c2dec9e45a4": {
+    "variant_id": "85d02c2dec9e45a4",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "fafa997e6a0e6f18": {
+    "variant_id": "fafa997e6a0e6f18",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "one_entity",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 0.9444,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "e77c3f0b5a6fc614": {
+    "variant_id": "e77c3f0b5a6fc614",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "3813d29ca5036a65": {
+    "variant_id": "3813d29ca5036a65",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 2,
+    "vote_errors": [
+      "Model did not return JSON: {\n  \"deadline_pressure\": \"none\",\n  \"outage_extent\": \"none\",\n  \"regulatory_or_security\": false,\n  \"scope\": \"individual\",\n  \"work_type\": \"Service Request\"\n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n "
+    ]
+  },
+  "443bf8e51e225823": {
+    "variant_id": "443bf8e51e225823",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "22d4bf892c0e495b": {
+    "variant_id": "22d4bf892c0e495b",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "e065790d35c7495e": {
+    "variant_id": "e065790d35c7495e",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "72648b49236d79cd": {
+    "variant_id": "72648b49236d79cd",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "caf9441a684b86aa": {
+    "variant_id": "caf9441a684b86aa",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "ed0cb6149a7508f6": {
+    "variant_id": "ed0cb6149a7508f6",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "8c831eb24c4311ed": {
+    "variant_id": "8c831eb24c4311ed",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a4a51d2de576ce01": {
+    "variant_id": "a4a51d2de576ce01",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "2992b6ed25086973": {
+    "variant_id": "2992b6ed25086973",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a16cd3a1b45c1cb9": {
+    "variant_id": "a16cd3a1b45c1cb9",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "2f5ccdc6e04ffca4": {
+    "variant_id": "2f5ccdc6e04ffca4",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "29f6aa6e64cb70dd": {
+    "variant_id": "29f6aa6e64cb70dd",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "b4d061f051bbd940": {
+    "variant_id": "b4d061f051bbd940",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5c262d947e83ab06": {
+    "variant_id": "5c262d947e83ab06",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "one_entity",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "7ee676335dde2e0e": {
+    "variant_id": "7ee676335dde2e0e",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "ecd767a5db936ee0": {
+    "variant_id": "ecd767a5db936ee0",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "one_entity",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "805a5a55064dece7": {
+    "variant_id": "805a5a55064dece7",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "29b48aadbcd7eaef": {
+    "variant_id": "29b48aadbcd7eaef",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "8b8caac4aa947e5c": {
+    "variant_id": "8b8caac4aa947e5c",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "597b02285e1c7250": {
+    "variant_id": "597b02285e1c7250",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "2f8648cfeac19be6": {
+    "variant_id": "2f8648cfeac19be6",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "41affa50d07fd1b8": {
+    "variant_id": "41affa50d07fd1b8",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5b8e78a0e0da38f1": {
+    "variant_id": "5b8e78a0e0da38f1",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "3e45dff2fc3a5dfb": {
+    "variant_id": "3e45dff2fc3a5dfb",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "c341c0bdaaaf1ad3": {
+    "variant_id": "c341c0bdaaaf1ad3",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "7dd0411712c5fea1": {
+    "variant_id": "7dd0411712c5fea1",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "one_entity",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "03dcfbecb3064713": {
+    "variant_id": "03dcfbecb3064713",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "ea1d4ee6535d366e": {
+    "variant_id": "ea1d4ee6535d366e",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "9d35e78237dd7946": {
+    "variant_id": "9d35e78237dd7946",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 0.9444,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "73756f48808a940f": {
+    "variant_id": "73756f48808a940f",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "1bf2670bfe830a70": {
+    "variant_id": "1bf2670bfe830a70",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "0b3e053b954452ae": {
+    "variant_id": "0b3e053b954452ae",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "ca3e8d62fbdeb3dd": {
+    "variant_id": "ca3e8d62fbdeb3dd",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "8e8ee2af1eb4e2f7": {
+    "variant_id": "8e8ee2af1eb4e2f7",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "60d1203a8f5c4d7e": {
+    "variant_id": "60d1203a8f5c4d7e",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5f6860685ecd0c58": {
+    "variant_id": "5f6860685ecd0c58",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "4a1919ee3d52f432": {
+    "variant_id": "4a1919ee3d52f432",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "cec776af51d590cb": {
+    "variant_id": "cec776af51d590cb",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a20352bb6a168caa": {
+    "variant_id": "a20352bb6a168caa",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "7f2abe2603546e19": {
+    "variant_id": "7f2abe2603546e19",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "c7ea934dc1678b75": {
+    "variant_id": "c7ea934dc1678b75",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 2,
+    "vote_errors": [
+      "Model did not return JSON: {\n  \"deadline_pressure\": \"none\",\n  \"outage_extent\": \"none\",\n  \"regulatory_or_security\": false,\n  \"scope\": \"individual\",\n  \"work_type\": \"Service Request\"\n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n "
+    ]
+  },
+  "d173e7008b52d9a5": {
+    "variant_id": "d173e7008b52d9a5",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "d5890c097b0f6e78": {
+    "variant_id": "d5890c097b0f6e78",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "6bbd5e25d8aacf6e": {
+    "variant_id": "6bbd5e25d8aacf6e",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a690974b0ba4f7fa": {
+    "variant_id": "a690974b0ba4f7fa",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 2,
+    "vote_errors": [
+      "Model did not return JSON: {\n  \"deadline_pressure\": \"none\",\n  \"outage_extent\": \"none\",\n  \"regulatory_or_security\": false,\n  \"scope\": \"individual\",\n  \"work_type\": \"Service Request\"\n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n "
+    ]
+  },
+  "70be47da2ce605fe": {
+    "variant_id": "70be47da2ce605fe",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 2,
+    "vote_errors": [
+      "Model did not return JSON: {\n  \"deadline_pressure\": \"none\",\n  \"outage_extent\": \"none\",\n  \"regulatory_or_security\": false,\n  \"scope\": \"individual\",\n  \"work_type\": \"Service Request\"\n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n "
+    ]
+  },
+  "7f1950aa0641f55b": {
+    "variant_id": "7f1950aa0641f55b",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "4dd2c7c6dba193bc": {
+    "variant_id": "4dd2c7c6dba193bc",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 2,
+    "vote_errors": [
+      "Model did not return JSON: {\n  \"deadline_pressure\": \"none\",\n  \"outage_extent\": \"none\",\n  \"regulatory_or_security\": false,\n  \"scope\": \"individual\",\n  \"work_type\": \"Service Request\"\n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n "
+    ]
+  },
+  "5e3237c674b2c321": {
+    "variant_id": "5e3237c674b2c321",
+    "evidence": {
+      "work_type": "Service Request",
+      "scope": "individual",
+      "outage_extent": "none",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 2,
+    "vote_errors": [
+      "Model did not return JSON: {\n  \"deadline_pressure\": \"none\",\n  \"outage_extent\": \"none\",\n  \"regulatory_or_security\": false,\n  \"scope\": \"individual\",\n  \"work_type\": \"Service Request\"\n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n "
+    ]
+  },
+  "e76db57ad491c64f": {
+    "variant_id": "e76db57ad491c64f",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "8dc1b710de485761": {
+    "variant_id": "8dc1b710de485761",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "7600976ec08205bc": {
+    "variant_id": "7600976ec08205bc",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "external_counterparty",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "4310ebb28005f02e": {
+    "variant_id": "4310ebb28005f02e",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a498575c208314c9": {
+    "variant_id": "a498575c208314c9",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "36a8ce38a98b04d2": {
+    "variant_id": "36a8ce38a98b04d2",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5ff595e769f33b60": {
+    "variant_id": "5ff595e769f33b60",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "f58e1887885841af": {
+    "variant_id": "f58e1887885841af",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "e7c3185df9e619a4": {
+    "variant_id": "e7c3185df9e619a4",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "b46a8b08da3cdc32": {
+    "variant_id": "b46a8b08da3cdc32",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a1b0ef9c6a6495c9": {
+    "variant_id": "a1b0ef9c6a6495c9",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "bbad5124dc5c8a99": {
+    "variant_id": "bbad5124dc5c8a99",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "06f2f2464e38695d": {
+    "variant_id": "06f2f2464e38695d",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "1ac8c0c614de0e9b": {
+    "variant_id": "1ac8c0c614de0e9b",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "472301a5f2789740": {
+    "variant_id": "472301a5f2789740",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "ff434a72f7581f7b": {
+    "variant_id": "ff434a72f7581f7b",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "e34567b5d60058e2": {
+    "variant_id": "e34567b5d60058e2",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "1f033661a5f752fb": {
+    "variant_id": "1f033661a5f752fb",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "71afd61c706be05a": {
+    "variant_id": "71afd61c706be05a",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": true,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "fdc52265eb196d65": {
+    "variant_id": "fdc52265eb196d65",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "911ca7395015fd32": {
+    "variant_id": "911ca7395015fd32",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 0.9444,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "e4a369fa34bc2981": {
+    "variant_id": "e4a369fa34bc2981",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "e4f70824f5e58c75": {
+    "variant_id": "e4f70824f5e58c75",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "e815d61905b376cd": {
+    "variant_id": "e815d61905b376cd",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 0.9444,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "f3e7726625a4ad88": {
+    "variant_id": "f3e7726625a4ad88",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "9bae6fa99abad419": {
+    "variant_id": "9bae6fa99abad419",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "54f6d7d8f23d0e0a": {
+    "variant_id": "54f6d7d8f23d0e0a",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "29f23afad34ce6d2": {
+    "variant_id": "29f23afad34ce6d2",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "d5e4889f3e0edab7": {
+    "variant_id": "d5e4889f3e0edab7",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "b343c265bbe62583": {
+    "variant_id": "b343c265bbe62583",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "6a23093801f4f71f": {
+    "variant_id": "6a23093801f4f71f",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "2016aa431d45aad4": {
+    "variant_id": "2016aa431d45aad4",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 0.9444,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "bf7bc4c209bbe7f8": {
+    "variant_id": "bf7bc4c209bbe7f8",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 0.9444,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "fede292232ae8b86": {
+    "variant_id": "fede292232ae8b86",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "0968a4e5187ed291": {
+    "variant_id": "0968a4e5187ed291",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "3925bc70eca24518": {
+    "variant_id": "3925bc70eca24518",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "c15fe4d4682320e5": {
+    "variant_id": "c15fe4d4682320e5",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5214b19511db84f7": {
+    "variant_id": "5214b19511db84f7",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "4f0e351c3458f557": {
+    "variant_id": "4f0e351c3458f557",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "b0e6b12a4f705214": {
+    "variant_id": "b0e6b12a4f705214",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "d781aaf262cb6673": {
+    "variant_id": "d781aaf262cb6673",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5f9ccc0d9205d386": {
+    "variant_id": "5f9ccc0d9205d386",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "c949b53c92a5cbb4": {
+    "variant_id": "c949b53c92a5cbb4",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "cc59c82fbeef7335": {
+    "variant_id": "cc59c82fbeef7335",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "6080998c5e6b6707": {
+    "variant_id": "6080998c5e6b6707",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "3e4c348eede2d199": {
+    "variant_id": "3e4c348eede2d199",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5555777129599f57": {
+    "variant_id": "5555777129599f57",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "4f8f97aca8919e31": {
+    "variant_id": "4f8f97aca8919e31",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "ff489e886942de52": {
+    "variant_id": "ff489e886942de52",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "328273a542287723": {
+    "variant_id": "328273a542287723",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "493c3336623d8e58": {
+    "variant_id": "493c3336623d8e58",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "d62a8d6360f8d824": {
+    "variant_id": "d62a8d6360f8d824",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a231005e3033aa84": {
+    "variant_id": "a231005e3033aa84",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "d4d5fdbfc2491f06": {
+    "variant_id": "d4d5fdbfc2491f06",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "97fc2bc7646d2957": {
+    "variant_id": "97fc2bc7646d2957",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "d0e1686fadcd0341": {
+    "variant_id": "d0e1686fadcd0341",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "137362a306c5a861": {
+    "variant_id": "137362a306c5a861",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "40b2c851f517fb7d": {
+    "variant_id": "40b2c851f517fb7d",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "59a315c06c574fc4": {
+    "variant_id": "59a315c06c574fc4",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "2a3aafa1e73f2b4c": {
+    "variant_id": "2a3aafa1e73f2b4c",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "4b24138be44ad00b": {
+    "variant_id": "4b24138be44ad00b",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 0.9444,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "f9c86a70c202cfa4": {
+    "variant_id": "f9c86a70c202cfa4",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "7437e87aa39b4930": {
+    "variant_id": "7437e87aa39b4930",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "f82c0f3a7531e456": {
+    "variant_id": "f82c0f3a7531e456",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "46417cde8fc45bdf": {
+    "variant_id": "46417cde8fc45bdf",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "65adf374a997fb54": {
+    "variant_id": "65adf374a997fb54",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5e012b4bf2c856a8": {
+    "variant_id": "5e012b4bf2c856a8",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "255e85a8a568b044": {
+    "variant_id": "255e85a8a568b044",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "725b70efc4c5e388": {
+    "variant_id": "725b70efc4c5e388",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "db5331317c232193": {
+    "variant_id": "db5331317c232193",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 0.9444,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "3c0b21bff373bea8": {
+    "variant_id": "3c0b21bff373bea8",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "a36b577cb7a07d58": {
+    "variant_id": "a36b577cb7a07d58",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "cb3c5dbc46d8e57d": {
+    "variant_id": "cb3c5dbc46d8e57d",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "70c87edfc7bd615c": {
+    "variant_id": "70c87edfc7bd615c",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "5558248f62d4952e": {
+    "variant_id": "5558248f62d4952e",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "d7bfb38140b38035": {
+    "variant_id": "d7bfb38140b38035",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "none",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  },
+  "359caf534afcc839": {
+    "variant_id": "359caf534afcc839",
+    "evidence": {
+      "work_type": "Incident",
+      "scope": "one_entity",
+      "outage_extent": "partial_degradation",
+      "workaround": "not_applicable",
+      "regulatory_or_security": false,
+      "deadline_pressure": "none"
+    },
+    "confidence": 1.0,
+    "n_votes_ok": 3,
+    "vote_errors": []
+  }
+}

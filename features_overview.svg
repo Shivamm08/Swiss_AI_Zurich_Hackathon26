@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="Segoe UI, Inter, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#ffffff"/>
+
+  <!-- Header -->
+  <text x="16" y="42" font-size="30" font-weight="700" fill="#0f172a">Triage Copilot — an AI assistant for service-desk analysts</text>
+  <text x="16" y="68" font-size="17" fill="#64748b">The AI observes and drafts · plain rules decide priority · the Team Lead approves · finished work becomes knowledge</text>
+
+  <!-- ══════════ THE PIPELINE ══════════ -->
+  <rect x="16" y="86" width="1568" height="146" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="34" y="112" font-size="16" font-weight="700" fill="#334155">ONE TICKET, END TO END — watch every step live in the app</text>
+
+  <g>
+    <rect x="34" y="126" width="176" height="86" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+    <text x="48" y="150" font-size="14" font-weight="700" fill="#0f172a">1 · Ticket arrives</text>
+    <text x="48" y="172" font-size="13" fill="#475569">Jira import, pasted</text>
+    <text x="48" y="190" font-size="13" fill="#475569">email, or created in</text>
+    <text x="48" y="206" font-size="13" fill="#475569">the app</text>
+
+    <rect x="232" y="126" width="176" height="86" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+    <text x="246" y="150" font-size="14" font-weight="700" fill="#065f46">2 · Retrieval</text>
+    <text x="246" y="172" font-size="13" fill="#064e3b">Hybrid BM25 + vector</text>
+    <text x="246" y="190" font-size="13" fill="#064e3b">search finds the most</text>
+    <text x="246" y="206" font-size="13" fill="#064e3b">similar past solutions</text>
+
+    <rect x="430" y="126" width="176" height="86" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+    <text x="444" y="150" font-size="14" font-weight="700" fill="#5b21b6">3 · The LLM reads</text>
+    <text x="444" y="172" font-size="13" fill="#4c1d95">3 independent votes</text>
+    <text x="444" y="190" font-size="13" fill="#4c1d95">report observable facts</text>
+    <text x="444" y="206" font-size="13" fill="#4c1d95">— never a priority</text>
+
+    <rect x="628" y="126" width="176" height="86" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+    <text x="642" y="150" font-size="14" font-weight="700" fill="#115e59">4 · Rules decide</text>
+    <text x="642" y="172" font-size="13" fill="#134e4a">Impact, Urgency, then</text>
+    <text x="642" y="190" font-size="13" fill="#134e4a">the challenge matrix</text>
+    <text x="642" y="206" font-size="13" fill="#134e4a">gives the Priority</text>
+
+    <rect x="826" y="126" width="176" height="86" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+    <text x="840" y="150" font-size="14" font-weight="700" fill="#115e59">5 · Confidence</text>
+    <text x="840" y="172" font-size="13" fill="#134e4a">Vote agreement +</text>
+    <text x="840" y="190" font-size="13" fill="#134e4a">retrieval quality set</text>
+    <text x="840" y="206" font-size="13" fill="#134e4a">the routing lane</text>
+
+    <rect x="1024" y="126" width="176" height="86" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+    <text x="1038" y="150" font-size="14" font-weight="700" fill="#115e59">6 · Right person</text>
+    <text x="1038" y="172" font-size="13" fill="#134e4a">Expertise balanced</text>
+    <text x="1038" y="190" font-size="13" fill="#134e4a">against each person's</text>
+    <text x="1038" y="206" font-size="13" fill="#134e4a">current workload</text>
+
+    <rect x="1222" y="126" width="176" height="86" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+    <text x="1236" y="150" font-size="14" font-weight="700" fill="#5b21b6">7 · Draft the fix</text>
+    <text x="1236" y="172" font-size="13" fill="#4c1d95">A suggested resolution</text>
+    <text x="1236" y="190" font-size="13" fill="#4c1d95">written from the closest</text>
+    <text x="1236" y="206" font-size="13" fill="#4c1d95">past solution</text>
+
+    <rect x="1420" y="126" width="148" height="86" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="3"/>
+    <text x="1434" y="150" font-size="14" font-weight="700" fill="#92400e">8 · The human</text>
+    <text x="1434" y="172" font-size="13" font-weight="700" fill="#78350f">approve · edit</text>
+    <text x="1434" y="190" font-size="13" font-weight="700" fill="#78350f">· reject</text>
+    <text x="1434" y="207" font-size="12" fill="#a16207">every single ticket</text>
+  </g>
+  <line x1="210" y1="169" x2="228" y2="169" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="408" y1="169" x2="426" y2="169" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="606" y1="169" x2="624" y2="169" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="804" y1="169" x2="822" y2="169" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="1002" y1="169" x2="1020" y2="169" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="1200" y1="169" x2="1218" y2="169" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="1398" y1="169" x2="1416" y2="169" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- ══════════ ROW 2 : the three pillars ══════════ -->
+
+  <!-- Roles & lifecycle -->
+  <g>
+    <rect x="16" y="248" width="506" height="292" rx="10" fill="#fffdf5" stroke="#d97706" stroke-width="2"/>
+    <text x="38" y="278" font-size="19" font-weight="700" fill="#92400e">Three roles, and a real lifecycle</text>
+
+    <rect x="38" y="292" width="462" height="54" rx="7" fill="#ffffff" stroke="#fcd34d"/>
+    <text x="54" y="313" font-size="14" font-weight="700" fill="#92400e">Team Lead / Analyst — 11, one per department</text>
+    <text x="54" y="333" font-size="13" fill="#78350f">Checks and dispatches every AI proposal, picks the specialist</text>
+
+    <rect x="38" y="354" width="462" height="54" rx="7" fill="#ffffff" stroke="#fcd34d"/>
+    <text x="54" y="375" font-size="14" font-weight="700" fill="#92400e">Specialist — 23</text>
+    <text x="54" y="395" font-size="13" fill="#78350f">Does the work, asks for missing info, closes with a note</text>
+
+    <rect x="38" y="416" width="462" height="46" rx="7" fill="#ffffff" stroke="#fcd34d"/>
+    <text x="54" y="437" font-size="14" font-weight="700" fill="#92400e">Admin — 1</text>
+    <text x="54" y="455" font-size="13" fill="#78350f">Runs the knowledge base, import/export, roster and settings</text>
+
+    <rect x="38" y="474" width="462" height="48" rx="7" fill="#fef3c7" stroke="#d97706"/>
+    <text x="54" y="495" font-size="13" font-weight="700" fill="#92400e">awaiting analyst → assigned → in progress / waiting → done</text>
+    <text x="54" y="514" font-size="13" fill="#78350f">Activity timeline on every ticket · reopen if the fix did not hold</text>
+  </g>
+
+  <!-- Priority: rules not AI -->
+  <g>
+    <rect x="538" y="248" width="506" height="292" rx="10" fill="#f0fdfa" stroke="#0d9488" stroke-width="3"/>
+    <text x="560" y="278" font-size="19" font-weight="700" fill="#115e59">Priority is decided by rules, not the model</text>
+    <text x="560" y="302" font-size="14" fill="#134e4a">The training labels are random, so severity is defined, not learned.</text>
+
+    <rect x="560" y="316" width="462" height="72" rx="7" fill="#ccfbf1" stroke="#5eead4"/>
+    <text x="576" y="338" font-size="13" fill="#134e4a">The LLM reports only observable facts:</text>
+    <text x="576" y="358" font-size="13" font-weight="600" fill="#0f766e">scope · outage · workaround · regulatory · deadline</text>
+    <text x="576" y="379" font-size="13" fill="#134e4a">Plain Python turns those into Impact and Urgency.</text>
+
+    <rect x="560" y="398" width="462" height="56" rx="7" fill="#ccfbf1" stroke="#5eead4"/>
+    <text x="576" y="420" font-size="14" font-weight="700" fill="#115e59">Priority = matrix[ Urgency ][ Impact ]</text>
+    <text x="576" y="441" font-size="13" fill="#134e4a">The challenge's own table — always internally consistent.</text>
+
+    <rect x="560" y="464" width="462" height="58" rx="7" fill="#ccfbf1" stroke="#5eead4"/>
+    <text x="576" y="486" font-size="14" font-weight="700" fill="#115e59">A 0 – 1 score sorts the queue</text>
+    <text x="576" y="507" font-size="13" fill="#134e4a">Weighs ticket age, entities hit, regulatory breach, outage.</text>
+  </g>
+
+  <!-- Learning loop -->
+  <g>
+    <rect x="1060" y="248" width="524" height="292" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="3"/>
+    <text x="1082" y="278" font-size="19" font-weight="700" fill="#065f46">It gets better with use</text>
+    <text x="1082" y="302" font-size="14" fill="#064e3b">Retrieval-augmented, and it learns from finished work.</text>
+
+    <rect x="1082" y="316" width="480" height="82" rx="7" fill="#d1fae5" stroke="#6ee7b7"/>
+    <text x="1098" y="338" font-size="14" font-weight="700" fill="#065f46">The knowledge base</text>
+    <text x="1098" y="359" font-size="13" fill="#064e3b">20 service cards · 21 real resolution playbooks</text>
+    <text x="1098" y="378" font-size="13" fill="#064e3b">+ every ticket a specialist has finished — and growing</text>
+    <text x="1098" y="394" font-size="12" fill="#047857">Hybrid search: keyword + embeddings, fused by rank</text>
+
+    <rect x="1082" y="408" width="480" height="58" rx="7" fill="#d1fae5" stroke="#6ee7b7"/>
+    <text x="1098" y="430" font-size="14" font-weight="700" fill="#065f46">Done means learned</text>
+    <text x="1098" y="451" font-size="13" fill="#064e3b">The specialist's own closing note becomes the next precedent.</text>
+
+    <rect x="1082" y="476" width="480" height="46" rx="7" fill="#ffffff" stroke="#059669"/>
+    <text x="1098" y="497" font-size="13" font-weight="700" fill="#047857">Reopen a ticket and the fix is removed from the knowledge base</text>
+    <text x="1098" y="515" font-size="13" fill="#064e3b">— so the AI never learns from a fix that did not hold.</text>
+  </g>
+
+  <path d="M 1322 540 L 1322 566 L 320 566 L 320 540" fill="none" stroke="#059669" stroke-width="3" marker-end="url(#g)"/>
+  <text x="700" y="560" font-size="14" font-weight="700" fill="#047857">finished work feeds the next ticket ▸</text>
+
+  <!-- ══════════ ROW 3 : around the pipeline ══════════ -->
+  <text x="16" y="606" font-size="16" font-weight="700" fill="#334155">AROUND THE PIPELINE</text>
+
+  <g>
+    <rect x="16" y="620" width="302" height="122" rx="9" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+    <text x="36" y="648" font-size="16" font-weight="700" fill="#5b21b6">Copilot chat</text>
+    <text x="36" y="670" font-size="13" fill="#4c1d95">Streaming assistant on every</text>
+    <text x="36" y="689" font-size="13" fill="#4c1d95">screen (⌘K / Ctrl+K). Answers</text>
+    <text x="36" y="708" font-size="13" fill="#4c1d95">from team knowledge, always</text>
+    <text x="36" y="727" font-size="13" font-weight="600" fill="#6d28d9">with its sources cited.</text>
+
+    <rect x="334" y="620" width="302" height="122" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="354" y="648" font-size="16" font-weight="700" fill="#92400e">Messages &amp; escalations</text>
+    <text x="354" y="670" font-size="13" fill="#78350f">Department channels and direct</text>
+    <text x="354" y="689" font-size="13" fill="#78350f">messages. Escalations are</text>
+    <text x="354" y="708" font-size="13" fill="#78350f">AI-drafted with the ticket</text>
+    <text x="354" y="727" font-size="13" fill="#78350f">attached and an SLA clock.</text>
+
+    <rect x="652" y="620" width="302" height="122" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+    <text x="672" y="648" font-size="16" font-weight="700" fill="#0f172a">Workload balancing</text>
+    <text x="672" y="670" font-size="13" fill="#475569">Nobody is pushed past capacity</text>
+    <text x="672" y="689" font-size="13" fill="#475569">or given an unfair share. Team</text>
+    <text x="672" y="708" font-size="13" fill="#475569">workload is visible to every</text>
+    <text x="672" y="727" font-size="13" fill="#475569">role, at any time.</text>
+
+    <rect x="970" y="620" width="302" height="122" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+    <text x="990" y="648" font-size="16" font-weight="700" fill="#0f172a">Impact dashboard</text>
+    <text x="990" y="670" font-size="13" fill="#475569">Misroutes caught, priorities</text>
+    <text x="990" y="689" font-size="13" fill="#475569">corrected, minutes saved,</text>
+    <text x="990" y="708" font-size="13" fill="#475569">acceptance rate, desk KPIs</text>
+    <text x="990" y="727" font-size="13" fill="#475569">and trends over time.</text>
+
+    <rect x="1288" y="620" width="296" height="122" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+    <text x="1308" y="648" font-size="16" font-weight="700" fill="#0f172a">Intake check</text>
+    <text x="1308" y="670" font-size="13" fill="#475569">Non-tickets are rejected at the</text>
+    <text x="1308" y="689" font-size="13" fill="#475569">door. Low-confidence proposals</text>
+    <text x="1308" y="708" font-size="13" fill="#475569">go to a shared Needs-review</text>
+    <text x="1308" y="727" font-size="13" fill="#475569">queue instead of a person.</text>
+  </g>
+
+  <!-- ══════════ Footer: stack ══════════ -->
+  <rect x="16" y="760" width="1568" height="124" rx="10" fill="#0f172a"/>
+  <text x="40" y="790" font-size="16" font-weight="700" fill="#ffffff">BUILT ON</text>
+  <text x="150" y="790" font-size="15" fill="#cbd5e1">FastAPI · SQLAlchemy 2 · PostgreSQL + pgvector · React 19 + TypeScript · Docker · OpenAPI-generated types so frontend and backend cannot drift</text>
+
+  <text x="40" y="822" font-size="16" font-weight="700" fill="#ffffff">MODELS</text>
+  <text x="150" y="822" font-size="15" fill="#cbd5e1">OpenAI or Azure OpenAI, plus</text>
+  <text x="392" y="822" font-size="15" font-weight="700" fill="#6ee7b7">Apertus on Swisscom's Swiss AI Platform</text>
+  <text x="692" y="822" font-size="15" fill="#cbd5e1">— chosen per request in the UI.</text>
+
+  <text x="40" y="856" font-size="16" font-weight="700" fill="#ffffff">NO KEY?</text>
+  <text x="150" y="856" font-size="15" fill="#cbd5e1">The whole app still runs in</text>
+  <text x="380" y="856" font-size="15" font-weight="700" fill="#5eead4">heuristic mode</text>
+  <text x="504" y="856" font-size="15" fill="#cbd5e1">with no LLM at all — keeping intake values and flagging everything low-confidence.</text>
+</svg>
