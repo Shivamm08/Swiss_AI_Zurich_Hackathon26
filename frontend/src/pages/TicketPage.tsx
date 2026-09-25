@@ -32,6 +32,8 @@ import {
   FactChips,
   FieldDiff,
   MatrixGrid,
+  MethodLegend,
+  MethodTag,
   RoutePill,
   ScoreBar,
   SlaTimer,
@@ -50,7 +52,7 @@ const StaffBadge = () => <Pill className="ml-1.5 bg-accent-soft text-accent">set
 function ConfidencePanel({ result }: { result: TriageResult }) {
   const d = result.confidence_detail
   return (
-    <Card title={`Confidence ${Math.round(result.confidence * 100)}%`} icon={<Gauge size={15} />} actions={<RoutePill route={result.route} />}>
+    <Card title={<span className="inline-flex items-center gap-1">Confidence {Math.round(result.confidence * 100)}%<MethodTag field="confidence" compact /></span>} icon={<Gauge size={15} />} actions={<RoutePill route={result.route} />}>
       {d ? (
         <dl className="flex flex-col gap-2 text-sm">
           <div className="flex items-center justify-between"><dt className="text-muted">Votes agree</dt><dd><ConfidenceMeter value={d.votes} /></dd></div>
@@ -77,13 +79,14 @@ function AssigneePanel({ ticket, result }: { ticket: TicketDetail; result: Triag
   const specialists = new Set(users?.filter((u) => u.role === 'specialist').map((u) => u.email))
   const candidates = s?.candidates.filter((c) => !users || specialists.has(c.user)) ?? []
   return (
-    <Card title="Specialist" icon={<UserCheck size={15} />}>
+    <Card title={<span className="inline-flex items-center gap-1">Specialist<MethodTag field="assignee" compact /></span>} icon={<UserCheck size={15} />}>
       <dl>
         <Field label={ticket.work_status === 'open' ? 'AI suggests' : 'Assigned to'}>
           {ticket.work_status !== 'open' ? <b>{short(ticket.assignee)}</b>
             : s?.recommended ? <><b>{short(s.recommended)}</b> <span className="text-xs text-muted">(not dispatched yet)</span></>
             : <span className="text-red-600">no suggestion</span>}
           {ticket.manual_fields.includes('assignee') && <StaffBadge />}
+          {result.confidence_detail?.staff_checks.some((c) => c.field === 'assignee') && <Pill className="ml-1.5 bg-amber-50 text-amber-800 ring-1 ring-amber-200">not in {result.team}</Pill>}
         </Field>
         <Field label="Expert">{short(s?.expert)} <span className="text-xs text-muted">(export)</span></Field>
       </dl>
@@ -131,6 +134,8 @@ function ProposalPanels({ ticket, result, editing, edits, setEdit }: {
   const team = ref?.services.find((s) => s.name === current.service)?.team ?? result.team
   const votes = result.vote_agreement
   const staff = (f: string) => ticket.manual_fields.includes(f)
+  const checks = result.confidence_detail?.staff_checks ?? []
+  const check = (f: string) => checks.find((c) => c.field === f)
 
   const select = (key: 'work_type' | 'service' | 'urgency' | 'impact' | 'resolution', options: readonly string[]) => (
     <select id={`edit-${key}`} aria-label={key} value={String(current[key])} onChange={(e) => setEdit(key, e.target.value as never)}
@@ -138,11 +143,18 @@ function ProposalPanels({ ticket, result, editing, edits, setEdit }: {
       {options.map((o) => <option key={o} value={o}>{o}</option>)}
     </select>
   )
+  const staffNote = (field: string) => {
+    const c = check(field)
+    return <><StaffBadge />{c && <Pill className="ml-1.5 bg-amber-50 text-amber-800 ring-1 ring-amber-200">{c.by === 'ai' ? 'AI reads' : 'rules give'} {c.checked}</Pill>}</>
+  }
   const voteNote = (field: string) =>
-    staff(field) ? <StaffBadge /> : votes[field] !== undefined && votes[field] < 1
+    staff(field) ? staffNote(field) : votes[field] !== undefined && votes[field] < 1
       ? <Pill className="ml-1.5 bg-amber-50 text-amber-800">votes {Math.round(votes[field] * 100)}%</Pill> : null
-  const row = (label: string, field: 'work_type' | 'service' | 'urgency' | 'impact' | 'resolution', intake: string | null | undefined, options?: readonly string[]) => (
-    <Field label={label}>
+  const label = (text: string, field: Parameters<typeof MethodTag>[0]['field']) => (
+    <span className="inline-flex flex-wrap items-center gap-1">{text}<MethodTag field={field} compact /></span>
+  )
+  const row = (name: string, field: 'work_type' | 'service' | 'urgency' | 'impact' | 'resolution', intake: string | null | undefined, options?: readonly string[]) => (
+    <Field label={label(name, field)}>
       {editing && options ? select(field, options) : intake !== undefined ? <FieldDiff intake={intake} value={String(current[field])} /> : String(current[field])}
       {!editing && voteNote(field)}
     </Field>
@@ -150,25 +162,38 @@ function ProposalPanels({ ticket, result, editing, edits, setEdit }: {
 
   return (
     <>
-      <Card title={<>AI proposal <span className="font-normal text-muted">· {result.model}</span></>} icon={<Sparkles size={15} />}
+      <Card title={<>Proposal <span className="font-normal text-muted">· {result.model}</span></>} icon={<Sparkles size={15} />}
         actions={<span className="font-mono text-xs text-muted">{(result.latency_ms / 1000).toFixed(1)} s</span>}>
+        <p className="mb-2"><MethodLegend /></p>
+        {checks.length > 0 && (
+          <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            <p className="mb-1 font-semibold">Second opinion disagrees with {checks.length === 1 ? 'a value' : `${checks.length} values`} set by staff</p>
+            <ul className="flex flex-col gap-0.5">
+              {checks.map((c) => (
+                <li key={c.field}><b>{c.field.replace('_', ' ')}</b>: staff set <b>{c.staff}</b>, {c.by === 'ai' ? 'the blind AI reading gives' : 'the rules give'} <b>{c.checked}</b> <span className="text-amber-800/80">({c.note})</span></li>
+              ))}
+            </ul>
+            <p className="mt-1 text-amber-800/80">Staff values are kept. Check them before dispatching; confidence is lowered until then.</p>
+          </div>
+        )}
         <dl className="divide-y divide-line/70">
           {row('Work type', 'work_type', ticket.work_type, ref?.work_types)}
           {row('Service', 'service', ticket.affected_service, ref?.services.map((s) => s.name))}
-          <Field label="Team">{team} <span className="text-xs text-muted">(fixed by service)</span></Field>
+          <Field label={label('Team', 'team')}>{team}</Field>
           {row('Impact', 'impact', ticket.impact, ref?.levels)}
           {row('Urgency', 'urgency', ticket.urgency, ref?.levels)}
-          <Field label="Priority">
+          <Field label={label('Priority', 'priority')}>
             <PriorityPill level={priority} /><ScoreBar score={result.priority_score} />
             {ticket.priority && priority !== ticket.priority && <span className="ml-2 text-xs text-muted">was {ticket.priority}</span>}
           </Field>
           {row('Resolution', 'resolution', undefined, ref?.resolutions)}
         </dl>
-        <div className="mt-3"><FactChips facts={result.facts} /></div>
+        <div className="mt-3 flex flex-wrap items-center gap-1.5"><span className="text-xs text-muted">Facts</span><MethodTag field="facts" compact /><FactChips facts={result.facts} /></div>
         {result.rationale && <p className="mt-3 rounded-lg bg-canvas px-3 py-2 text-xs text-muted">{result.rationale}</p>}
       </Card>
 
-      <Card title="Why this priority" icon={<Scale size={15} />}>
+      <Card title={<span className="inline-flex items-center gap-1">Why this priority<MethodTag field="impact" compact /></span>} icon={<Scale size={15} />}
+        actions={<span className="text-xs text-muted">no AI decides priority</span>}>
         <div className="grid gap-4 sm:grid-cols-[1fr_13rem]">
           <ul className="flex flex-col gap-1.5 text-sm">
             {(editing ? [`Priority ${priority} = matrix[urgency ${urgency}][impact ${impact}] (edited)`] : result.rubric_trace).map((line) => (
@@ -179,7 +204,7 @@ function ProposalPanels({ ticket, result, editing, edits, setEdit }: {
         </div>
       </Card>
 
-      <Card title={<>Suggested resolution{staff('resolution_comment') && <StaffBadge />}</>} icon={<Pencil size={15} />}
+      <Card title={<span className="inline-flex items-center gap-1">Suggested resolution<MethodTag field="resolution_comment" compact />{staff('resolution_comment') && <StaffBadge />}</span>} icon={<Pencil size={15} />}
         actions={<span className="text-xs text-muted">AI draft</span>}>
         {editing ? (
           <>
