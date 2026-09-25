@@ -1,10 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
-import AssistantPage from './pages/AssistantPage'
 import DashboardPage from './pages/DashboardPage'
 import ImportPage from './pages/ImportPage'
 import KnowledgePage from './pages/KnowledgePage'
+import MessagesPage from './pages/MessagesPage'
 import NewTicketPage from './pages/NewTicketPage'
+import PeoplePage from './pages/PeoplePage'
 import QueuePage from './pages/QueuePage'
 import SettingsPage from './pages/SettingsPage'
 import TeamPage from './pages/TeamPage'
@@ -21,7 +22,9 @@ export default function App() {
         <Route path="team" element={<TeamPage />} />
         <Route path="new" element={<NewTicketPage />} />
         <Route path="knowledge" element={<KnowledgePage />} />
-        <Route path="assistant" element={<AssistantPage />} />
+        <Route path="messages" element={<MessagesPage />} />
+        <Route path="people" element={<PeoplePage />} />
+        <Route path="assistant" element={<Navigate to="/" replace />} />
         <Route path="intake" element={<ImportPage />} />
         <Route path="import" element={<Navigate to="/intake" replace />} />
         <Route path="settings" element={<SettingsPage />} />

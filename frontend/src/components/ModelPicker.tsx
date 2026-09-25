@@ -14,8 +14,8 @@ export default function ModelPicker() {
   if (!data) return null
 
   return (
-    <label className="flex items-center gap-2 text-xs text-muted" htmlFor="model-picker">
-      AI model
+    <label className="hidden items-center gap-2 text-xs text-muted lg:flex" htmlFor="model-picker">
+      Model
       <select
         id="model-picker"
         value={model ?? ''}

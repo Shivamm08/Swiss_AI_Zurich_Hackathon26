@@ -8,6 +8,8 @@ import type {
   EmailIngest,
   EvidenceKind,
   KbSearchRequest,
+  DraftRequest,
+  MessageCreate,
   RubricPreviewRequest,
   ReviewCreate,
   TicketCreate,
@@ -217,3 +219,46 @@ export const useCalibration = () =>
 
 export const fetchSubmission = (source: TicketSource = 'challenge') =>
   unwrap(api.GET('/api/export/submission', { params: { query: { source } } }))
+
+// ------------------------------------------------------------------ messaging / directory / impact
+
+export const useChannels = (asUser: string | undefined) =>
+  useQuery({
+    queryKey: ['channels', asUser],
+    queryFn: () => unwrap(api.GET('/api/chat/channels', { params: { query: { as_user: asUser! } } })),
+    enabled: !!asUser,
+    refetchInterval: 5_000,
+  })
+
+export const useMessages = (channel: string | undefined) =>
+  useQuery({
+    queryKey: ['messages', channel],
+    queryFn: () => unwrap(api.GET('/api/chat/messages', { params: { query: { channel: channel! } } })),
+    enabled: !!channel,
+    refetchInterval: 3_000,
+  })
+
+export const useSendMessage = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: MessageCreate) => unwrap(api.POST('/api/chat/messages', { body })),
+    onSuccess: (msg) => {
+      qc.invalidateQueries({ queryKey: ['messages', msg.channel] })
+      qc.invalidateQueries({ queryKey: ['channels'] })
+      qc.invalidateQueries({ queryKey: ['directory'] })
+      if (msg.ticket_id) qc.invalidateQueries({ queryKey: ['ticket'] })
+    },
+  })
+}
+
+export const useDraftMessage = () =>
+  useMutation({ mutationFn: (body: DraftRequest) => unwrap(api.POST('/api/chat/draft', { body })) })
+
+export const useDirectory = () =>
+  useQuery({ queryKey: ['directory'], queryFn: () => unwrap(api.GET('/api/directory')), refetchInterval: 15_000 })
+
+export const useImpact = (includeDemo: boolean) =>
+  useQuery({
+    queryKey: ['impact', includeDemo],
+    queryFn: () => unwrap(api.GET('/api/metrics/impact', { params: { query: { include_demo: includeDemo, days: 28 } } })),
+  })
