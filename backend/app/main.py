@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
 from app import __version__
-from app.api import insights, knowledge, people, system, tickets, triage
+from app.api import chat, insights, knowledge, people, system, tickets, triage
 from app.config import settings
 
 
@@ -28,6 +28,6 @@ app.add_middleware(
 # Every route lives under /api so the frontend dev proxy and any deployment
 # can forward a single prefix.
 api = APIRouter(prefix="/api")
-for module in (system, tickets, triage, knowledge, insights, people):
+for module in (system, tickets, triage, knowledge, insights, people, chat):
     api.include_router(module.router)
 app.include_router(api)

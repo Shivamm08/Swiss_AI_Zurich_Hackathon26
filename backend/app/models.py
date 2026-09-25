@@ -162,3 +162,21 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(10), default="analyst", server_default="analyst")  # analyst | lead | admin
     teams: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default=text("'[]'::jsonb"))
     capacity: Mapped[int] = mapped_column(Integer, default=8, server_default="8")
+
+
+class Message(Base):
+    """Team channels and direct messages (spec: People & teams, escalations).
+
+    channel: "team:<Team name>" for a department channel, "dm:<email_a>|<email_b>" (sorted) for a
+    direct conversation. kind: message | system | escalation | handoff.
+    """
+
+    __tablename__ = "messages"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()"))
+    channel: Mapped[str] = mapped_column(String(300), index=True)
+    sender: Mapped[str] = mapped_column(String(120))
+    body: Mapped[str] = mapped_column(Text)
+    kind: Mapped[str] = mapped_column(String(20), default="message", server_default="message")
+    ticket_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("tickets.id", ondelete="SET NULL"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)

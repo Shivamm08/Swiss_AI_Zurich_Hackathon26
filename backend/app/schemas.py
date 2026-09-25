@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.config import LlmProvider
 from app.domain import Criticality, Level, Resolution, ServiceName, TeamName, WorkType
 
-TicketSource = Literal["challenge", "training", "manual", "email"]
+TicketSource = Literal["challenge", "training", "manual", "email", "demo"]
 TriageState = Literal["new", "proposed", "approved", "edited", "rejected"]
 ReviewAction = Literal["approve", "edit", "reject"]
 EvidenceKind = Literal["service_card", "playbook", "historical_ticket"]
@@ -444,3 +444,142 @@ class SettingsOut(BaseModel):
     votes: int
     max_share: float
     default_capacity: int
+
+
+# ---------------------------------------------------------------- messaging / directory
+
+ChannelKind = Literal["team", "dm"]
+MessageKind = Literal["message", "system", "escalation", "handoff"]
+DraftPurpose = Literal["escalate", "handoff", "question"]
+
+
+class MessageOut(ORM):
+    id: uuid.UUID
+    channel: str
+    sender: str
+    sender_name: str
+    body: str
+    kind: MessageKind
+    ticket_id: uuid.UUID | None
+    ticket_number: int | None = None
+    ticket_summary: str | None = None
+    created_at: datetime
+
+
+class MessageCreate(BaseModel):
+    channel: str = Field(description='"team:<Team>" or "dm:<email>|<email>" (any order)')
+    sender: str
+    body: str = Field(min_length=1)
+    kind: MessageKind = "message"
+    ticket_id: uuid.UUID | None = Field(None, description="Attach a ticket; kind 'escalation' also marks it escalated")
+
+
+class ChannelOut(BaseModel):
+    id: str
+    kind: ChannelKind
+    title: str
+    subtitle: str
+    members: list[str]
+    last_message: MessageOut | None
+    message_count: int
+
+
+class DraftRequest(BaseModel):
+    ticket_id: uuid.UUID
+    sender: str
+    to: str = Field(description="A person's email, or 'team:<Team>'")
+    purpose: DraftPurpose = "escalate"
+    model: str | None = None
+
+
+class DraftOut(BaseModel):
+    channel: str
+    recipient_label: str
+    body: str
+    kind: MessageKind
+    model: str
+
+
+class MemberBrief(BaseModel):
+    email: str
+    name: str
+    role: Role
+    open: int
+    capacity: int
+
+
+class ServiceBrief(BaseModel):
+    name: ServiceName
+    criticality: Criticality
+
+
+class Department(BaseModel):
+    team: TeamName
+    channel: str
+    services: list[ServiceBrief]
+    lead: MemberBrief | None
+    members: list[MemberBrief]
+    open_tickets: int
+    escalations: int
+    messages_7d: int
+
+
+# ---------------------------------------------------------------- copilot chat
+
+
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class CopilotRequest(BaseModel):
+    messages: list[ChatTurn] = Field(min_length=1, description="Conversation so far; the last one is the question")
+    ticket_id: uuid.UUID | None = None
+    model: str | None = None
+
+
+class CopilotEvent(BaseModel):
+    """Server-sent event of POST /api/assistant/stream: sources first, then tokens, then done."""
+
+    type: Literal["sources", "token", "done", "error"]
+    text: str | None = None
+    citations: list[Evidence] = []
+    model: str | None = None
+
+
+# ---------------------------------------------------------------- impact / trends
+
+
+class DailyPoint(BaseModel):
+    day: str
+    created: int
+    triaged: int
+    approved: int
+    edited: int
+    rejected: int
+    auto: int
+    review: int
+    triage: int
+    misroutes: int = Field(description="Proposals whose service differs from the intake service")
+    avg_review_seconds: float | None
+    acceptance_rate: float | None
+
+
+class Impact(BaseModel):
+    include_demo: bool
+    tickets: int
+    tickets_triaged: int
+    misroutes_caught: int
+    priority_corrected: int
+    clarifications_requested: int
+    escalations: int
+    auto_routed_share: float | None
+    acceptance_rate: float | None
+    avg_triage_seconds: float | None
+    avg_review_seconds: float | None
+    minutes_saved: float
+    manual_triage_minutes: float
+    max_load: float | None = Field(description="Busiest person's open tickets divided by their capacity")
+    over_capacity: int = Field(description="People at or over capacity")
+    learned_documents: int
+    days: list[DailyPoint]

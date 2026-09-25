@@ -352,6 +352,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/assistant/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stream Copilot
+         * @description Copilot chat: retrieves knowledge for the latest question, then streams the answer token by token.
+         */
+        post: operations["stream_copilot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/metrics": {
         parameters: {
             query?: never;
@@ -412,6 +432,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/metrics/impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Impact
+         * @description Business view: the service-desk pain points and how much of each the system handled.
+         */
+        get: operations["get_impact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users": {
         parameters: {
             query?: never;
@@ -438,6 +478,78 @@ export interface paths {
         };
         /** Get Workload */
         get: operations["get_workload"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Channels */
+        get: operations["list_channels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Messages */
+        get: operations["list_messages"];
+        put?: never;
+        /** Send Message */
+        post: operations["send_message"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Draft Message
+         * @description AI-drafted escalation / hand-off / question about a ticket, addressed to a person or a team.
+         */
+        post: operations["draft_message"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/directory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Directory */
+        get: operations["get_directory"];
         put?: never;
         post?: never;
         delete?: never;
@@ -519,7 +631,7 @@ export interface components {
              */
             ticket_ids?: string[] | null;
             /** Source */
-            source?: ("challenge" | "training" | "manual" | "email") | null;
+            source?: ("challenge" | "training" | "manual" | "email" | "demo") | null;
             /**
              * Model
              * @description LLM model from /api/llm/models; omit for the default, 'heuristic' for no LLM
@@ -545,7 +657,7 @@ export interface components {
              * @default challenge
              * @enum {string}
              */
-            source: "challenge" | "training" | "manual" | "email";
+            source: "challenge" | "training" | "manual" | "email" | "demo";
         };
         /** Calibration */
         Calibration: {
@@ -567,6 +679,35 @@ export interface components {
              * @description Share approved without changing service or priority
              */
             agreement: number | null;
+        };
+        /** ChannelOut */
+        ChannelOut: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "team" | "dm";
+            /** Title */
+            title: string;
+            /** Subtitle */
+            subtitle: string;
+            /** Members */
+            members: string[];
+            last_message: components["schemas"]["MessageOut"] | null;
+            /** Message Count */
+            message_count: number;
+        };
+        /** ChatTurn */
+        ChatTurn: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+            /** Content */
+            content: string;
         };
         /** ConfidenceOut */
         ConfidenceOut: {
@@ -590,6 +731,68 @@ export interface components {
              * @description Reasons for caution, e.g. generic_service, unclear_input
              */
             flags: string[];
+        };
+        /**
+         * CopilotEvent
+         * @description Server-sent event of POST /api/assistant/stream: sources first, then tokens, then done.
+         */
+        CopilotEvent: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "sources" | "token" | "done" | "error";
+            /** Text */
+            text?: string | null;
+            /**
+             * Citations
+             * @default []
+             */
+            citations: components["schemas"]["Evidence"][];
+            /** Model */
+            model?: string | null;
+        };
+        /** CopilotRequest */
+        CopilotRequest: {
+            /**
+             * Messages
+             * @description Conversation so far; the last one is the question
+             */
+            messages: components["schemas"]["ChatTurn"][];
+            /** Ticket Id */
+            ticket_id?: string | null;
+            /** Model */
+            model?: string | null;
+        };
+        /** DailyPoint */
+        DailyPoint: {
+            /** Day */
+            day: string;
+            /** Created */
+            created: number;
+            /** Triaged */
+            triaged: number;
+            /** Approved */
+            approved: number;
+            /** Edited */
+            edited: number;
+            /** Rejected */
+            rejected: number;
+            /** Auto */
+            auto: number;
+            /** Review */
+            review: number;
+            /** Triage */
+            triage: number;
+            /**
+             * Misroutes
+             * @description Proposals whose service differs from the intake service
+             */
+            misroutes: number;
+            /** Avg Review Seconds */
+            avg_review_seconds: number | null;
+            /** Acceptance Rate */
+            acceptance_rate: number | null;
         };
         /**
          * Decision
@@ -656,6 +859,66 @@ export interface components {
             resolution?: ("done" | "cancelled" | "clarification" | "cannot reproduce") | null;
             /** Resolution Comment */
             resolution_comment?: string | null;
+        };
+        /** Department */
+        Department: {
+            /**
+             * Team
+             * @enum {string}
+             */
+            team: "Service Desk" | "Enterprise Applications" | "Investment Operations" | "Securities Operations" | "Risk & Controls" | "Valuation & Pricing" | "Client Services" | "Market Data Services" | "Trading Support" | "Tax & Reporting" | "Treasury & Cash";
+            /** Channel */
+            channel: string;
+            /** Services */
+            services: components["schemas"]["ServiceBrief"][];
+            lead: components["schemas"]["MemberBrief"] | null;
+            /** Members */
+            members: components["schemas"]["MemberBrief"][];
+            /** Open Tickets */
+            open_tickets: number;
+            /** Escalations */
+            escalations: number;
+            /** Messages 7D */
+            messages_7d: number;
+        };
+        /** DraftOut */
+        DraftOut: {
+            /** Channel */
+            channel: string;
+            /** Recipient Label */
+            recipient_label: string;
+            /** Body */
+            body: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "message" | "system" | "escalation" | "handoff";
+            /** Model */
+            model: string;
+        };
+        /** DraftRequest */
+        DraftRequest: {
+            /**
+             * Ticket Id
+             * Format: uuid
+             */
+            ticket_id: string;
+            /** Sender */
+            sender: string;
+            /**
+             * To
+             * @description A person's email, or 'team:<Team>'
+             */
+            to: string;
+            /**
+             * Purpose
+             * @default escalate
+             * @enum {string}
+             */
+            purpose: "escalate" | "handoff" | "question";
+            /** Model */
+            model?: string | null;
         };
         /** EmailIngest */
         EmailIngest: {
@@ -740,6 +1003,49 @@ export interface components {
             embeddings_configured: boolean;
             /** Version */
             version: string;
+        };
+        /** Impact */
+        Impact: {
+            /** Include Demo */
+            include_demo: boolean;
+            /** Tickets */
+            tickets: number;
+            /** Tickets Triaged */
+            tickets_triaged: number;
+            /** Misroutes Caught */
+            misroutes_caught: number;
+            /** Priority Corrected */
+            priority_corrected: number;
+            /** Clarifications Requested */
+            clarifications_requested: number;
+            /** Escalations */
+            escalations: number;
+            /** Auto Routed Share */
+            auto_routed_share: number | null;
+            /** Acceptance Rate */
+            acceptance_rate: number | null;
+            /** Avg Triage Seconds */
+            avg_triage_seconds: number | null;
+            /** Avg Review Seconds */
+            avg_review_seconds: number | null;
+            /** Minutes Saved */
+            minutes_saved: number;
+            /** Manual Triage Minutes */
+            manual_triage_minutes: number;
+            /**
+             * Max Load
+             * @description Busiest person's open tickets divided by their capacity
+             */
+            max_load: number | null;
+            /**
+             * Over Capacity
+             * @description People at or over capacity
+             */
+            over_capacity: number;
+            /** Learned Documents */
+            learned_documents: number;
+            /** Days */
+            days: components["schemas"]["DailyPoint"][];
         };
         /** ImportResult */
         ImportResult: {
@@ -827,6 +1133,77 @@ export interface components {
             resolution?: ("done" | "cancelled" | "clarification" | "cannot reproduce") | null;
             /** Resolution Comment */
             resolution_comment?: string | null;
+        };
+        /** MemberBrief */
+        MemberBrief: {
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "analyst" | "lead" | "admin";
+            /** Open */
+            open: number;
+            /** Capacity */
+            capacity: number;
+        };
+        /** MessageCreate */
+        MessageCreate: {
+            /**
+             * Channel
+             * @description "team:<Team>" or "dm:<email>|<email>" (any order)
+             */
+            channel: string;
+            /** Sender */
+            sender: string;
+            /** Body */
+            body: string;
+            /**
+             * Kind
+             * @default message
+             * @enum {string}
+             */
+            kind: "message" | "system" | "escalation" | "handoff";
+            /**
+             * Ticket Id
+             * @description Attach a ticket; kind 'escalation' also marks it escalated
+             */
+            ticket_id?: string | null;
+        };
+        /** MessageOut */
+        MessageOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Channel */
+            channel: string;
+            /** Sender */
+            sender: string;
+            /** Sender Name */
+            sender_name: string;
+            /** Body */
+            body: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "message" | "system" | "escalation" | "handoff";
+            /** Ticket Id */
+            ticket_id: string | null;
+            /** Ticket Number */
+            ticket_number?: number | null;
+            /** Ticket Summary */
+            ticket_summary?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** Metrics */
         Metrics: {
@@ -1047,6 +1424,19 @@ export interface components {
              */
             work_type: "Incident" | "Service Request";
         };
+        /** ServiceBrief */
+        ServiceBrief: {
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "Trading Platform" | "Order Management" | "Trade Matching" | "Securities Settlement" | "Corporate Actions" | "Fund Pricing" | "NAV Calculation" | "Portfolio Accounting" | "Cash Management" | "Risk & Compliance Monitoring" | "Regulatory Reporting" | "SimCorp Dimension" | "Rimes Data Feed" | "Client Reporting" | "Tax Reporting" | "CRM & Client Portal" | "Identity & Access Management" | "SharePoint & File Storage" | "Outlook & Email" | "Emailed Support Tickets";
+            /**
+             * Criticality
+             * @enum {string}
+             */
+            criticality: "Critical" | "Non-Critical";
+        };
         /** ServiceInfo */
         ServiceInfo: {
             /**
@@ -1131,7 +1521,7 @@ export interface components {
              * @default manual
              * @enum {string}
              */
-            source: "challenge" | "training" | "manual" | "email";
+            source: "challenge" | "training" | "manual" | "email" | "demo";
             manual?: components["schemas"]["ManualFields"] | null;
         };
         /** TicketDetail */
@@ -1188,7 +1578,7 @@ export interface components {
              * Source
              * @enum {string}
              */
-            source: "challenge" | "training" | "manual" | "email";
+            source: "challenge" | "training" | "manual" | "email" | "demo";
             /**
              * Triage State
              * @enum {string}
@@ -1286,7 +1676,7 @@ export interface components {
              * Source
              * @enum {string}
              */
-            source: "challenge" | "training" | "manual" | "email";
+            source: "challenge" | "training" | "manual" | "email" | "demo";
             /**
              * Triage State
              * @enum {string}
@@ -1712,7 +2102,7 @@ export interface operations {
                 as_user?: string | null;
                 sort?: string;
                 state?: ("new" | "proposed" | "approved" | "edited" | "rejected") | null;
-                source?: ("challenge" | "training" | "manual" | "email") | null;
+                source?: ("challenge" | "training" | "manual" | "email" | "demo") | null;
                 /** @description AI service */
                 service?: string | null;
                 /** @description AI team */
@@ -2228,6 +2618,40 @@ export interface operations {
             };
         };
     };
+    stream_copilot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CopilotRequest"];
+            };
+        };
+        responses: {
+            /** @description Server-sent events: one 'sources', many 'token', then 'done' */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": unknown;
+                    "application/json": components["schemas"]["CopilotEvent"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_metrics: {
         parameters: {
             query?: never;
@@ -2271,7 +2695,7 @@ export interface operations {
     export_submission: {
         parameters: {
             query?: {
-                source?: "challenge" | "training" | "manual" | "email";
+                source?: "challenge" | "training" | "manual" | "email" | "demo";
             };
             header?: never;
             path?: never;
@@ -2288,6 +2712,38 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_impact: {
+        parameters: {
+            query?: {
+                include_demo?: boolean;
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Impact"];
                 };
             };
             /** @description Validation Error */
@@ -2360,6 +2816,156 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_channels: {
+        parameters: {
+            query: {
+                /** @description Email of the person viewing */
+                as_user: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_messages: {
+        parameters: {
+            query: {
+                channel: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_message: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    draft_message: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_directory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Department"][];
                 };
             };
         };

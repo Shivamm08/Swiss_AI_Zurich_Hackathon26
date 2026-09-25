@@ -262,7 +262,8 @@
                     "challenge",
                     "training",
                     "manual",
-                    "email"
+                    "email",
+                    "demo"
                   ],
                   "type": "string"
                 },
@@ -1051,6 +1052,49 @@
         }
       }
     },
+    "/api/assistant/stream": {
+      "post": {
+        "tags": [
+          "knowledge"
+        ],
+        "summary": "Stream Copilot",
+        "description": "Copilot chat: retrieves knowledge for the latest question, then streams the answer token by token.",
+        "operationId": "stream_copilot",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopilotRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Server-sent events: one 'sources', many 'token', then 'done'",
+            "content": {
+              "text/event-stream": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CopilotEvent"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/metrics": {
       "get": {
         "tags": [
@@ -1112,7 +1156,8 @@
                 "challenge",
                 "training",
                 "manual",
-                "email"
+                "email",
+                "demo"
               ],
               "type": "string",
               "default": "challenge",
@@ -1132,6 +1177,60 @@
                     "additionalProperties": true
                   },
                   "title": "Response Export Submission"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/metrics/impact": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Get Impact",
+        "description": "Business view: the service-desk pain points and how much of each the system handled.",
+        "operationId": "get_impact",
+        "parameters": [
+          {
+            "name": "include_demo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Demo"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 28,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Impact"
                 }
               }
             }
@@ -1239,6 +1338,218 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/channels": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "List Channels",
+        "operationId": "list_channels",
+        "parameters": [
+          {
+            "name": "as_user",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Email of the person viewing",
+              "title": "As User"
+            },
+            "description": "Email of the person viewing"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChannelOut"
+                  },
+                  "title": "Response List Channels"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/messages": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "List Messages",
+        "operationId": "list_messages",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Channel"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessageOut"
+                  },
+                  "title": "Response List Messages"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Send Message",
+        "operationId": "send_message",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/draft": {
+      "post": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Draft Message",
+        "description": "AI-drafted escalation / hand-off / question about a ticket, addressed to a person or a team.",
+        "operationId": "draft_message",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/directory": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Get Directory",
+        "operationId": "get_directory",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Department"
+                  },
+                  "type": "array",
+                  "title": "Response Get Directory"
                 }
               }
             }
@@ -1437,7 +1748,8 @@
                   "challenge",
                   "training",
                   "manual",
-                  "email"
+                  "email",
+                  "demo"
                 ]
               },
               {
@@ -1494,7 +1806,8 @@
               "challenge",
               "training",
               "manual",
-              "email"
+              "email",
+              "demo"
             ],
             "title": "Source",
             "default": "challenge"
@@ -1563,6 +1876,84 @@
         ],
         "title": "CalibrationBucket"
       },
+      "ChannelOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "team",
+              "dm"
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle"
+          },
+          "members": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "last_message": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message_count": {
+            "type": "integer",
+            "title": "Message Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "subtitle",
+          "members",
+          "last_message",
+          "message_count"
+        ],
+        "title": "ChannelOut"
+      },
+      "ChatTurn": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ChatTurn"
+      },
       "ConfidenceOut": {
         "properties": {
           "overall": {
@@ -1599,6 +1990,180 @@
           "flags"
         ],
         "title": "ConfidenceOut"
+      },
+      "CopilotEvent": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "sources",
+              "token",
+              "done",
+              "error"
+            ],
+            "title": "Type"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Citations",
+            "default": []
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "CopilotEvent",
+        "description": "Server-sent event of POST /api/assistant/stream: sources first, then tokens, then done."
+      },
+      "CopilotRequest": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ChatTurn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Messages",
+            "description": "Conversation so far; the last one is the question"
+          },
+          "ticket_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "CopilotRequest"
+      },
+      "DailyPoint": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "title": "Day"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "triaged": {
+            "type": "integer",
+            "title": "Triaged"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "edited": {
+            "type": "integer",
+            "title": "Edited"
+          },
+          "rejected": {
+            "type": "integer",
+            "title": "Rejected"
+          },
+          "auto": {
+            "type": "integer",
+            "title": "Auto"
+          },
+          "review": {
+            "type": "integer",
+            "title": "Review"
+          },
+          "triage": {
+            "type": "integer",
+            "title": "Triage"
+          },
+          "misroutes": {
+            "type": "integer",
+            "title": "Misroutes",
+            "description": "Proposals whose service differs from the intake service"
+          },
+          "avg_review_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Review Seconds"
+          },
+          "acceptance_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acceptance Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "created",
+          "triaged",
+          "approved",
+          "edited",
+          "rejected",
+          "auto",
+          "review",
+          "triage",
+          "misroutes",
+          "avg_review_seconds",
+          "acceptance_rate"
+        ],
+        "title": "DailyPoint"
       },
       "Decision": {
         "properties": {
@@ -1857,6 +2422,164 @@
         "title": "DecisionEdit",
         "description": "Analyst overrides. Team and priority are always recomputed server-side\nfrom service and urgency/impact, so they can never be inconsistent."
       },
+      "Department": {
+        "properties": {
+          "team": {
+            "type": "string",
+            "enum": [
+              "Service Desk",
+              "Enterprise Applications",
+              "Investment Operations",
+              "Securities Operations",
+              "Risk & Controls",
+              "Valuation & Pricing",
+              "Client Services",
+              "Market Data Services",
+              "Trading Support",
+              "Tax & Reporting",
+              "Treasury & Cash"
+            ],
+            "title": "Team"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "services": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceBrief"
+            },
+            "type": "array",
+            "title": "Services"
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MemberBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/MemberBrief"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "open_tickets": {
+            "type": "integer",
+            "title": "Open Tickets"
+          },
+          "escalations": {
+            "type": "integer",
+            "title": "Escalations"
+          },
+          "messages_7d": {
+            "type": "integer",
+            "title": "Messages 7D"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team",
+          "channel",
+          "services",
+          "lead",
+          "members",
+          "open_tickets",
+          "escalations",
+          "messages_7d"
+        ],
+        "title": "Department"
+      },
+      "DraftOut": {
+        "properties": {
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "recipient_label": {
+            "type": "string",
+            "title": "Recipient Label"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "message",
+              "system",
+              "escalation",
+              "handoff"
+            ],
+            "title": "Kind"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel",
+          "recipient_label",
+          "body",
+          "kind",
+          "model"
+        ],
+        "title": "DraftOut"
+      },
+      "DraftRequest": {
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ticket Id"
+          },
+          "sender": {
+            "type": "string",
+            "title": "Sender"
+          },
+          "to": {
+            "type": "string",
+            "title": "To",
+            "description": "A person's email, or 'team:<Team>'"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "escalate",
+              "handoff",
+              "question"
+            ],
+            "title": "Purpose",
+            "default": "escalate"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "sender",
+          "to"
+        ],
+        "title": "DraftRequest"
+      },
       "EmailIngest": {
         "properties": {
           "from_address": {
@@ -2058,6 +2781,139 @@
           "version"
         ],
         "title": "Health"
+      },
+      "Impact": {
+        "properties": {
+          "include_demo": {
+            "type": "boolean",
+            "title": "Include Demo"
+          },
+          "tickets": {
+            "type": "integer",
+            "title": "Tickets"
+          },
+          "tickets_triaged": {
+            "type": "integer",
+            "title": "Tickets Triaged"
+          },
+          "misroutes_caught": {
+            "type": "integer",
+            "title": "Misroutes Caught"
+          },
+          "priority_corrected": {
+            "type": "integer",
+            "title": "Priority Corrected"
+          },
+          "clarifications_requested": {
+            "type": "integer",
+            "title": "Clarifications Requested"
+          },
+          "escalations": {
+            "type": "integer",
+            "title": "Escalations"
+          },
+          "auto_routed_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Routed Share"
+          },
+          "acceptance_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acceptance Rate"
+          },
+          "avg_triage_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Triage Seconds"
+          },
+          "avg_review_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Review Seconds"
+          },
+          "minutes_saved": {
+            "type": "number",
+            "title": "Minutes Saved"
+          },
+          "manual_triage_minutes": {
+            "type": "number",
+            "title": "Manual Triage Minutes"
+          },
+          "max_load": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Load",
+            "description": "Busiest person's open tickets divided by their capacity"
+          },
+          "over_capacity": {
+            "type": "integer",
+            "title": "Over Capacity",
+            "description": "People at or over capacity"
+          },
+          "learned_documents": {
+            "type": "integer",
+            "title": "Learned Documents"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/DailyPoint"
+            },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "include_demo",
+          "tickets",
+          "tickets_triaged",
+          "misroutes_caught",
+          "priority_corrected",
+          "clarifications_requested",
+          "escalations",
+          "auto_routed_share",
+          "acceptance_rate",
+          "avg_triage_seconds",
+          "avg_review_seconds",
+          "minutes_saved",
+          "manual_triage_minutes",
+          "max_load",
+          "over_capacity",
+          "learned_documents",
+          "days"
+        ],
+        "title": "Impact"
       },
       "ImportResult": {
         "properties": {
@@ -2353,6 +3209,179 @@
         "type": "object",
         "title": "ManualFields",
         "description": "Values staff fill in themselves. The pipeline keeps them and only fills the gaps."
+      },
+      "MemberBrief": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "analyst",
+              "lead",
+              "admin"
+            ],
+            "title": "Role"
+          },
+          "open": {
+            "type": "integer",
+            "title": "Open"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "name",
+          "role",
+          "open",
+          "capacity"
+        ],
+        "title": "MemberBrief"
+      },
+      "MessageCreate": {
+        "properties": {
+          "channel": {
+            "type": "string",
+            "title": "Channel",
+            "description": "\"team:<Team>\" or \"dm:<email>|<email>\" (any order)"
+          },
+          "sender": {
+            "type": "string",
+            "title": "Sender"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Body"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "message",
+              "system",
+              "escalation",
+              "handoff"
+            ],
+            "title": "Kind",
+            "default": "message"
+          },
+          "ticket_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Id",
+            "description": "Attach a ticket; kind 'escalation' also marks it escalated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel",
+          "sender",
+          "body"
+        ],
+        "title": "MessageCreate"
+      },
+      "MessageOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "sender": {
+            "type": "string",
+            "title": "Sender"
+          },
+          "sender_name": {
+            "type": "string",
+            "title": "Sender Name"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "message",
+              "system",
+              "escalation",
+              "handoff"
+            ],
+            "title": "Kind"
+          },
+          "ticket_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Id"
+          },
+          "ticket_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Number"
+          },
+          "ticket_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Summary"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "channel",
+          "sender",
+          "sender_name",
+          "body",
+          "kind",
+          "ticket_id",
+          "created_at"
+        ],
+        "title": "MessageOut"
       },
       "Metrics": {
         "properties": {
@@ -2979,6 +4008,50 @@
         ],
         "title": "RubricPreviewRequest"
       },
+      "ServiceBrief": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "Trading Platform",
+              "Order Management",
+              "Trade Matching",
+              "Securities Settlement",
+              "Corporate Actions",
+              "Fund Pricing",
+              "NAV Calculation",
+              "Portfolio Accounting",
+              "Cash Management",
+              "Risk & Compliance Monitoring",
+              "Regulatory Reporting",
+              "SimCorp Dimension",
+              "Rimes Data Feed",
+              "Client Reporting",
+              "Tax Reporting",
+              "CRM & Client Portal",
+              "Identity & Access Management",
+              "SharePoint & File Storage",
+              "Outlook & Email",
+              "Emailed Support Tickets"
+            ],
+            "title": "Name"
+          },
+          "criticality": {
+            "type": "string",
+            "enum": [
+              "Critical",
+              "Non-Critical"
+            ],
+            "title": "Criticality"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "criticality"
+        ],
+        "title": "ServiceBrief"
+      },
       "ServiceInfo": {
         "properties": {
           "name": {
@@ -3226,7 +4299,8 @@
               "challenge",
               "training",
               "manual",
-              "email"
+              "email",
+              "demo"
             ],
             "title": "Source",
             "default": "manual"
@@ -3393,7 +4467,8 @@
               "challenge",
               "training",
               "manual",
-              "email"
+              "email",
+              "demo"
             ],
             "title": "Source"
           },
@@ -3708,7 +4783,8 @@
               "challenge",
               "training",
               "manual",
-              "email"
+              "email",
+              "demo"
             ],
             "title": "Source"
           },

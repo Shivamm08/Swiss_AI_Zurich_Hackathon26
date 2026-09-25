@@ -15,6 +15,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from app import chat
 from app.config import settings
 from app.domain import normalize_level, priority_for
 from app.ingest import ticket_text
@@ -62,6 +63,7 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
     now = datetime.now(timezone.utc)
     model = llm.resolve_model(model)
     manual = ticket.manual
+    was_escalated = bool(ticket.escalated)
 
     def event(stage: str, status: str, message: str, data: dict[str, Any] | None = None) -> TriageStreamEvent:
         return TriageStreamEvent(stage=stage, status=status, message=message, data=data or {},  # type: ignore[arg-type]
@@ -183,6 +185,12 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
     ticket.escalated, ticket.sla_due_at = escalated, sla_due_at
 
     db.add(result)
+    if escalated and not was_escalated:  # tell the owning team right away
+        who = chat.names(db).get(working or "", "nobody yet")
+        chat.post(db, chat.team_channel(team), chat.SYSTEM_SENDER,
+                  f"Escalation: #{ticket.number} \"{ticket.summary}\" is {priority} on {ex.service} (critical). "
+                  f"Assigned to {who}. Response due within {confidence.SLA_HOURS[priority]:g} h.",
+                  kind="escalation", ticket_id=ticket.id)
     db.commit()
     db.refresh(result)
     if sink is not None:
