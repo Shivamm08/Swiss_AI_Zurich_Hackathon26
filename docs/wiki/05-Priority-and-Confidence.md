@@ -105,17 +105,38 @@ overall = min(votes, past-case match) × flag multipliers
 Taking the **weaker** part means that if either part is unsure, a human looks. In heuristic mode
 (no model), overall is fixed at **20%**.
 
+### No precedent
+
+When no past fix matches, the flag `no_precedent` is added (informational: the past-case part of
+confidence is already capped at 30%, so the ticket lands in Needs review). The draft becomes
+"No matching past fix. Suggested first steps: …", never a resolution.
+
+### Staff disagreement
+
+Values staff set on the New-ticket form are kept, but they are **checked**:
+
+- the AI reads the ticket **without seeing** the staff values, so its reading of work type, service
+  and resolution is an independent second opinion;
+- the rules compute urgency and impact from the facts as usual;
+- a staff-chosen specialist is checked against the roster (must be a specialist of the owning team).
+
+Every disagreement becomes a **staff check** (`confidence_detail.staff_checks`: field, staff value,
+checked value, by `ai` or `rules`, and why), adds the flag `staff_disagreement` (× 0.75) and is shown
+to the analyst as "Second opinion disagrees with a value set by staff" before they dispatch. The
+staff value is never overwritten: a person decides.
+
 ## Routing
 
 | Overall confidence | Route | What happens |
 |---|---|---|
-| ≥ 80% | `auto` | Assigned to the recommended person, ready for one-click approval |
-| 50–80% | `review` | Assigned, marked "review" |
-| < 50% | `triage` | **Not assigned**; shown in the **Needs review** tab for a team lead |
+| ≥ 80% | `auto` | Department's Triage inbox, labelled *high confidence*: usually one click for the analyst |
+| 50–80% | `review` | Department's Triage inbox, labelled *check carefully* |
+| < 50% | `triage` | Shared **Needs review** tab, labelled *low confidence*: even the department may be wrong |
 
 Independently, **Highest priority on a Critical service** sets `escalated = true`. The ticket
 appears in the Escalations tab and on the team lead's workload screen. Thresholds are
-configurable (`AUTO_THRESHOLD`, `TRIAGE_THRESHOLD`). Nothing is ever closed automatically.
+configurable (`AUTO_THRESHOLD`, `TRIAGE_THRESHOLD`). Nothing is ever assigned or closed
+automatically: the analyst dispatches every ticket, and only the specialist marks it done.
 
 ## SLA deadlines
 

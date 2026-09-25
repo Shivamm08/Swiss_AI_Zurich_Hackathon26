@@ -26,7 +26,7 @@ export function initials(name: string): string {
   return name.split(/[\s.@]+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join('')
 }
 
-export const ROLE_LABEL = { admin: 'Admin', lead: 'Team lead', analyst: 'Analyst' } as const
+export const ROLE_LABEL = { admin: 'Admin', analyst: 'Team Lead / Analyst', specialist: 'Specialist' } as const
 
 /** Chart series colors: dataviz reference slots 1-3, validated (CVD ΔE ≥ 9.2 adjacent). */
 export const SERIES = ['#2a78d6', '#eb6834', '#1baf7a'] as const

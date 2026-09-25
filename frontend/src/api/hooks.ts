@@ -12,6 +12,7 @@ import type {
   MessageCreate,
   RubricPreviewRequest,
   ReviewCreate,
+  WorkUpdate,
   TicketCreate,
   TicketListParams,
   TicketSource,
@@ -78,6 +79,8 @@ function useInvalidateTickets() {
     qc.invalidateQueries({ queryKey: queryKeys.calibration })
     qc.invalidateQueries({ queryKey: ['workload'] })
     qc.invalidateQueries({ queryKey: ['kb-documents'] })
+    qc.invalidateQueries({ queryKey: ['challenge-stats'] })
+    qc.invalidateQueries({ queryKey: ['impact'] })
   }
 }
 
@@ -119,9 +122,9 @@ export const useImportTickets = () => {
 export const useDeleteTicket = () => {
   const invalidate = useInvalidateTickets()
   return useMutation({
-    mutationFn: async (ticketId: string) => {
+    mutationFn: async ({ ticketId, by }: { ticketId: string; by: string }) => {
       const { response, error } = await api.DELETE('/api/tickets/{ticket_id}', {
-        params: { path: { ticket_id: ticketId } },
+        params: { path: { ticket_id: ticketId }, query: { by } },  // admin only
       })
       if (!response.ok) throw new ApiError(response.status, error)
     },
@@ -163,8 +166,28 @@ export const useReviewTriage = () => {
 export const useAssignTicket = () => {
   const invalidate = useInvalidateTickets()
   return useMutation({
-    mutationFn: ({ ticketId, assignee }: { ticketId: string; assignee: string }) =>
-      unwrap(api.POST('/api/tickets/{ticket_id}/assign', { params: { path: { ticket_id: ticketId } }, body: { assignee } })),
+    mutationFn: ({ ticketId, assignee, by }: { ticketId: string; assignee: string; by?: string }) =>
+      unwrap(api.POST('/api/tickets/{ticket_id}/assign', { params: { path: { ticket_id: ticketId } }, body: { assignee, by } })),
+    onSuccess: invalidate,
+  })
+}
+
+/** The department's analyst (or admin) clears an escalation once it's handled. */
+export const useDeescalate = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: ({ ticketId, by, note }: { ticketId: string; by: string; note?: string }) =>
+      unwrap(api.POST('/api/tickets/{ticket_id}/deescalate', { params: { path: { ticket_id: ticketId } }, body: { by, note } })),
+    onSuccess: invalidate,
+  })
+}
+
+/** A specialist moving their ticket along: start, wait, resume, resolve (done), hand back. */
+export const useWorkUpdate = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: ({ ticketId, body }: { ticketId: string; body: WorkUpdate }) =>
+      unwrap(api.POST('/api/tickets/{ticket_id}/work', { params: { path: { ticket_id: ticketId } }, body })),
     onSuccess: invalidate,
   })
 }
@@ -256,6 +279,19 @@ export const useDraftMessage = () =>
 
 export const useDirectory = () =>
   useQuery({ queryKey: ['directory'], queryFn: () => unwrap(api.GET('/api/directory')), refetchInterval: 15_000 })
+
+export const useChallengeStats = () =>
+  useQuery({ queryKey: ['challenge-stats'], queryFn: () => unwrap(api.GET('/api/metrics/challenge', {})) })
+
+/** The department's analyst (or admin) sends a done ticket back to its specialist, with a reason. */
+export const useReopen = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: ({ ticketId, by, note }: { ticketId: string; by: string; note: string }) =>
+      unwrap(api.POST('/api/tickets/{ticket_id}/reopen', { params: { path: { ticket_id: ticketId } }, body: { by, note } })),
+    onSuccess: invalidate,
+  })
+}
 
 export const useImpact = (includeDemo: boolean) =>
   useQuery({

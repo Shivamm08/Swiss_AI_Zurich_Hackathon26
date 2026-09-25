@@ -49,6 +49,17 @@ function PainCard({ icon: Icon, pain, answer, value, unit }: { icon: LucideIcon;
   )
 }
 
+function Kpi({ label, value, how, bad = false }: { label: string; value: string; how: string; bad?: boolean }) {
+  return (
+    <div className="rounded-2xl border border-line bg-surface p-4 shadow-card" title={how}>
+      <p className="text-xs tracking-wider text-muted uppercase">{label}</p>
+      <p className="mt-1 text-3xl font-semibold tabular">{value}</p>
+      <p className="mt-1 text-[11px] leading-snug text-muted">{how}</p>
+      {bad && <p className="mt-1 text-[10px] font-medium text-muted uppercase">lower is better</p>}
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const [includeDemo, setIncludeDemo] = useState(true)
   const [showTable, setShowTable] = useState(false)
@@ -65,7 +76,7 @@ export default function DashboardPage() {
       acceptance: rolling(data.days, (d) => [d.approved, d.approved + d.edited + d.rejected]),
       reviewTime: rolling(data.days, (d) => [(d.avg_review_seconds ?? 0) * (d.approved + d.edited + d.rejected), d.avg_review_seconds == null ? 0 : d.approved + d.edited + d.rejected]),
       routes: [
-        { label: 'Auto-assigned', color: SERIES[0], values: data.days.map((d) => d.auto) },
+        { label: 'High confidence', color: SERIES[0], values: data.days.map((d) => d.auto) },
         { label: 'Assigned, review', color: SERIES[1], values: data.days.map((d) => d.review) },
         { label: 'Needs human triage', color: SERIES[2], values: data.days.map((d) => d.triage) },
       ],
@@ -114,22 +125,48 @@ export default function DashboardPage() {
           </section>
 
           <section>
+            <h2 className="mb-3 text-[13px] font-semibold tracking-wide text-muted uppercase">Desk KPIs</h2>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+              <Kpi label="Time to assign" value={data.time_to_assign_minutes != null ? `${Math.round(data.time_to_assign_minutes)} min` : '–'}
+                how="Median time from a ticket arriving to its dispatch to a specialist (activity timeline)." />
+              <Kpi label="First-time accuracy" value={pct(data.first_time_accuracy)}
+                how="Analyst decisions that accepted the AI proposal with no field changed (reviews.overridden_fields empty)." />
+              <Kpi label="AI misroutes" value={pct(data.ai_misroute_rate)} bad
+                how="Decisions where the analyst changed the service (wrong department) or rejected the proposal." />
+              <Kpi label="Reassigned" value={pct(data.reassignment_rate)} bad
+                how="Dispatched tickets later reassigned or handed back by the specialist." />
+              <Kpi label="Reopened" value={pct(data.reopen_rate)} bad
+                how="Finished tickets the Team Lead / Analyst reopened because the fix wasn't good enough." />
+            </div>
+            {Object.keys(data.field_accuracy).length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-xs shadow-card">
+                <span className="font-medium text-muted">Kept as proposed, per field:</span>
+                {Object.entries(data.field_accuracy).map(([f, v]) => (
+                  <span key={f} className={`rounded-full px-2 py-0.5 tabular ${v >= 0.95 ? 'bg-emerald-50 text-emerald-700' : v >= 0.85 ? 'bg-amber-50 text-amber-800' : 'bg-red-50 text-red-700'}`}>
+                    {f.replace('_', ' ')} {Math.round(v * 100)}%
+                  </span>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section>
             <h2 className="mb-3 text-[13px] font-semibold tracking-wide text-muted uppercase">Pain points we solve</h2>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <PainCard icon={Route} pain="Tickets bounce between teams" answer="The AI reads the content, not the intake field, and re-routes with visible reasons."
                 value={String(data.misroutes_caught)} unit="misrouted tickets caught" />
               <PainCard icon={Scale} pain="Everything is marked urgent" answer="Priority comes from an auditable rule and the official matrix, never from who shouts loudest."
                 value={String(data.priority_corrected)} unit="priorities corrected" />
-              <PainCard icon={BookOpenCheck} pain="Fixes live in people's heads" answer="Every approved fix becomes knowledge the next similar ticket reuses: the learning loop."
-                value={String(data.learned_documents)} unit="approved fixes now reusable" />
+              <PainCard icon={BookOpenCheck} pain="Fixes live in people's heads" answer="Every finished ticket becomes knowledge the next similar ticket reuses: the learning loop."
+                value={String(data.learned_documents)} unit="resolved fixes now reusable" />
               <PainCard icon={Clock3} pain="Tickets wait hours for first triage" answer="A complete proposal in seconds, with SLA timers from the moment it arrives."
                 value={`${data.avg_triage_seconds ?? '–'} s`} unit={`vs ~${data.manual_triage_minutes} min by hand`} />
               <PainCard icon={Users} pain="One expert gets all the tickets" answer="Assignment balances expertise with capacity, so nobody is buried."
                 value={pct(data.max_load)} unit={`busiest person's load · ${data.over_capacity} over capacity`} />
               <PainCard icon={Siren} pain="Escalations get lost in email" answer="Critical tickets alert the owning team instantly; escalations carry the ticket and an AI-drafted brief."
                 value={String(data.escalations)} unit="escalations with full context" />
-              <PainCard icon={ShieldCheck} pain="Nobody trusts a black-box AI" answer="Every step is shown live, confidence is measured, and a human approves every decision."
-                value={pct(data.auto_routed_share)} unit="confident enough to auto-assign" />
+              <PainCard icon={ShieldCheck} pain="Nobody trusts a black-box AI" answer="Every step is shown live, confidence is measured, and an analyst approves every ticket before anyone works on it."
+                value={pct(data.auto_routed_share)} unit="high confidence: one-click approval" />
               <PainCard icon={HelpCircle} pain="Vague tickets: “pls fix asap”" answer="Unclear tickets are detected and the draft asks the reporter for exactly what's missing."
                 value={String(data.clarifications_requested)} unit="vague tickets caught early" />
             </div>

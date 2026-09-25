@@ -4,8 +4,9 @@
 
 A Jira ticket arrives. Triage Copilot works out what it really is (incident or request), which
 service and team own it, how urgent it is, who should handle it and how it will probably be
-resolved. It shows its reasoning step by step and lets a human **approve, edit or reject** every
-proposal.
+resolved. It shows its reasoning step by step. The department's **Team Lead / Analyst** approves,
+edits or rejects every proposal, which dispatches the ticket to a **specialist**. The specialist
+works it and marks it **done**, and only then does the fix become knowledge for the next ticket.
 
 ```mermaid
 flowchart LR
@@ -16,7 +17,8 @@ flowchart LR
   E --> F[Pick the right<br/>person]
   F --> G[Draft the<br/>resolution]
   G --> H[Analyst approves,<br/>edits or rejects]
-  H -->|approved answers| B
+  H -->|dispatch| I[Specialist works it:<br/>in progress, waiting]
+  I -->|done + closing note| B
 ```
 
 ---
@@ -28,7 +30,6 @@ flowchart LR
 ```bash
 git clone https://github.com/Shivamm08/Swiss_AI_Zurich_Hackathon26.git
 cd Swiss_AI_Zurich_Hackathon26
-git switch triage-copilot
 
 cp .env.example .env          # then open .env and paste your OPENAI_API_KEY
 # put the challenge file into data/raw/ (see data/README.md)
@@ -44,8 +45,8 @@ make seed-demo                # optional: a clearly labelled, simulated 4-week h
 ```
 
 Open **http://localhost:5173**. Click **▶ Triage** on any ticket to watch the AI work through it live,
-press **⌘K / Ctrl+K** to ask the Copilot, and use the persona button (top right) to see the app as an
-analyst, a team lead or the admin.
+press **⌘K / Ctrl+K** to ask the Copilot, and use the persona button (top right) to see the app as a
+Team Lead / Analyst, a specialist or the admin.
 
 | Address | What |
 |---|---|
@@ -77,14 +78,16 @@ The full guide is in the **[project wiki](docs/wiki/Home.md)**:
 | [Development workflow](docs/wiki/12-Development-Workflow.md) | contribute without breaking things |
 | [Collaboration and Copilot](docs/wiki/13-Collaboration-and-Copilot.md) | use the Copilot, messages, escalations and personas |
 | [Impact and demo data](docs/wiki/14-Impact-and-Demo-Data.md) | see the pain points we solve and how the demo history is made |
+| [Roles and ticket lifecycle](docs/wiki/15-Roles-and-Ticket-Lifecycle.md) | know who does what, from arrival to done |
 
 ---
 
 ## What's inside
 
 - **Live triage walkthrough:** watch retrieval, 3 AI votes, the priority rules, confidence and assignment happen step by step.
-- **A human approves everything:** approve, edit or reject; low-confidence tickets go to a Needs-review queue.
-- **Learning loop:** every approved fix becomes knowledge the next similar ticket reuses.
+- **Three clear roles:** the Team Lead / Analyst checks every AI proposal and dispatches it, the Specialist does the work and closes it, the Admin runs the system. Low-confidence tickets go to a shared Needs-review queue.
+- **Ticket lifecycle:** awaiting analyst → assigned → in progress / waiting for info → done, with an activity timeline on every ticket.
+- **Learning loop:** every ticket marked done, with the specialist's own closing note, becomes knowledge the next similar ticket reuses.
 - **Copilot:** a streaming chat assistant on every screen that answers from team knowledge, with sources.
 - **Messages and escalations:** department channels, direct messages, and AI-drafted escalations with the ticket attached.
 - **People & teams, workload balancing, Impact dashboard:** built around the everyday pain points of a service desk.

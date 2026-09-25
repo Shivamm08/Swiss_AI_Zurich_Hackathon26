@@ -4,7 +4,7 @@
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from pgvector.sqlalchemy import Vector
@@ -53,6 +53,14 @@ class Ticket(Base):
     route: Mapped[str | None] = mapped_column(String(10), index=True)
     escalated: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     sla_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # Work lifecycle (see WORK_STATUSES in schemas): an analyst dispatches, a specialist works and closes it.
+    work_status: Mapped[str] = mapped_column(String(20), default="open", server_default="open", index=True)
+    resolution: Mapped[str | None] = mapped_column(String(30))  # set by the specialist when done
+    resolution_comment: Mapped[str | None] = mapped_column(Text)
+    resolved_by: Mapped[str | None] = mapped_column(String(120))
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    activity: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list, server_default=text("'[]'::jsonb"))
     source_created_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -67,6 +75,11 @@ class Ticket(Base):
     @property
     def manual_fields(self) -> list[str]:
         return list(self.manual)
+
+    def add_activity(self, by: str, action: str, note: str | None = None) -> None:
+        """Append to the activity timeline (reassigned so SQLAlchemy notices the JSONB change)."""
+        entry = {"at": datetime.now(timezone.utc).isoformat(), "by": by, "action": action, "note": note}
+        self.activity = [*(self.activity or []), entry]
 
     triage_results: Mapped[list["TriageResult"]] = relationship(
         back_populates="ticket", order_by="TriageResult.created_at.desc()", cascade="all, delete-orphan"
@@ -159,7 +172,8 @@ class User(Base):
 
     email: Mapped[str] = mapped_column(String(120), primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
-    role: Mapped[str] = mapped_column(String(10), default="analyst", server_default="analyst")  # analyst | lead | admin
+    # admin | analyst (team lead: dispatches and checks) | specialist (does the work)
+    role: Mapped[str] = mapped_column(String(10), default="specialist", server_default="specialist")
     teams: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default=text("'[]'::jsonb"))
     capacity: Mapped[int] = mapped_column(Integer, default=8, server_default="8")
 

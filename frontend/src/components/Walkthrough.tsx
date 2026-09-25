@@ -25,7 +25,7 @@ const STAGES: { key: string; title: string; icon: LucideIcon; blurb: string }[] 
   { key: 'extract', title: 'Read the ticket', icon: Brain, blurb: 'Independent votes on the observable facts' },
   { key: 'rubric', title: 'Decide priority', icon: Scale, blurb: 'Deterministic rubric + Urgency × Impact matrix' },
   { key: 'confidence', title: 'Measure confidence', icon: Gauge, blurb: 'Weakest of vote agreement and past-case match' },
-  { key: 'assign', title: 'Route to a person', icon: UserCheck, blurb: 'Expert for the problem, balanced by workload' },
+  { key: 'assign', title: 'Suggest a specialist', icon: UserCheck, blurb: 'Expert for the problem, balanced by workload; the analyst decides' },
   { key: 'draft', title: 'Draft the resolution', icon: PenLine, blurb: 'Adapted from the closest past solution' },
 ]
 
@@ -128,7 +128,13 @@ export default function Walkthrough({ events, running, reference, votesTotal }: 
   const retrieve = get('retrieve')
   if (retrieve) {
     const evidence = retrieve.data.evidence as Evidence[]
+    const floor = Number(retrieve.data.min_similarity ?? 0.3)
     details.retrieve = (
+      <>
+      <p className="mb-1.5 text-xs text-muted">
+        Only documents at least {Math.round(floor * 100)}% similar to the ticket, and close to the best match, are kept (up to 6).
+        {Boolean(retrieve.data.no_precedent) && <b className="ml-1 text-amber-700">No similar past fix: the draft will be first steps, not a resolution.</b>}
+      </p>
       <ul className="grid gap-1.5 sm:grid-cols-2">
         {evidence.map((e) => (
           <li key={e.ref_id} className="animate-rise flex items-center gap-2 rounded-lg border border-line px-2.5 py-1.5 text-xs">
@@ -136,10 +142,11 @@ export default function Walkthrough({ events, running, reference, votesTotal }: 
               {e.kind === 'historical_ticket' ? 'learned' : e.kind === 'service_card' ? 'service' : 'playbook'}
             </Pill>
             <span className="min-w-0 flex-1 truncate" title={e.title}>{e.title}</span>
-            <span className="font-mono text-muted">{e.score.toFixed(2)}</span>
+            <span className="font-mono text-muted">{e.similarity != null ? `${Math.round(e.similarity * 100)}%` : e.score.toFixed(2)}</span>
           </li>
         ))}
       </ul>
+      </>
     )
   }
   const voteEvents = events.filter((e) => e.stage === 'vote')
@@ -175,7 +182,7 @@ export default function Walkthrough({ events, running, reference, votesTotal }: 
         <span className="flex items-center gap-2">Similar past case <ConfidenceMeter value={c.retrieval} /></span>
         <span className="flex items-center gap-2">Flags <b className="font-medium">{c.flags.length ? c.flags.join(', ').replaceAll('_', ' ') : 'none'}</b></span>
         <span className="flex items-center gap-2 font-semibold">Overall {Math.round(c.overall * 100)}% <RoutePill route={conf.data.route as Route} /></span>
-        {Boolean(conf.data.escalated) && <Pill className="bg-red-50 text-red-700 ring-1 ring-red-200">escalated to team lead</Pill>}
+        {Boolean(conf.data.escalated) && <Pill className="bg-red-50 text-red-700 ring-1 ring-red-200">escalated to the team lead</Pill>}
       </div>
     )
   }
@@ -184,7 +191,7 @@ export default function Walkthrough({ events, running, reference, votesTotal }: 
     const s = assign.data.suggestion as AssigneeSuggestion
     details.assign = (
       <div className="flex flex-col gap-2 text-sm">
-        <p>Expert <b>{s.expert?.split('@')[0] ?? 'none'}</b> · working assignee <b>{(assign.data.working_assignee as string | null)?.split('@')[0] ?? 'none, sent to Needs review'}</b></p>
+        <p>Expert <b>{s.expert?.split('@')[0] ?? 'none'}</b> · suggested specialist <b>{(assign.data.suggested_assignee as string | null)?.split('@')[0] ?? 'none'}</b> · waiting for the <b>{String(assign.data.waiting_for ?? 'analyst')}</b></p>
         <p className="text-xs text-muted">{s.reason}</p>
         <div className="flex flex-wrap gap-1.5">
           {s.candidates.slice(0, 4).map((c) => (

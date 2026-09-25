@@ -34,9 +34,9 @@ const NAV: { section: string; items: NavItem[] }[] = [
   {
     section: 'Manage',
     items: [
-      { to: '/new', label: 'New ticket', icon: FilePlus2, roles: ['lead', 'admin'] },
-      { to: '/team', label: 'Team workload', icon: Users, roles: ['lead', 'admin'] },
-      { to: '/dashboard', label: 'Impact', icon: BarChart3, roles: ['lead', 'admin'] },
+      { to: '/new', label: 'New ticket', icon: FilePlus2, roles: ['analyst', 'admin'] },
+      { to: '/team', label: 'Team workload', icon: Users, roles: ['analyst', 'admin'] },
+      { to: '/dashboard', label: 'Impact', icon: BarChart3, roles: ['analyst', 'admin'] },
     ],
   },
   {
@@ -63,6 +63,9 @@ function HealthDot() {
 
 function Badge({ kind }: { kind: NonNullable<NavItem['badge']> }) {
   const { user, role } = useViewer()
+  const specialist = role === 'specialist'
+  // Specialists: their open work. Analysts and admin: tickets waiting for a decision.
+  const { data: inbox } = useTickets({ view: 'inbox', as_user: user?.email, limit: 1 })
   const { data: review } = useTickets({ view: 'needs_review', as_user: user?.email, limit: 1 })
   const { data: mine } = useTickets({ view: 'mine', as_user: user?.email, limit: 1 })
   const { data: channels } = useChannels(kind === 'messages' ? user?.email : undefined)
@@ -70,9 +73,9 @@ function Badge({ kind }: { kind: NonNullable<NavItem['badge']> }) {
     const dms = channels?.filter((c) => c.kind === 'dm').length ?? 0
     return dms ? <span className="ml-auto rounded-full bg-ink-3 px-1.5 text-[11px] font-semibold text-slate-200">{dms}</span> : null
   }
-  const n = role === 'analyst' ? mine?.total : review?.total
+  const n = specialist ? mine?.total : (inbox?.total ?? 0) + (review?.total ?? 0)
   if (!n) return null
-  return <span className={`ml-auto rounded-full px-1.5 text-[11px] font-semibold ${role === 'analyst' ? 'bg-accent text-white' : 'bg-red-500 text-white'}`}>{n}</span>
+  return <span className={`ml-auto rounded-full px-1.5 text-[11px] font-semibold ${specialist ? 'bg-accent text-white' : 'bg-red-500 text-white'}`}>{n}</span>
 }
 
 export default function Layout() {
@@ -130,10 +133,10 @@ export default function Layout() {
           <span className="font-semibold md:hidden">Triage Copilot</span>
           <HealthDot />
           <div className="ml-auto flex items-center gap-3">
-            <ModelPicker />
-            <button type="button" onClick={() => copilot.setOpen(!copilot.open)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-ai to-accent px-3.5 py-1.5 text-sm font-medium text-white shadow-sm transition hover:brightness-110">
-              <Sparkles size={14} />Copilot
+            <span className="hidden md:contents"><ModelPicker /></span>
+            <button type="button" onClick={() => copilot.setOpen(!copilot.open)} aria-label="Copilot"
+              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-ai to-accent px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:brightness-110 sm:px-3.5">
+              <Sparkles size={14} /><span className="hidden sm:inline">Copilot</span>
             </button>
             <PersonaSwitcher />
           </div>

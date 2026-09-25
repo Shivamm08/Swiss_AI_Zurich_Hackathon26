@@ -43,10 +43,13 @@ export type Impact = Schemas['Impact']
 export type DailyPoint = Schemas['DailyPoint']
 export type ChatTurn = Schemas['ChatTurn']
 export type CopilotEvent = Schemas['CopilotEvent']
+export type WorkUpdate = Schemas['WorkUpdate']
+export type ActivityEntry = Schemas['ActivityEntry']
 
 export type Level = Schemas['PriorityResponse']['priority']
 export type ServiceName = Decision['service']
 export type TriageState = Ticket['triage_state']
+export type WorkStatus = Ticket['work_status']
 export type TicketSource = Ticket['source']
 export type EvidenceKind = Evidence['kind']
 export type Route = NonNullable<Ticket['route']>

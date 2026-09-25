@@ -71,8 +71,11 @@ def to_out(db: Session, message: Message, lookup: dict[str, str] | None = None) 
 
 def post(db: Session, channel: str, sender: str, body: str, kind: str = "message",
          ticket_id: uuid.UUID | None = None) -> Message:
-    message = Message(channel=normalize_channel(channel), sender=sender, body=body, kind=kind, ticket_id=ticket_id)
+    channel = normalize_channel(channel)
+    message = Message(channel=channel, sender=sender, body=body, kind=kind, ticket_id=ticket_id)
     db.add(message)
     if kind == "escalation" and ticket_id and (ticket := db.get(Ticket, ticket_id)):
         ticket.escalated = True
+        target = channel[5:] if channel.startswith("team:") else next((m for m in channel[3:].split("|") if m != sender), None)
+        ticket.add_activity(sender, "escalated", f"to {target}")
     return message

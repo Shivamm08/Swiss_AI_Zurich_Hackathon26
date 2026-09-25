@@ -1,7 +1,60 @@
 // Triage-specific building blocks (spec section 14). Pages compose these; keep them presentational.
-import { useEffect, useState } from 'react'
+import { BookMarked, Info, Scale, Sparkles } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import type { ConfidenceDetail, Evidence, Facts, Level, ReferenceData, Route } from '../api/types'
+import { FIELD_METHODS, METHOD_BLURB, METHOD_LABEL, type FieldKey, type Method } from './fields'
 import { Pill } from './ui'
+
+const METHOD_STYLE: Record<Method, { cls: string; icon: typeof Sparkles }> = {
+  ai: { cls: 'bg-ai-soft text-ai', icon: Sparkles },
+  rules: { cls: 'bg-emerald-50 text-emerald-700', icon: Scale },
+  lookup: { cls: 'bg-slate-100 text-slate-600', icon: BookMarked },
+}
+
+/** "AI reads" / "Rule" / "Lookup" tag with an (i) that explains exactly how the field is produced. */
+export function MethodTag({ field, compact = false, align = 'left' }: { field: FieldKey; compact?: boolean; align?: 'left' | 'right' }) {
+  const { method, how } = FIELD_METHODS[field]
+  const { cls, icon: Icon } = METHOD_STYLE[method]
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const close = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false) }
+    window.addEventListener('mousedown', close)
+    return () => window.removeEventListener('mousedown', close)
+  }, [open])
+  return (
+    <span ref={ref} className="relative inline-flex items-center gap-0.5 align-middle">
+      <span className={`inline-flex items-center gap-0.5 rounded px-1 py-px text-[10px] font-semibold tracking-wide uppercase ${cls}`}>
+        <Icon size={9} />{compact ? METHOD_LABEL[method].split(' ')[0] : METHOD_LABEL[method]}
+      </span>
+      <button type="button" aria-label={`How is ${field.replace('_', ' ')} calculated?`} onClick={() => setOpen((v) => !v)}
+        className="rounded-full p-0.5 text-slate-400 hover:text-accent focus-visible:outline-2 focus-visible:outline-accent">
+        <Info size={12} />
+      </button>
+      {open && (
+        <span role="tooltip" className={`absolute top-full ${align === 'right' ? 'right-0' : 'left-0'} z-40 mt-1 w-72 rounded-lg border border-line bg-surface p-3 text-left text-xs leading-relaxed font-normal normal-case tracking-normal text-ink shadow-pop`}>
+          <span className={`mb-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${cls}`}><Icon size={10} />{METHOD_LABEL[method]}</span>
+          <span className="block">{how}</span>
+          <span className="mt-1.5 block text-muted">{METHOD_BLURB[method]}</span>
+        </span>
+      )}
+    </span>
+  )
+}
+
+/** Legend for the three ways a value is produced. */
+export function MethodLegend() {
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2 text-[11px] text-muted">
+      {(['ai', 'rules', 'lookup'] as Method[]).map((m) => {
+        const { cls, icon: Icon } = METHOD_STYLE[m]
+        return <span key={m} title={METHOD_BLURB[m]} className={`inline-flex items-center gap-0.5 rounded px-1 py-px text-[10px] font-semibold uppercase ${cls}`}><Icon size={9} />{METHOD_LABEL[m]}</span>
+      })}
+      <span>· tap (i) for how</span>
+    </span>
+  )
+}
 
 const LEVEL_SHORT: Record<Level, string> = { Highest: 'Hst', High: 'Hi', Medium: 'Med', Low: 'Lo', Lowest: 'Lst' }
 
@@ -30,7 +83,7 @@ export function SlaTimer({ dueAt, startAt, closed = false }: { dueAt?: string | 
     const id = setInterval(() => setNow(Date.now()), 30_000)
     return () => clearInterval(id)
   }, [])
-  if (closed) return <span className="text-xs text-muted">closed</span>
+  if (closed) return <span className="text-slate-400" title="Done: the SLA clock has stopped">–</span>
   if (!dueAt) return <span className="text-slate-400">–</span>
   const due = new Date(dueAt).getTime()
   const start = startAt ? new Date(startAt).getTime() : due
@@ -60,9 +113,10 @@ export function ConfidenceMeter({ value, detail }: { value?: number | null; deta
 }
 
 const ROUTE_STYLES: Record<Route, [string, string]> = {
-  auto: ['bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200', 'auto'],
-  review: ['bg-amber-50 text-amber-800 ring-1 ring-amber-200', 'review'],
-  triage: ['bg-red-50 text-red-700 ring-1 ring-red-200', 'needs review'],
+  // The route only says how closely the analyst should look; every ticket still needs their decision.
+  auto: ['bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200', 'high confidence'],
+  review: ['bg-amber-50 text-amber-800 ring-1 ring-amber-200', 'check carefully'],
+  triage: ['bg-red-50 text-red-700 ring-1 ring-red-200', 'low confidence'],
 }
 
 export function RoutePill({ route }: { route?: Route | null }) {
@@ -151,7 +205,9 @@ export function EvidenceList({ evidence, highlight }: { evidence: Evidence[]; hi
             <button type="button" className="w-full text-left" onClick={() => setOpen(open === e.ref_id ? null : e.ref_id)}>
               <span className="flex items-center gap-2">
                 <Pill className={cls}>{label}</Pill>
-                <span className="font-mono text-xs text-slate-500">{e.score.toFixed(2)}</span>
+                <span className="font-mono text-xs text-slate-500" title={e.similarity != null ? 'Cosine similarity to this ticket' : 'Keyword rank score'}>
+                  {e.similarity != null ? `${Math.round(e.similarity * 100)}% match` : e.score.toFixed(2)}
+                </span>
                 {e.ref_id === highlight && <span className="text-xs font-medium text-accent">used for this proposal</span>}
               </span>
               <span className="mt-0.5 block">{e.title}</span>

@@ -19,8 +19,13 @@ TriageState = Literal["new", "proposed", "approved", "edited", "rejected"]
 ReviewAction = Literal["approve", "edit", "reject"]
 EvidenceKind = Literal["service_card", "playbook", "historical_ticket"]
 Route = Literal["auto", "review", "triage"]
-Role = Literal["analyst", "lead", "admin"]
-TicketView = Literal["mine", "team", "needs_review", "escalations", "all"]
+# admin: runs the system · analyst: team lead who checks the AI triage and dispatches · specialist: does the work
+Role = Literal["admin", "analyst", "specialist"]
+# open: waiting for an analyst · assigned: dispatched to a specialist · in_progress · waiting (for information) · done
+WorkStatus = Literal["open", "assigned", "in_progress", "waiting", "done"]
+WorkAction = Literal["start", "wait", "resume", "resolve", "handback"]
+# inbox: the analyst's department, waiting for their decision · needs_review: untriaged or low confidence (any analyst)
+TicketView = Literal["mine", "inbox", "team", "needs_review", "escalations", "all"]
 
 # Observable facts the LLM extracts (enums/booleans only); the rubric turns them into Impact/Urgency.
 Scope = Literal["individual", "team", "one_entity", "multi_entity", "external_counterparty"]
@@ -138,6 +143,7 @@ class TicketCreate(TicketBase):
     description: str = Field(min_length=3)
     source: TicketSource = "manual"
     manual: ManualFields | None = None
+    created_by: str = Field(description="Email of the Team Lead / Analyst or admin creating it (specialists can't)")
 
 
 class EmailIngest(BaseModel):
@@ -165,6 +171,11 @@ class TicketOut(TicketBase, ORM):
     escalated: bool = False
     sla_due_at: datetime | None = None
     manual_fields: list[str] = Field(default=[], description="Fields confirmed by staff at creation")
+    work_status: WorkStatus = "open"
+    resolution: str | None = Field(None, description="Set by the specialist when the ticket is done")
+    resolution_comment: str | None = None
+    resolved_by: str | None = None
+    resolved_at: datetime | None = None
 
 
 TriageStage = Literal["retrieve", "extract", "vote", "rubric", "confidence", "assign", "draft", "done", "error"]
@@ -205,7 +216,8 @@ class Evidence(BaseModel):
     ref_id: str
     title: str
     snippet: str
-    score: float
+    score: float = Field(description="Hybrid rank score, normalised so the best hit = 1.0 (ordering only)")
+    similarity: float | None = Field(None, description="Cosine similarity to the query (absolute relevance); None without embeddings")
 
 
 class Decision(BaseModel):
@@ -222,11 +234,23 @@ class Decision(BaseModel):
     resolution_comment: str
 
 
+class StaffCheck(BaseModel):
+    """A value staff set that the independent check disagrees with. Staff's value is kept; the
+    analyst sees the disagreement before dispatching."""
+
+    field: str
+    staff: str = Field(description="What staff entered (kept)")
+    checked: str = Field(description="What the independent check found")
+    by: Literal["ai", "rules"] = Field(description="ai: the blind AI reading (votes); rules: the rubric / roster")
+    note: str
+
+
 class ConfidenceOut(BaseModel):
     overall: float = Field(ge=0, le=1, description="min(votes, retrieval) x flag multipliers")
     votes: float = Field(description="How consistently the model answered across votes")
     retrieval: float = Field(description="How closely the matched past solution fits")
-    flags: list[str] = Field(description="Reasons for caution, e.g. generic_service, unclear_input")
+    flags: list[str] = Field(description="Reasons for caution, e.g. generic_service, unclear_input, staff_disagreement")
+    staff_checks: list[StaffCheck] = Field(default=[], description="Staff-set values the AI reading or the rules disagree with")
 
 
 class AssigneeCandidate(BaseModel):
@@ -317,7 +341,13 @@ class ReviewOut(ORM):
 
 
 class AssignRequest(BaseModel):
-    assignee: str
+    assignee: str = Field(description="A specialist in the ticket's department")
+    by: str = Field(description="The Team Lead / Analyst or admin doing it")
+
+
+class TicketNote(BaseModel):
+    by: str
+    note: str | None = None
 
 
 class RubricPreviewRequest(BaseModel):
@@ -334,9 +364,29 @@ class RubricPreview(BaseModel):
     rubric_trace: list[str]
 
 
+class ActivityEntry(BaseModel):
+    at: datetime
+    by: str
+    action: str = Field(description="triaged | approved | edited | rejected | assigned | start | wait | resume | resolve | "
+                                     "handback | escalated | deescalated | reopened")
+    note: str | None = None
+
+
+class WorkUpdate(BaseModel):
+    """A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done), or
+    handback: give it back to the department's analyst to reassign (note required)."""
+
+    action: WorkAction
+    by: str = Field(description="Email of the person acting (the assigned specialist, or an admin)")
+    note: str | None = Field(None, description="What information is missing (wait), or why you're handing it back (handback)")
+    resolution: Resolution | None = Field(None, description="Required for resolve")
+    resolution_comment: str | None = Field(None, description="Required for resolve: root cause, action taken, verification")
+
+
 class TicketDetail(TicketOut):
     latest_triage: TriageResultOut | None
     reviews: list[ReviewOut]
+    activity: list[ActivityEntry] = []
 
 
 # ---------------------------------------------------------------- knowledge base / RAG
@@ -373,6 +423,7 @@ class AssistantAnswer(BaseModel):
     answer: str
     citations: list[Evidence]
     model: str
+    grounding: Literal["sources", "ticket", "no_knowledge", "off_topic"] = "sources"
 
 
 # ---------------------------------------------------------------- metrics
@@ -427,7 +478,7 @@ class WorkloadMember(BaseModel):
     share: float = Field(description="Share of the team's open tickets")
     high_open: int = Field(description="Open tickets with priority High or Highest")
     oldest_open_at: datetime | None
-    approved_7d: int
+    resolved_7d: int = Field(description="Tickets this person closed in the last 7 days")
 
 
 class Workload(BaseModel):
@@ -449,8 +500,11 @@ class SettingsOut(BaseModel):
 # ---------------------------------------------------------------- messaging / directory
 
 ChannelKind = Literal["team", "dm"]
-MessageKind = Literal["message", "system", "escalation", "handoff"]
-DraftPurpose = Literal["escalate", "handoff", "question"]
+# resolved: the automatic "ticket done" note a specialist's Team Lead / Analyst receives
+# reopened: the analyst sent a done ticket back to the specialist
+MessageKind = Literal["message", "system", "escalation", "handoff", "resolved", "reopened"]
+# Hand-offs are not a message any more: a specialist hands a ticket back (POST /tickets/{id}/work).
+DraftPurpose = Literal["escalate", "question"]
 
 
 class MessageOut(ORM):
@@ -545,6 +599,8 @@ class CopilotEvent(BaseModel):
     text: str | None = None
     citations: list[Evidence] = []
     model: str | None = None
+    grounding: Literal["sources", "ticket", "no_knowledge", "off_topic"] | None = Field(
+        None, description="On 'sources' and 'done': what the answer rests on. off_topic = refused, nothing generated")
 
 
 # ---------------------------------------------------------------- impact / trends
@@ -565,6 +621,30 @@ class DailyPoint(BaseModel):
     acceptance_rate: float | None
 
 
+class ChallengeStats(BaseModel):
+    """How the system handles the challenge set. There are no answer labels (they're hidden), so this
+    measures coverage, certainty and what changed versus intake, not accuracy."""
+
+    tickets: int
+    triaged: int
+    heuristic: int = Field(description="Triaged without an AI model (fallback)")
+    avg_confidence: float | None
+    avg_vote_agreement: float | None = Field(description="How consistently the 3 AI readings agreed")
+    unanimous_service: int = Field(description="Tickets where all 3 votes named the same service")
+    with_precedent: int = Field(description="Tickets matched to a real past fix")
+    by_route: dict[str, int]
+    by_priority: dict[str, int]
+    by_service: dict[str, int]
+    changed_vs_intake: dict[str, int] = Field(description="Per field: how many proposals differ from the intake value")
+    priority_raised: int
+    priority_lowered: int
+    escalated: int
+    avg_latency_seconds: float | None
+    decided: int = Field(description="Proposals an analyst has decided on")
+    accepted_unchanged: int
+    note: str
+
+
 class Impact(BaseModel):
     include_demo: bool
     tickets: int
@@ -582,4 +662,11 @@ class Impact(BaseModel):
     max_load: float | None = Field(description="Busiest person's open tickets divided by their capacity")
     over_capacity: int = Field(description="People at or over capacity")
     learned_documents: int
+    # Desk KPIs, from the activity timeline and the analysts' decisions
+    time_to_assign_minutes: float | None = Field(description="Median minutes from a ticket arriving to its dispatch to a specialist")
+    first_time_accuracy: float | None = Field(description="Share of analyst decisions that accepted the proposal with no field changed")
+    field_accuracy: dict[str, float] = Field(description="Per field: share of decisions where the analyst kept the AI's value")
+    ai_misroute_rate: float | None = Field(description="Share of decisions where the analyst changed the service or rejected the proposal")
+    reassignment_rate: float | None = Field(description="Share of dispatched tickets later reassigned or handed back")
+    reopen_rate: float | None = Field(description="Share of finished tickets the analyst reopened")
     days: list[DailyPoint]

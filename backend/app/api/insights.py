@@ -11,7 +11,8 @@ from app.db import get_db
 from app.domain import normalize_level
 from app.models import KbDocument, Review, Ticket, TriageResult, User
 from app.pipeline.assignment import is_open
-from app.schemas import Calibration, CalibrationBucket, DailyPoint, Impact, Metrics, TicketSource
+from app.domain import LEVELS
+from app.schemas import Calibration, CalibrationBucket, ChallengeStats, DailyPoint, Impact, Metrics, TicketSource
 
 router = APIRouter(tags=["insights"])
 
@@ -72,7 +73,8 @@ def get_calibration(db: Session = Depends(get_db)) -> Calibration:
 @router.get("/export/submission", response_model=list[dict[str, Any]])
 def export_submission(source: TicketSource = "challenge", db: Session = Depends(get_db)) -> list[dict[str, Any]]:
     """Challenge-format records with our decisions filled in.
-    Uses the analyst-approved/edited decision when there is one, else the latest AI proposal.
+    Uses the analyst-approved/edited decision when there is one, else the latest AI proposal; a
+    ticket that is done uses the specialist's actual resolution and closing comment.
     TODO: confirm the exact expected submission format with Swiss Life."""
     records = []
     for ticket in db.scalars(select(Ticket).where(Ticket.source == source).order_by(Ticket.number)):
@@ -84,6 +86,8 @@ def export_submission(source: TicketSource = "challenge", db: Session = Depends(
                 "impact", "priority", "resolution", "resolution_comment",
             )}
         record = dict(ticket.raw)
+        if decision and ticket.work_status == "done" and ticket.resolution_comment:
+            decision = {**decision, "resolution": ticket.resolution, "resolution_comment": ticket.resolution_comment}
         if decision:
             record.update({
                 "Work type": decision["work_type"],
@@ -99,6 +103,75 @@ def export_submission(source: TicketSource = "challenge", db: Session = Depends(
             })
         records.append(record)
     return records
+
+
+@router.get("/metrics/challenge", response_model=ChallengeStats)
+def get_challenge_stats(source: TicketSource = "challenge", db: Session = Depends(get_db)) -> ChallengeStats:
+    """Coverage and certainty on the challenge tickets (the answer set is hidden, so no accuracy)."""
+    tickets = db.scalars(select(Ticket).where(Ticket.source == source)).all()
+    latest = [t.triage_results[0] for t in tickets if t.triage_results]
+    reviews = [r for t in tickets for r in t.reviews]
+    avg = (lambda xs: round(sum(xs) / len(xs), 3) if xs else None)
+    rank = {level: i for i, level in enumerate(LEVELS)}  # Highest = 0
+    by_id = {t.id: t for t in tickets}
+    moved = [(rank[p], rank[r.priority]) for r in latest if (p := normalize_level(by_id[r.ticket_id].priority))]
+    votes = [sum(r.vote_agreement.values()) / len(r.vote_agreement) for r in latest if r.vote_agreement]
+    return ChallengeStats(
+        tickets=len(tickets),
+        triaged=len(latest),
+        heuristic=sum(1 for r in latest if r.model == "heuristic"),
+        avg_confidence=avg([r.confidence for r in latest]),
+        avg_vote_agreement=avg(votes),
+        unanimous_service=sum(1 for r in latest if r.vote_agreement.get("service") == 1.0),
+        with_precedent=sum(1 for r in latest if r.playbook_ref and not r.playbook_ref.startswith("svc-")),
+        by_route=dict(Counter(r.route for r in latest if r.route)),
+        by_priority={lvl: n for lvl in LEVELS if (n := sum(1 for r in latest if r.priority == lvl))},
+        by_service=dict(Counter(r.service for r in latest).most_common()),
+        changed_vs_intake=dict(Counter(f for r in latest for f in r.changed_fields)),
+        priority_raised=sum(1 for before, after in moved if after < before),
+        priority_lowered=sum(1 for before, after in moved if after > before),
+        escalated=sum(1 for r in latest if r.escalated),
+        avg_latency_seconds=avg([r.latency_ms / 1000 for r in latest]),
+        decided=len(reviews),
+        accepted_unchanged=sum(1 for r in reviews if r.action == "approve"),
+        note="No answer labels are available (hidden set): this shows coverage, certainty and changes versus intake, not accuracy.",
+    )
+
+
+KPI_FIELDS = ("work_type", "service", "urgency", "impact", "priority", "assignee", "resolution")
+DISPATCH = {"approved", "edited", "assigned"}
+
+
+def desk_kpis(tickets: list[Ticket], reviews: list[Review]) -> dict[str, Any]:
+    """Time to assign, first-time accuracy (per field), AI misroutes, reassignments and reopens."""
+    def when(entry: dict) -> datetime:
+        return datetime.fromisoformat(entry["at"])
+
+    waits, dispatched, reassigned = [], 0, 0
+    done_or_reopened, reopened = 0, 0
+    for t in tickets:
+        log = t.activity or []
+        steps = [i for i, a in enumerate(log) if a.get("action") in DISPATCH]
+        if steps:
+            dispatched += 1
+            waits.append((when(log[steps[0]]) - t.created_at).total_seconds() / 60)
+            later = log[steps[0] + 1:]
+            reassigned += any(a.get("action") in ("assigned", "handback") for a in later)
+        was_reopened = any(a.get("action") == "reopened" for a in log)
+        reopened += was_reopened
+        done_or_reopened += t.work_status == "done" or was_reopened
+    decided = len(reviews)
+    ratio = (lambda n, d: round(n / d, 3) if d else None)
+    waits.sort()
+    return {
+        "time_to_assign_minutes": round(waits[len(waits) // 2], 1) if waits else None,
+        "first_time_accuracy": ratio(sum(1 for r in reviews if r.action == "approve"), decided),
+        "field_accuracy": {f: round(1 - sum(1 for r in reviews if f in (r.overridden_fields or [])) / decided, 3)
+                           for f in KPI_FIELDS} if decided else {},
+        "ai_misroute_rate": ratio(sum(1 for r in reviews if r.action == "reject" or "service" in (r.overridden_fields or [])), decided),
+        "reassignment_rate": ratio(reassigned, dispatched),
+        "reopen_rate": ratio(reopened, done_or_reopened),
+    }
 
 
 @router.get("/metrics/impact", response_model=Impact)
@@ -160,6 +233,7 @@ def get_impact(
         ))
 
     return Impact(
+        **desk_kpis(tickets, reviews),
         include_demo=include_demo,
         tickets=len(tickets),
         tickets_triaged=len(latest),

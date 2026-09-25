@@ -15,7 +15,7 @@ metadata, and an embedding (1,536 numbers from `text-embedding-3-small`).
 |---|---|---|---|---|
 | **Service card** | 20 | `kb/services.yaml` | `svc-trade-matching` | Description, typical keywords and **boundaries** of one service |
 | **Playbook entry** | 21 | `kb/playbook.jsonl` | `pb-trade-matching-2` | A real resolution note from the training data, with its author (`resolver`) |
-| **Learned ticket** | grows | created on approval | `tkt-22` | A ticket an analyst approved or edited, with the final decision and closing note |
+| **Learned ticket** | grows | created when a ticket is done | `tkt-22` | A ticket a specialist marked done, with the final decision and **their** closing note |
 
 ### Service cards
 
@@ -68,7 +68,24 @@ For a ticket, the query is its full text (see [pipeline](04-Triage-Pipeline.md#w
 2. **Vector ranking:** the query is embedded, and pgvector returns the nearest documents by
    cosine distance.
 3. **Merge (reciprocal rank fusion):** each document scores `Σ 1 / (60 + rank)` across both
-   lists. The top 6 are returned, scores normalised so the best = 1.00.
+   lists (this decides the order).
+4. **Keep only what's relevant:** a document must be at least **40% similar** (cosine) to the
+   query **and** within 12 points of the best hit. The limit (6 for tickets, 5 for the Copilot) is a
+   maximum, not a quota.
+
+Why not always 6? A fixed number pads a clear match with weak documents, and hands the AI
+unrelated "evidence" when nothing matches, which invites made-up answers. Measured on our
+knowledge base (`text-embedding-3-small`):
+
+| Query | Best similarity | Returned |
+|---|---|---|
+| Ticket with a real precedent (rejected allocations) | 0.75–0.79 | 3 |
+| "What does the Rimes Data Feed service cover?" | 0.79 | 1 (the service card) |
+| A new kind of problem (badge readers) | 0.25–0.37 | 0 |
+| Off-topic (weather, recipes, code) | < 0.12 | 0 |
+
+Each document shows its similarity ("78% match") on the ticket, in the walkthrough and in the
+Copilot. Code: `retrieve.relevant()`, `RELEVANCE_MIN`, `RELEVANCE_BAND`; tested in `tests/test_retrieval.py`.
 
 Without an embedding model, only step 1 runs. Everything still works, just less well on paraphrases.
 
@@ -81,28 +98,31 @@ Without an embedding model, only step 1 runs. Everything still works, just less 
 | **Expert** | The matched document's `resolver` |
 | **Draft** | The matched note is the template for the resolution comment |
 | **Confidence** | Cosine similarity to the matched document → the "past-case match" part |
-| **Assistant** | The chat answers from the top 5 documents and cites them as `[ref_id]` |
+| **Assistant** | The chat answers only from the relevant documents (up to 5) and cites them as `[ref_id]` |
 
 ## The learning loop
 
-When an analyst **approves or edits** a proposal (`kb/learn.py`):
+When a specialist **marks a ticket done** (`POST /api/tickets/{id}/work` with `resolve`,
+then `kb/learn.py`):
 
 1. A document `tkt-<number>` is created or updated, with the ticket's summary and description,
-   the **final** decision, and the closing note.
-2. `meta.resolver` = the ticket's working assignee; `meta.quality` = approve or edit.
+   the final classification (the analyst's edit if there was one, else the approved proposal),
+   the resolution type, and the specialist's **own closing note**.
+2. `meta.resolver` = the specialist who resolved it; `meta.quality` = `resolved`.
 3. It is embedded immediately.
 
-The next similar ticket then retrieves this **human-approved** answer. It often ranks first,
+The next similar ticket then retrieves this **real, finished** fix. It often ranks first,
 above the playbook. This raises the past-case confidence, gives a better draft, and builds
-expertise for the resolver (see [assignment](06-Assignment-and-Workload.md)).
+expertise for the specialist (see [assignment](06-Assignment-and-Workload.md)).
 
-**Only human-approved results enter the knowledge base**, never raw AI output. Otherwise the
-system would learn from its own mistakes. Rejected proposals are never added.
+**Only finished work enters the knowledge base**: never raw AI output, and never a ticket that
+was only approved at triage and hasn't been worked yet. Otherwise the system would learn from
+guesses. See [Roles and ticket lifecycle](15-Roles-and-Ticket-Lifecycle.md).
 
 ## Copilot chat
 
-The Copilot (on every screen, ⌘K) uses the same retrieval: for each question it fetches the top 5
-documents (plus the ticket, if one is open) and answers **only from them**, citing `[ref_id]`,
-streaming word by word, with the conversation remembered. Without a model it lists the most
-relevant sources. Details: [Collaboration and Copilot](13-Collaboration-and-Copilot.md).
+The Copilot (on every screen, ⌘K) uses the same retrieval: for each question it fetches only the
+relevant documents (up to 5, plus the ticket if one is open) and answers **only from them**, citing
+`[ref_id]`. If nothing is relevant, an off-topic question is refused and an on-topic one gets
+"not in the knowledge base" instead of a guess (see below). Details: [Collaboration and Copilot](13-Collaboration-and-Copilot.md).
 The older single-shot endpoint `POST /api/assistant/ask` still exists.

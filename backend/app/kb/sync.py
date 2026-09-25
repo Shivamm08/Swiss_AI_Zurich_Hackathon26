@@ -89,7 +89,7 @@ def sync_roster(db: Session) -> int:
     for person in people:
         user = db.get(User, person["email"]) or User(email=person["email"])
         user.name = person["name"]
-        user.role = person.get("role", "analyst")
+        user.role = person.get("role", "specialist")
         user.teams = person.get("teams", [])
         user.capacity = person.get("capacity", settings.default_capacity)
         db.add(user)

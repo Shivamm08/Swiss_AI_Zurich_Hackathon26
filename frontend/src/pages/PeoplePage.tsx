@@ -102,7 +102,7 @@ export default function PeoplePage() {
               ))}
             </div>
             <div className="mt-4 flex items-center gap-2">
-              {d.lead && <><Avatar name={d.lead.name} email={d.lead.email} size="xs" /><span className="text-xs"><b>{d.lead.name}</b> <span className="text-muted">lead</span></span></>}
+              {d.lead && <><Avatar name={d.lead.name} email={d.lead.email} size="xs" /><span className="text-xs"><b>{d.lead.name}</b> <span className="text-muted">team lead / analyst</span></span></>}
               <span className="ml-auto"><AvatarStack people={d.members} /></span>
             </div>
             <div className="mt-4 flex gap-2 border-t border-line pt-3">

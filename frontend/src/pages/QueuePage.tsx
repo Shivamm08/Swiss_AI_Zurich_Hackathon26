@@ -2,26 +2,27 @@ import { FilePlus2, Inbox, Play, Search, ShieldAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useReference, useTickets } from '../api/hooks'
-import type { Level, TicketListParams, TicketView } from '../api/types'
+import type { Level, Role, TicketListParams, TicketView } from '../api/types'
 import { ConfidenceMeter, FieldDiff, RoutePill, ScoreBar, SlaTimer } from '../components/triage'
 import { PRIORITY_STYLES } from '../components/styles'
-import { Button, EmptyState, ErrorBox, Loading, PageHeader, PriorityPill, StatePill } from '../components/ui'
-import { canLead, useViewer } from '../viewas/context'
+import { Button, EmptyState, ErrorBox, Loading, PageHeader, PriorityPill, WorkStatusPill } from '../components/ui'
+import { canDispatch, useViewer } from '../viewas/context'
 
 type Sort = NonNullable<TicketListParams['sort']>
 
-const TABS: { view: TicketView; label: string; lead?: boolean }[] = [
-  { view: 'mine', label: 'My queue' },
-  { view: 'team', label: 'My team' },
-  { view: 'needs_review', label: 'Needs review', lead: true },
-  { view: 'escalations', label: 'Escalations', lead: true },
-  { view: 'all', label: 'All tickets' },
+const TABS: { view: TicketView; label: string; roles: Role[]; hint: string }[] = [
+  { view: 'inbox', label: 'Triage inbox', roles: ['analyst', 'admin'], hint: 'AI proposals for your department. Check each one, then approve to dispatch it to a specialist.' },
+  { view: 'needs_review', label: 'Needs review', roles: ['analyst', 'admin'], hint: 'Not triaged yet, or the AI is unsure (maybe even about the department). Any analyst can take these.' },
+  { view: 'mine', label: 'My work', roles: ['specialist'], hint: 'Tickets dispatched to you. Start, and mark them done with a closing note: that note is what the Copilot learns from.' },
+  { view: 'team', label: 'My department', roles: ['analyst', 'specialist'], hint: 'Everything open in your department, at any stage.' },
+  { view: 'escalations', label: 'Escalations', roles: ['analyst', 'admin', 'specialist'], hint: 'Highest priority on a critical service, or escalated by a person.' },
+  { view: 'all', label: 'All tickets', roles: ['analyst', 'admin', 'specialist'], hint: 'Every ticket, ranked by priority.' },
 ]
 
 function TabCount({ view, asUser }: { view: TicketView; asUser?: string }) {
   const { data } = useTickets({ view, as_user: asUser, limit: 1 })
   if (data?.total === undefined) return null
-  const alert = (view === 'needs_review' || view === 'escalations') && data.total > 0
+  const alert = (view === 'inbox' || view === 'needs_review' || view === 'escalations') && data.total > 0
   return <span className={`ml-1.5 rounded-full px-1.5 text-[11px] tabular ${alert ? 'bg-red-500 text-white' : 'bg-black/5'}`}>{data.total}</span>
 }
 
@@ -29,13 +30,15 @@ export default function QueuePage() {
   const { user, role } = useViewer()
   const navigate = useNavigate()
   const { data: reference } = useReference()
-  const [view, setView] = useState<TicketView>(role === 'analyst' ? 'mine' : 'all')
+  const tabs = TABS.filter((t) => t.roles.includes(role))
+  const [picked, setView] = useState<TicketView>(role === 'specialist' ? 'mine' : 'inbox')
+  const view = tabs.some((t) => t.view === picked) ? picked : tabs[0].view  // switching persona can hide the tab
   const [sort, setSort] = useState<Sort>('priority_score')
   const [service, setService] = useState('')
   const [q, setQ] = useState('')
-  const [showClosed, setShowClosed] = useState(false)
+  const [showDone, setShowDone] = useState(false)
   const { data, isLoading, error } = useTickets({
-    include_closed: showClosed,
+    include_done: showDone,
     view,
     as_user: user?.email,
     sort: view === 'needs_review' ? 'confidence' : sort,
@@ -48,13 +51,13 @@ export default function QueuePage() {
     <div className="flex flex-col gap-5">
       <PageHeader
         title="Queue"
-        subtitle="Ranked by AI-assessed priority, then by time left before the SLA deadline. Open a ticket to watch the AI triage it."
-        actions={canLead(role) && <Button variant="secondary" icon={<FilePlus2 size={15} />} onClick={() => navigate('/new')}>New ticket</Button>}
+        subtitle={tabs.find((t) => t.view === view)?.hint}
+        actions={canDispatch(role) && <Button variant="secondary" icon={<FilePlus2 size={15} />} onClick={() => navigate('/new')}>New ticket</Button>}
       />
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="inline-flex rounded-lg border border-line bg-surface p-0.5 shadow-card">
-          {TABS.filter((t) => !t.lead || canLead(role)).map((t) => (
+          {tabs.map((t) => (
             <button key={t.view} type="button" onClick={() => setView(t.view)}
               className={`rounded-md px-3 py-1.5 text-sm transition ${view === t.view ? 'bg-ink text-white shadow-sm' : 'text-muted hover:text-ink'}`}>
               {t.label}
@@ -75,9 +78,9 @@ export default function QueuePage() {
             <option value="">All services</option>
             {reference?.services.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
           </select>
-          <label className="flex items-center gap-1.5 text-sm text-muted" htmlFor="queue-closed">
-            <input id="queue-closed" type="checkbox" checked={showClosed} onChange={(e) => setShowClosed(e.target.checked)} className="accent-[var(--color-accent)]" />
-            Show closed
+          <label className="flex items-center gap-1.5 text-sm text-muted" htmlFor="queue-done">
+            <input id="queue-done" type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} className="accent-[var(--color-accent)]" />
+            Show done
           </label>
           <label className="sr-only" htmlFor="queue-sort">Sort</label>
           <select id="queue-sort" value={sort} onChange={(e) => setSort(e.target.value as Sort)}
@@ -94,8 +97,9 @@ export default function QueuePage() {
       {isLoading && <Loading />}
       {data && data.items.length === 0 && (
         <EmptyState icon={view === 'needs_review' ? <ShieldAlert size={28} /> : <Inbox size={28} />}
-          title={view === 'mine' ? 'Nothing assigned to you' : 'No tickets here'}>
-          {view === 'mine' ? 'New tickets land here once the AI routes them to you.' : 'Import tickets or create one to get started.'}
+          title={view === 'mine' ? 'Nothing assigned to you' : view === 'inbox' ? 'Inbox zero' : 'No tickets here'}>
+          {view === 'mine' ? 'Tickets land here once an analyst dispatches them to you.'
+            : view === 'inbox' ? 'Every AI proposal for your department has been decided.' : 'Import tickets or create one to get started.'}
         </EmptyState>
       )}
       {data && data.items.length > 0 && (
@@ -124,7 +128,7 @@ export default function QueuePage() {
                         <PriorityPill level={level} />
                         <ScoreBar score={t.priority_score} />
                       </td>
-                      <td className="px-3 py-3"><SlaTimer dueAt={t.sla_due_at} startAt={t.created_at} closed={t.status === 'done'} /></td>
+                      <td className="px-3 py-3"><SlaTimer dueAt={t.sla_due_at} startAt={t.created_at} closed={t.work_status === 'done'} /></td>
                       <td className="max-w-lg px-3 py-3">
                         <p className="font-medium text-ink group-hover:text-accent">{t.summary}</p>
                         <p className="mt-0.5 font-mono text-[11px] text-muted">
@@ -143,7 +147,12 @@ export default function QueuePage() {
                             onClick={(e) => { e.stopPropagation(); navigate(`/tickets/${t.id}?run=1`) }}>
                             Triage
                           </Button>
-                        ) : t.triage_state === 'proposed' && t.route ? <RoutePill route={t.route} /> : <StatePill state={t.triage_state} />}
+                        ) : (
+                          <span className="flex flex-col items-start gap-1">
+                            <WorkStatusPill ticket={t} />
+                            {t.work_status === 'open' && t.route !== 'triage' && <RoutePill route={t.route} />}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   )

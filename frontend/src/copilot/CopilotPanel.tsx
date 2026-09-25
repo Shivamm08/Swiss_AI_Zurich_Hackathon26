@@ -45,6 +45,9 @@ function Inline({ text, citations, onCite }: { text: string; citations: Evidence
             </button>
           )
         }
+        if (ref && /[0-9-]/.test(ref)) {  // looks like a citation but wasn't retrieved: never shown as a source
+          return <span key={i} title="Not among the retrieved sources" className="mx-0.5 rounded bg-red-50 px-1 font-mono text-[10px] text-red-700 line-through">{ref}</span>
+        }
         return <Fragment key={i}>{part}</Fragment>
       })}
     </>
@@ -102,6 +105,14 @@ function Bubble({ message }: { message: ChatMessage }) {
             </>
           ) : message.streaming ? <TypingDots /> : null}
         </div>
+        {!message.streaming && !message.error && message.grounding && message.grounding !== 'sources' && (
+          <p className={`mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${message.grounding === 'off_topic' ? 'bg-slate-100 text-slate-600' : 'bg-amber-50 text-amber-800'}`}>
+            <BookOpen size={11} />
+            {message.grounding === 'off_topic' ? 'Outside the Copilot\'s scope: nothing was generated'
+              : message.grounding === 'ticket' ? 'Based on this ticket only: no matching past fix in the knowledge base'
+              : 'Not in the knowledge base: answered from the built-in app guide or said so, nothing guessed'}
+          </p>
+        )}
         {citations.length > 0 && !message.error && (
           <div className="mt-1.5 flex flex-wrap items-center gap-1">
             <span className="flex items-center gap-1 text-[11px] text-muted"><BookOpen size={11} />Sources</span>
@@ -110,6 +121,7 @@ function Bubble({ message }: { message: ChatMessage }) {
                 className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${KIND_STYLE[c.kind]} ${openRef === c.ref_id ? 'ring-1 ring-current' : ''}`}
                 title={c.title}>
                 {c.kind === 'historical_ticket' ? 'learned' : c.kind === 'service_card' ? 'service' : 'playbook'} · {c.title.split(':')[0]}
+                {c.similarity != null && <span className="ml-1 opacity-70">{Math.round(c.similarity * 100)}%</span>}
               </button>
             ))}
           </div>
@@ -180,7 +192,7 @@ export default function CopilotPanel({ open, onClose, messages, busy, onSend, on
             <div>
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-ai to-accent text-white shadow-pop"><Sparkles size={20} /></span>
               <p className="mt-3 text-lg font-semibold">Hi {user?.name.split(' ')[0] ?? 'there'}, how can I help?</p>
-              <p className="text-sm text-muted">I search the service catalogue, the resolution playbook and every ticket your team approved, and I cite where each answer comes from.</p>
+              <p className="text-sm text-muted">I answer from the service catalogue, the resolution playbook and every ticket your team resolved, and cite each source. If nothing matches I say so instead of guessing, and I decline questions outside service-desk work.</p>
             </div>
             <div className="flex flex-col gap-2">
               {prompts.map((p) => (

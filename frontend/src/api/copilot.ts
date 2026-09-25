@@ -8,6 +8,8 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   citations?: Evidence[]
+  /** What the answer rests on: sources, the open ticket, nothing matching, or refused as off-topic. */
+  grounding?: CopilotEvent['grounding']
   streaming?: boolean
   error?: boolean
   model?: string
@@ -59,7 +61,7 @@ export function useCopilotChat() {
           split = buffer.indexOf('\n\n')
           if (!line) continue
           const event = JSON.parse(line.slice(6)) as CopilotEvent
-          if (event.type === 'sources') update(answer.id, () => ({ citations: event.citations }))
+          if (event.type === 'sources') update(answer.id, () => ({ citations: event.citations, grounding: event.grounding }))
           if (event.type === 'token') update(answer.id, (m) => ({ content: m.content + (event.text ?? '') }))
           if (event.type === 'done') update(answer.id, () => ({ streaming: false, model: event.model ?? undefined }))
           if (event.type === 'error') update(answer.id, () => ({ streaming: false, error: true, content: event.text ?? 'Something went wrong' }))

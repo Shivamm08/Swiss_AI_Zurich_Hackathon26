@@ -1,7 +1,7 @@
 // Shared UI primitives. Pages compose these; tokens live in index.css (@theme).
 import { AlertTriangle, Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import type { Level, TriageState } from '../api/types'
+import type { Level, Ticket, TriageState, WorkStatus } from '../api/types'
 import { PRIORITY_STYLES } from './styles'
 
 export function Card({ title, icon, actions, children, className = '', padded = true }: {
@@ -94,6 +94,26 @@ const STATE_STYLES: Record<TriageState, [string, string]> = {
 }
 
 export const StatePill = ({ state }: { state: TriageState }) => <Pill className={STATE_STYLES[state][0]}>{STATE_STYLES[state][1]}</Pill>
+
+const WORK_STYLES: Record<WorkStatus | 'untriaged' | 'needs_review' | 'handed_back', [string, string]> = {
+  untriaged: ['bg-slate-100 text-slate-700', 'not triaged'],
+  needs_review: ['bg-red-50 text-red-700 ring-1 ring-red-200', 'needs review'],
+  open: ['bg-ai-soft text-ai', 'awaiting analyst'],
+  handed_back: ['bg-orange-50 text-orange-700 ring-1 ring-orange-200', 'handed back'],
+  assigned: ['bg-slate-100 text-slate-700 ring-1 ring-slate-200', 'assigned'],
+  in_progress: ['bg-accent-soft text-accent', 'in progress'],
+  waiting: ['bg-amber-50 text-amber-800 ring-1 ring-amber-200', 'waiting for info'],
+  done: ['bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200', 'done'],
+}
+
+/** Where a ticket is in its life: with the analysts (not triaged, needs review, awaiting analyst) or with a specialist. */
+export function WorkStatusPill({ ticket }: { ticket: Pick<Ticket, 'work_status' | 'triage_state' | 'route'> }) {
+  const key = ticket.work_status !== 'open' ? ticket.work_status
+    : ticket.triage_state === 'new' ? 'untriaged'
+    : ticket.route === 'triage' || ticket.triage_state === 'rejected' ? 'needs_review'
+    : ticket.triage_state === 'approved' || ticket.triage_state === 'edited' ? 'handed_back' : 'open'
+  return <Pill className={WORK_STYLES[key][0]}>{WORK_STYLES[key][1]}</Pill>
+}
 
 export function ErrorBox({ error }: { error: unknown }) {
   if (!error) return null

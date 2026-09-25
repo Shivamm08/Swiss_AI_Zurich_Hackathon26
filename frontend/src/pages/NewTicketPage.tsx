@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCreateTicket, useReference, useUsers } from '../api/hooks'
 import type { Level, TicketCreate } from '../api/types'
+import type { FieldKey } from '../components/fields'
+import { MethodLegend, MethodTag } from '../components/triage'
 import { Button, Card, ErrorBox, PageHeader, PriorityPill, inputClass } from '../components/ui'
 import { useViewer } from '../viewas/context'
 
@@ -15,10 +17,10 @@ const REQUEST_TYPES = [
 type Manual = { work_type: string; service: string; urgency: string; impact: string; assignee: string; resolution: string; resolution_comment: string }
 const EMPTY_MANUAL: Manual = { work_type: '', service: '', urgency: '', impact: '', assignee: '', resolution: '', resolution_comment: '' }
 
-function Labelled({ id, label, hint, children }: { id: string; label: string; hint?: string; children: React.ReactNode }) {
+function Labelled({ id, label, hint, field, children }: { id: string; label: string; hint?: string; field?: FieldKey; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1 text-sm font-medium" htmlFor={id}>
-      <span>{label}{hint && <span className="ml-1 font-normal text-muted">{hint}</span>}</span>
+      <span className="inline-flex flex-wrap items-center gap-1">{label}{field && <MethodTag field={field} compact />}{hint && <span className="font-normal text-muted">{hint}</span>}</span>
       {children}
     </label>
   )
@@ -39,7 +41,7 @@ export default function NewTicketPage() {
 
   const team = reference?.services.find((s) => s.name === manual.service)?.team
   const priority = manual.urgency && manual.impact ? reference?.priority_matrix[manual.urgency as Level]?.[manual.impact as Level] : undefined
-  const people = (users ?? []).filter((u) => u.role !== 'admin' && (!team || u.teams.includes(team)))
+  const people = (users ?? []).filter((u) => u.role === 'specialist' && (!team || u.teams.includes(team)))
   const filled = Object.entries(manual).filter(([, v]) => v).map(([k]) => k)
 
   const submit = async (triageNow: boolean) => {
@@ -55,6 +57,7 @@ export default function NewTicketPage() {
       linked_issues: [],
       comments: [],
       manual: filled.length ? (cleaned as TicketCreate['manual']) : null,
+      created_by: user?.email ?? null,
     })
     navigate(`/tickets/${ticket.id}${triageNow ? '?run=1' : ''}`)
   }
@@ -67,7 +70,7 @@ export default function NewTicketPage() {
 
   return (
     <div className="flex max-w-6xl flex-col gap-5">
-      <PageHeader title="New ticket" subtitle="Describe the problem. Fill in anything you already know; the AI completes the rest and respects your values." />
+      <PageHeader title="New ticket" subtitle="Describe the problem and set anything you already know. The rest is filled automatically: the AI only reads the text, and rules compute priority, team and the suggested specialist." />
       <form className="grid gap-5 lg:grid-cols-[1.5fr_1fr]" onSubmit={onSubmit}>
         <div className="flex flex-col gap-5">
           <Card title="The ticket" icon={<FilePlus2 size={15} />}>
@@ -102,48 +105,49 @@ export default function NewTicketPage() {
 
           <Card title="Set details yourself (optional)" icon={<UserPen size={15} />}
             actions={filled.length > 0 && <Button type="button" variant="ghost" className="text-xs" onClick={() => setManual(EMPTY_MANUAL)}>Clear</Button>}>
-            <p className="mb-4 text-sm text-muted">Anything you set here is kept exactly as you entered it and marked "set by staff". Leave a field on "Let AI decide" to have it filled in.</p>
+            <p className="mb-2 text-sm text-muted">Leave a field on <b>Automatic</b> to have it filled: <b>AI reads</b> fields come from the ticket text (3 votes, fixed options only); <b>Rule</b> fields are computed, never guessed.</p>
+            <p className="mb-4 text-sm text-muted">Anything you set is kept and marked "set by staff", <b>and double-checked</b>: the AI still reads the ticket without seeing your values, and the rules still compute theirs. If they disagree, the analyst sees a warning before dispatching.</p>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Labelled id="m-work" label="Work type">
+              <Labelled id="m-work" label="Work type" field="work_type">
                 <select id="m-work" value={manual.work_type} onChange={setM('work_type')} className={inputClass}>
-                  <option value="">Let AI decide</option>
+                  <option value="">Automatic · AI reads it</option>
                   {reference?.work_types.map((w) => <option key={w}>{w}</option>)}
                 </select>
               </Labelled>
-              <Labelled id="m-service" label="Service" hint={team ? `→ team ${team}` : undefined}>
+              <Labelled id="m-service" label="Service" field="service" hint={team ? `→ team ${team}` : undefined}>
                 <select id="m-service" value={manual.service} onChange={setM('service')} className={inputClass}>
-                  <option value="">Let AI decide</option>
+                  <option value="">Automatic · AI reads it</option>
                   {reference?.services.map((s) => <option key={s.name}>{s.name}</option>)}
                 </select>
               </Labelled>
-              <Labelled id="m-urgency" label="Urgency">
+              <Labelled id="m-urgency" label="Urgency" field="urgency">
                 <select id="m-urgency" value={manual.urgency} onChange={setM('urgency')} className={inputClass}>
-                  <option value="">Let AI decide</option>
+                  <option value="">Automatic · rules compute it</option>
                   {reference?.levels.map((l) => <option key={l} value={l}>{l} ({reference.urgency_labels[l]})</option>)}
                 </select>
               </Labelled>
-              <Labelled id="m-impact" label="Impact">
+              <Labelled id="m-impact" label="Impact" field="impact">
                 <select id="m-impact" value={manual.impact} onChange={setM('impact')} className={inputClass}>
-                  <option value="">Let AI decide</option>
+                  <option value="">Automatic · rules compute it</option>
                   {reference?.levels.map((l) => <option key={l} value={l}>{l} ({reference.impact_labels[l]})</option>)}
                 </select>
               </Labelled>
-              <Labelled id="m-assignee" label="Assignee" hint={team ? `members of ${team}` : undefined}>
+              <Labelled id="m-assignee" label="Specialist" field="assignee" hint={team ? `specialists of ${team}` : undefined}>
                 <select id="m-assignee" value={manual.assignee} onChange={setM('assignee')} className={inputClass}>
-                  <option value="">Let AI decide</option>
+                  <option value="">Automatic · rules suggest one</option>
                   {people.map((u) => <option key={u.email} value={u.email}>{u.name} · {u.teams[0] ?? ''}</option>)}
                 </select>
               </Labelled>
-              <Labelled id="m-resolution" label="Resolution status">
+              <Labelled id="m-resolution" label="Resolution status" field="resolution">
                 <select id="m-resolution" value={manual.resolution} onChange={setM('resolution')} className={inputClass}>
-                  <option value="">Let AI decide</option>
+                  <option value="">Automatic · AI reads it</option>
                   {reference?.resolutions.map((r) => <option key={r}>{r}</option>)}
                 </select>
               </Labelled>
               <div className="sm:col-span-2">
-                <Labelled id="m-comment" label="Resolution comment">
+                <Labelled id="m-comment" label="Resolution comment" field="resolution_comment">
                   <textarea id="m-comment" rows={3} value={manual.resolution_comment} onChange={setM('resolution_comment')} className={inputClass}
-                    placeholder="Let AI draft it, or write your own closing note" />
+                    placeholder="Leave empty: a suggestion is drafted from the matched past fix. The specialist writes the real closing note." />
                 </Labelled>
               </div>
             </div>
@@ -151,26 +155,26 @@ export default function NewTicketPage() {
         </div>
 
         <div className="flex flex-col gap-5">
-          <Card title="What happens next" icon={<Sparkles size={15} />}>
+          <Card title="How each field is filled" icon={<Sparkles size={15} />}>
+            <p className="mb-3"><MethodLegend /></p>
             <ul className="flex flex-col gap-3 text-sm">
-              {[
-                ['Work type', manual.work_type],
-                ['Service', manual.service],
-                ['Team', team ? `${team} (from service)` : ''],
-                ['Urgency', manual.urgency],
-                ['Impact', manual.impact],
-                ['Priority', priority ? `${priority} (matrix)` : ''],
-                ['Assignee', manual.assignee ? manual.assignee.split('@')[0] : ''],
-                ['Resolution', manual.resolution],
-                ['Resolution comment', manual.resolution_comment ? 'your text' : ''],
-              ].map(([label, value]) => (
+              {([
+                ['Work type', 'work_type', manual.work_type],
+                ['Service', 'service', manual.service],
+                ['Team', 'team', team ? `${team} (from service)` : ''],
+                ['Urgency', 'urgency', manual.urgency],
+                ['Impact', 'impact', manual.impact],
+                ['Priority', 'priority', priority ? `${priority} (matrix)` : ''],
+                ['Specialist', 'assignee', manual.assignee ? manual.assignee.split('@')[0] : ''],
+                ['Resolution', 'resolution', manual.resolution],
+                ['Resolution comment', 'resolution_comment', manual.resolution_comment ? 'your text' : ''],
+              ] as [string, FieldKey, string][]).map(([label, field, value]) => (
                 <li key={label} className="flex items-center justify-between gap-2">
                   <span className="text-muted">{label}</span>
                   {value ? (
-                    <span className="font-medium">{label === 'Priority' && priority ? <PriorityPill level={priority} /> : value}</span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-ai"><Sparkles size={12} />AI fills in</span>
-                  )}
+                    <span className="font-medium">{label === 'Priority' && priority ? <PriorityPill level={priority} /> : value}
+                      {(label === 'Team' || label === 'Priority') ? null : <span className="ml-1.5 text-[10px] font-semibold text-accent uppercase">staff · checked</span>}</span>
+                  ) : <MethodTag field={field} align="right" />}
                 </li>
               ))}
             </ul>

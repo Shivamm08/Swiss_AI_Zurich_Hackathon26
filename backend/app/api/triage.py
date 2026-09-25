@@ -5,12 +5,12 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import validate_model
-from app.api.tickets import get_ticket_or_404
+from app.api.deps import get_actor, require_manager, validate_model
+from app.api.tickets import get_ticket_or_404, require_specialist
 from app.db import SessionLocal, get_db
 from app.domain import priority_for, team_for
-from app.kb.learn import learn_from_review
-from app.models import Review, Ticket, TriageResult
+from app.models import Review, Ticket, TriageResult, User
+from app.pipeline import assignment
 from app.pipeline.pipeline import run_triage, triage_events
 from app.pipeline.rubric import is_critical, rescore
 from app.schemas import (
@@ -25,6 +25,30 @@ from app.schemas import (
 )
 
 router = APIRouter(tags=["triage"])
+
+
+def handed_back_by(ticket: Ticket) -> set[str]:
+    """Specialists who handed this ticket back: don't send it to them again."""
+    return {a["by"] for a in ticket.activity or [] if a.get("action") == "handback"}
+
+
+def _dispatch_to(db: Session, ticket: Ticket, result: TriageResult, final: Decision, chosen: str | None) -> str | None:
+    """Who gets the work: the analyst's pick, else the best suggested specialist (re-computed if the
+    analyst moved the ticket to another team), skipping anyone who handed it back."""
+    if chosen:
+        return require_specialist(db, chosen, final.team).email
+    skip = handed_back_by(ticket)
+    if final.team == result.team:
+        suggestion = result.assignee_suggestion or {}
+        ranked = [suggestion.get("recommended")] + [c["user"] for c in suggestion.get("candidates", [])]
+    else:
+        fresh = assignment.suggest(db, final.team, final.service, None, ticket_id=ticket.id)
+        ranked = [fresh.recommended] + [c.user for c in fresh.candidates]
+    for email in ranked:
+        person = db.get(User, email) if email else None
+        if person and person.role == "specialist" and final.team in (person.teams or []) and email not in skip:
+            return email
+    return None
 
 _STATE_FOR_ACTION = {"approve": "approved", "edit": "edited", "reject": "rejected"}
 
@@ -100,9 +124,14 @@ def get_triage_result(result_id: uuid.UUID, db: Session = Depends(get_db)) -> Tr
 
 @router.post("/triage/{result_id}/review", response_model=ReviewOut, status_code=201)
 def review_triage(result_id: uuid.UUID, body: ReviewCreate, db: Session = Depends(get_db)) -> Review:
+    """The analyst's decision on the AI proposal. Approve/edit dispatches the ticket to a specialist;
+    reject sends it to Needs review. (The knowledge base learns later, when the work is done.)"""
     result = db.get(TriageResult, result_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Triage result not found")
+    require_manager(get_actor(db, body.reviewer), result.ticket, "decide on this proposal")
+    if result.ticket.work_status != "open":
+        raise HTTPException(status_code=409, detail="Already with a specialist: reassign it instead")
 
     proposed = Decision.model_validate(result, from_attributes=True)
     final: Decision | None = None
@@ -131,16 +160,18 @@ def review_triage(result_id: uuid.UUID, body: ReviewCreate, db: Session = Depend
     ticket = result.ticket
     ticket.triage_state = _STATE_FOR_ACTION[body.action]
     if final is not None:
-        # Keep the queue in sync with the human decision, then feed the learning loop.
+        # Keep the queue in sync with the human decision.
         ticket.ai_service, ticket.ai_team = final.service, final.team
         ticket.priority_score = rescore(result.priority, ticket.priority_score, final.priority)
         ticket.ai_priority = final.priority
         ticket.escalated = final.priority == "Highest" and is_critical(final.service)
         if ticket.route == "triage":
             ticket.route = "review"
-        learn_from_review(db, ticket, final.model_dump(), quality=body.action, reviewer=body.reviewer)
-    else:  # rejected: back to the Service Desk triage queue for a human to classify
-        ticket.route, ticket.assignee = "triage", None
+        ticket.assignee = _dispatch_to(db, ticket, result, final, body.edits.assignee if body.edits else None)
+        ticket.work_status = "assigned" if ticket.assignee else "open"
+    else:  # rejected: Needs review, for an analyst to classify by hand
+        ticket.route, ticket.assignee, ticket.work_status = "triage", None, "open"
+    ticket.add_activity(body.reviewer, ticket.triage_state, body.notes or (ticket.assignee if final else None))
     db.commit()
     db.refresh(review)
     return review

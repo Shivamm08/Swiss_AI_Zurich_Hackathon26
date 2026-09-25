@@ -41,7 +41,10 @@ erDiagram
 | `work_type`, `request_type`, `summary`, `description`, `affected_service`, `business_entity`, `reporter`, `urgency`, `impact`, `priority`, `status`, `linked_issues`, `comments` | **Intake values**, as received (may be wrong) |
 | `raw` | The original Jira record (used by the export). `raw.manual` holds staff-confirmed fields |
 | `triage_state` | new → proposed → approved / edited / rejected |
-| `assignee` | Working assignee (workload-aware) |
+| `assignee` | The specialist the analyst dispatched it to (empty while `work_status` is `open`) |
+| `work_status` | open → assigned → in_progress / waiting → done ([lifecycle](15-Roles-and-Ticket-Lifecycle.md)) |
+| `resolution`, `resolution_comment`, `resolved_by`, `resolved_at` | Set by the specialist when they mark it done |
+| `activity` | Timeline: triaged, approved/edited/rejected, assigned, start, wait, resume, resolve |
 | `ai_service`, `ai_team`, `ai_priority`, `priority_score`, `confidence`, `route`, `escalated`, `sla_due_at` | Copied from the latest proposal (updated by reviews) so the queue can sort and filter fast |
 
 ### `triage_results`: one AI proposal (re-running adds a new row)
@@ -67,7 +70,7 @@ erDiagram
 
 ### `users`: the roster
 
-`email` (primary key), `name`, `role` (analyst / lead / admin), `teams` (list), `capacity`.
+`email` (primary key), `name`, `role` (admin / analyst = Team Lead / Analyst / specialist), `teams` (list), `capacity`.
 
 ### `messages`: team channels and direct messages
 
@@ -89,6 +92,7 @@ twin in `backend/migrations_sql/` for pasting into the Supabase SQL editor.
 | `0001` | tickets, triage_results, reviews, kb_documents; enables `pgvector` |
 | `0002` | users table; queue columns on tickets; facts/confidence/routing/assignment columns on triage_results |
 | `0003_messaging` | messages table |
+| `0004_work_lifecycle` | ticket work status, the specialist's resolution fields, activity timeline; renames roles (lead → analyst, analyst → specialist). Never clears `tickets.assignee`, which is shared with Manan's branch |
 
 **The backend runs `alembic upgrade head` on every start.** On the shared Supabase, the first
 teammate who starts a newer version migrates it for everyone.
@@ -114,7 +118,7 @@ How it works (`backend/alembic/env.py`):
 | Table | Value | Owner |
 |---|---|---|
 | `alembic_version` | `0003` | Manan's branch (untouched) |
-| `alembic_version_triage` | `0003_messaging` | this branch |
+| `alembic_version_triage` | `0003_messaging` (`0004_work_lifecycle` after the next `make up`) | this branch |
 
 Files kept for safety:
 
