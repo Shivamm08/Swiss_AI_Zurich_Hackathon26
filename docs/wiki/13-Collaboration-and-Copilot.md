@@ -37,8 +37,8 @@ Messages have a **kind** that changes how they look:
 | Kind | Looks like | Created by |
 |---|---|---|
 | `message` | Normal chat bubble | Anyone |
-| `handoff` | Bubble with a violet "hand-off" tag | "Message about this ticket" → Hand off |
-| `escalation` | Bubble with a red "escalation" tag. **Sets the ticket's `escalated` flag** | "Escalate" on a ticket |
+| `handoff` | Bubble with a violet "handed back" tag | Posted automatically in the department channel when a specialist **hands a ticket back** |
+| `escalation` | Bubble with a red "escalation" tag. **Sets the ticket's `escalated` flag** and logs it on the ticket | "Escalate" on a ticket (only the specialist on it, its Team Lead / Analyst, or an admin: `403` otherwise) |
 | automatic escalation | Red card "Automatic escalation" | The pipeline, when a ticket becomes Highest on a critical service |
 
 A message can carry a ticket: it's shown as a card linking to the ticket.
@@ -46,13 +46,28 @@ A message can carry a ticket: it's shown as a card linking to the ticket.
 API: `GET /api/chat/channels?as_user=`, `GET /api/chat/messages?channel=`, `POST /api/chat/messages`.
 Code: `backend/app/chat.py`, `backend/app/api/chat.py`, `frontend/src/pages/MessagesPage.tsx`.
 
-## Escalate / hand off from a ticket (AI-drafted)
+## Escalate, hand back, ask: three different things
+
+Before, "escalate" and "hand off" were both just messages. Now each does its own job:
+
+| | Escalate | Hand back | Ask a question |
+|---|---|---|---|
+| **Means** | "This needs more attention or authority now": SLA at risk, blocked, needs a decision | "I can't take this one": wrong department, at capacity, needs other skills | "I need information" |
+| **Who** | The specialist on it, the department's Team Lead / Analyst, an admin | The specialist on it (or an admin) | Anyone |
+| **Goes to** | One level up: specialist → their **Team Lead / Analyst**; analyst → the **Admin**; or the department channel | The department's analyst (Triage inbox, shown as *handed back*) | The analyst, the specialist, or the channel |
+| **Changes** | `escalated = true`, in the Escalations tab, logged. The assignee stays | Assignee cleared, `work_status` back to `open`; the next suggestion skips that specialist; a "handed back" post in the channel | Nothing |
+| **Ends** | **De-escalate** by the department's analyst or an admin (`POST /api/tickets/{id}/deescalate`) | The analyst re-dispatches | – |
+| **Where** | **Escalate** button on the ticket → Copilot drafts the message | **Hand back…** in the specialist's work bar (reason required) | **Message about this ticket** |
+
+Specialists don't pass tickets to each other: deciding who works on what is the analyst's job.
+
+### The AI-drafted message
 
 On a triaged ticket, **Escalate** or **Message about this ticket** opens a dialog:
 
-1. Pick the purpose: **Escalate** (take ownership now), **Hand off** (pass it on with context) or
-   **Ask a question** (get missing information).
-2. Pick the recipient: the owning team's **Team Lead / Analyst**, the **specialist** working on it, or the whole **team channel**.
+1. Pick the purpose: **Escalate** (only shown if you may escalate this ticket) or **Ask a question**.
+2. Pick the recipient. Escalations offer the next level up (see above) or the department channel;
+   questions offer the Team Lead / Analyst, the specialist on the ticket, or the channel.
 3. **Draft with Copilot.** The AI writes 3–5 sentences with the ticket number, what's affected,
    the priority, the SLA deadline and one concrete ask (`POST /api/chat/draft`).
 4. Messages opens on the right conversation with the draft ready. **Edit it, then send.** Nothing
@@ -62,7 +77,7 @@ On a triaged ticket, **Escalate** or **Message about this ticket** opens a dialo
 
 When triage decides a ticket is **Highest priority on a critical service**, it's marked
 `escalated`, and a red **automatic escalation** is posted to the owning team's channel, with the
-ticket, the working assignee and the SLA. It also appears in the Escalations tab and on the Team
+ticket, the suggested specialist and the SLA, asking the Team Lead / Analyst for a decision now. It also appears in the Escalations tab and on the Team
 workload screen.
 
 ## People & teams (directory)

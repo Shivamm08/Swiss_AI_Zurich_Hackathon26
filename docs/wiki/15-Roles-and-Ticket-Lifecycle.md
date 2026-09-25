@@ -30,6 +30,7 @@ flowchart LR
   P -->|waiting for info| W[Waiting]
   W -->|resume| P
   P -->|mark done + closing note| D[Done]
+  P -->|hand back + reason| O
   A -->|mark done| D
   W -->|mark done| D
   D -->|added to the knowledge base| KB[(RAG)]
@@ -39,10 +40,11 @@ flowchart LR
 |---|---|---|---|
 | `open`, not triaged | *not triaged* | any analyst (Needs review) | run the AI triage |
 | `open`, route `auto`/`review` | *awaiting analyst* | the department's analyst (Triage inbox) | **Approve & dispatch**, **Edit** (then dispatch), **Reject** |
+| `open`, handed back | *handed back* | the department's analyst (Triage inbox) | **Approve & dispatch** (skips whoever handed it back), or dispatch someone from the list |
 | `open`, route `triage` or rejected | *needs review* | any analyst (Needs review) | edit the service and dispatch, or dispatch directly from the candidate list |
-| `assigned` | *assigned* | the specialist | **Start work**, **Waiting for info**, **Mark done** |
-| `in_progress` | *in progress* | the specialist | **Mark done**, **Waiting for info** |
-| `waiting` | *waiting for info* | the specialist, once the reporter answers | **Resume**, **Mark done** |
+| `assigned` | *assigned* | the specialist | **Start work**, **Waiting for info**, **Mark done**, **Hand back** |
+| `in_progress` | *in progress* | the specialist | **Mark done**, **Waiting for info**, **Hand back** |
+| `waiting` | *waiting for info* | the specialist, once the reporter answers | **Resume**, **Mark done**, **Hand back** |
 | `done` | *done* | nobody | none: it's in the knowledge base |
 
 ### Creating tickets
@@ -87,9 +89,44 @@ Every step is logged on the ticket (`tickets.activity`): AI triaged it, the anal
 dispatched it, the specialist started, waited (with the reason), resumed and marked it done. The
 ticket screen shows this as the **Activity** card.
 
+## Who may do what
+
+There's no login, so every state-changing call names the person acting (`by`, `reviewer`,
+`created_by` or `sender`). The backend checks that person's role against the ticket, and the UI
+only shows the buttons they can use.
+
+| Action | Specialist | Team Lead / Analyst | Admin |
+|---|---|---|---|
+| Create a ticket (New ticket) | – | ✓ | ✓ |
+| Approve / edit / reject the AI proposal | – | own department + Needs review | ✓ |
+| Dispatch or reassign | – | own department + Needs review | ✓ |
+| Start, wait, resume, mark done | only their own tickets | – | ✓ |
+| Hand back | only their own tickets | – | ✓ |
+| Escalate | their own tickets | own department | ✓ |
+| De-escalate | – | own department | ✓ |
+| Delete a ticket | – | – | ✓ |
+| Team workload, Impact | – | ✓ | ✓ |
+| Knowledge base, Intake & export, Settings | – | – | ✓ |
+
+Pages a role can't use are hidden in the sidebar **and** blocked if opened by URL. Jira import and
+email are the automatic intake channels (admin screen), separate from people creating tickets.
+
+## Escalations and hand-backs
+
+**Escalate** raises attention one level up (specialist → their Team Lead / Analyst → the Admin)
+and keeps the assignee. **Hand back** returns the ticket to the analyst to reassign, and the next
+suggestion skips whoever handed it back. **De-escalate** ends an escalation. Details:
+[Collaboration and Copilot](13-Collaboration-and-Copilot.md#escalate-hand-back-ask-three-different-things).
+
 ## Rules the backend enforces
 
 - Only the assigned specialist (or an admin) can move the work along: `POST /api/tickets/{id}/work`.
+- Only the department's analyst (any analyst for Needs review) or an admin can decide, dispatch,
+  reassign or de-escalate (`403` otherwise). A decision is only possible while the ticket is
+  waiting for an analyst (`409` once dispatched: reassign instead).
+- Work only goes to **specialists of the ticket's department** (`400` otherwise: change the
+  service first to move it to another department).
+- A hand-back needs a reason (`422`).
 - Transitions must be valid. You can't start a ticket that isn't assigned, resume one that isn't
   waiting, or change a done ticket (`409`).
 - Marking done needs a resolution and a non-empty closing note (`422`).
