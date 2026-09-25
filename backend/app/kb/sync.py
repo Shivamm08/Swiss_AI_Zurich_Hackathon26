@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.domain import SERVICE_CATALOG
-from app.models import KbDocument
+from app.models import KbDocument, User
 from app.pipeline import llm
 
 
@@ -78,3 +78,20 @@ def sync_kb(db: Session) -> tuple[int, int]:
             embedded += 1
     db.commit()
     return len(docs), embedded
+
+
+def sync_roster(db: Session) -> int:
+    """Upsert kb/roster.yaml into the users table (people added in the DB are kept)."""
+    path = settings.kb_dir / "roster.yaml"
+    if not path.exists():
+        return 0
+    people = yaml.safe_load(path.read_text()) or []
+    for person in people:
+        user = db.get(User, person["email"]) or User(email=person["email"])
+        user.name = person["name"]
+        user.role = person.get("role", "analyst")
+        user.teams = person.get("teams", [])
+        user.capacity = person.get("capacity", settings.default_capacity)
+        db.add(user)
+    db.commit()
+    return len(people)
