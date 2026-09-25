@@ -105,3 +105,87 @@ Answer honestly and turn it into the strength:
 Insert the diagram in PowerPoint via **Insert → Pictures → This Device →
 `presentation_flow.svg`**. It is native SVG, so it stays sharp when projected
 and you can ungroup it to animate the flow step by step.
+
+---
+
+# 1-Minute Technical Walkthrough — `features_overview.svg`
+
+A second, separate minute. Use this when you have the **features diagram** on
+screen and the audience is technical (judges, engineers, a CTO) rather than
+investors. It covers four things: the rules, retrieval, the learning loop, and
+how the model writes resolution notes.
+
+**156 words ≈ 60 seconds.**
+
+## THE SCRIPT — say exactly this
+
+> **[Frame — gesture at the whole page]**
+>
+> The whole system on one page. The AI reads and writes; the rules decide.
+> Four things make it work.
+
+> **[Point at the teal box, centre]**
+>
+> First, the rules. The model never picks a priority — it reports facts: is
+> something down, how widely, is there a workaround, a deadline at risk. Rules
+> turn those into Impact and Urgency; the matrix gives Priority.
+
+> **[Point at step 2, top row]**
+>
+> Second, retrieval. Before the model sees the ticket we search the knowledge
+> base — service cards and twenty-one resolution playbooks — keyword and vector
+> search combined.
+
+> **[Point at the green box, right]**
+>
+> Third, it learns. When a specialist marks a ticket done, their closing note
+> becomes searchable precedent. Reopen the ticket and it's removed — so it never
+> learns from a fix that didn't hold.
+
+> **[Point at step 7, top row]**
+>
+> Fourth, the model writes that note: root cause, action, verification, grounded
+> in the matched past fix. With no precedent it won't invent one; it writes
+> diagnostic steps instead.
+
+> **[Close]**
+>
+> The AI does language. The rules do judgement. Every closed ticket makes the
+> next one faster.
+
+---
+
+## Delivery notes
+
+- **Pointing order is not left-to-right:** centre → top-left → right →
+  top-right → step back. Beats 2 and 4 are both in the top pipeline row while
+  1 and 3 are in the middle band. Rehearse the hand movement once.
+- **The fourth beat is the strongest — do not rush it.** "It won't invent one"
+  is the line that separates this from every other RAG demo in the room.
+- Say **"closing note"** or **"resolution note"**, not "summary". The system
+  does not summarise tickets; it writes the resolution, grounded in precedent.
+
+## If you have ten spare seconds, add this
+
+> When retrieval finds no match, the prompt switches. Instead of a resolution
+> it writes "No matching past fix — suggested first steps", and numbers them.
+> Claiming a fix it hasn't got would be the hallucination.
+
+That is verbatim the reasoning in `backend/app/pipeline/draft.py`:
+
+> *"Without a matching past fix there is nothing true to report yet, so the
+> draft is a plan, not a resolution: writing 'I fixed X' here would be a
+> hallucination."*
+
+The main prompt also bans filler explicitly — *"No filler such as 'issue
+fixed'"* — which is a direct hit on the challenge's scoring criterion about
+generic resolution text.
+
+## Q&A backup for this deck
+
+| Question | Answer |
+|---|---|
+| "What exactly is retrieved?" | 20 service cards with explicit boundaries, 21 real resolution playbooks from the training data, plus every ticket a specialist has finished. BM25 and pgvector run in parallel and are merged by reciprocal rank fusion. |
+| "Is the priority ever model-generated?" | No. The model returns six enum fields. `rubric.py` maps them to Impact and Urgency, and the challenge matrix gives Priority. The 0–1 score only reorders tickets *inside* their priority band. |
+| "How does the loop avoid drift?" | Only finished work enters the knowledge base, carrying the specialist's own closing note. Reopening a ticket deletes its entry, so a fix that failed in the field stops being precedent. |
+| "What if the resolution draft is wrong?" | It is a draft on a ticket a human already approved, and the specialist edits it before closing. The edited version — not the model's — is what gets stored. |
