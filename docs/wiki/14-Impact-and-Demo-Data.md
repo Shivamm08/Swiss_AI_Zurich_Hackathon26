@@ -50,7 +50,7 @@ How it's generated (`backend/app/scripts/seed_demo.py`, fixed random seed, so ev
 | Confidence and routing | Confidence depends on how clear the template is; routing uses the **real thresholds** |
 | Assignment | Expert if not clearly busier than the least-loaded teammate, like the real rule |
 | Reviews | Most tickets older than a day are reviewed. Low-confidence proposals are corrected or rejected more often (what a calibrated system implies). A mild improvement over the 4 weeks stands in for the learning loop. **Illustrative, not measured** |
-| Closed tickets | Reviewed tickets older than 2 days are `status = done` (not counted as workload) |
+| Closed tickets | Reviewed tickets older than 2 days, and every ticket older than 3 days, are `status = done` (not counted as workload); only the last few days are open work |
 | Messages | Per department: a short realistic conversation (announcements, hand-offs, follow-ups), automatic escalation posts, and a few direct messages between leads, analysts and the admin |
 
 The simulated tickets **don't enter the knowledge base**, so they can't affect how real tickets are triaged.

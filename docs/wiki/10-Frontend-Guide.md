@@ -7,7 +7,7 @@ lucide-react (icons). Code in `frontend/src/`.
 
 | Route | Screen | Who sees it | What's on it |
 |---|---|---|---|
-| `/` | **Queue** | everyone | Tabs: My queue · My team · Needs review · Escalations · All. Sorted by priority score, with SLA countdown, intake→AI service change, confidence, status. Untriaged rows have a **▶ Triage** button |
+| `/` | **Queue** | everyone | Tabs: My queue · My team · Needs review · Escalations · All. Open tickets only unless **Show closed** is ticked. Sorted by priority score, with SLA countdown ("closed" for closed tickets), intake→AI service change, confidence, status. Untriaged rows have a **▶ Triage** button |
 | `/tickets/:id` | **Ticket** | everyone | Header · **Live triage walkthrough** · As received · AI proposal · Why this priority (matrix) · Resolution draft · Confidence · Assignee · Evidence · History · Approve/Edit/Reject bar |
 | `/new` | **New ticket** | lead, admin | Required: summary, description, reporter. Optional "Set details yourself" for every AI-fillable field. Buttons: *Create and watch AI triage* / *Create only* |
 | `/messages` | **Messages** | everyone | Department channels and direct messages; ticket cards; escalations |

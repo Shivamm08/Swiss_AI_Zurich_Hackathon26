@@ -19,7 +19,7 @@ endpoint with its exact request and response shapes, and lets you try them. The 
 
 | Method | Path | What it does |
 |---|---|---|
-| GET | `/api/tickets` | The queue. Query: `view` (mine · team · needs_review · escalations · all), `as_user` (email), `sort` (priority_score · sla_due_at · confidence · number), `state`, `source`, `service`, `team`, `q` (search), `limit`, `offset` |
+| GET | `/api/tickets` | The queue. Query: `view` (mine · team · needs_review · escalations · all), `as_user` (email), `sort` (priority_score · sla_due_at · confidence · number), `state`, `source`, `service`, `team`, `q` (search), `include_closed` (default false: closed tickets are hidden), `limit`, `offset` |
 | POST | `/api/tickets` | Create a ticket. `summary`, `description` required; optional `manual` = staff-confirmed fields |
 | POST | `/api/tickets/from-email` | `{from_address, subject, body, business_entity?}` → a new ticket |
 | POST | `/api/tickets/import` | Upload a Jira export JSON (multipart: `file`, `source`) |
