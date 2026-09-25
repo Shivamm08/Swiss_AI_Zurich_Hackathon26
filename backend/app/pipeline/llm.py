@@ -9,6 +9,7 @@ pipeline falls back to its heuristic path and the app still runs without keys.""
 
 import json
 import re
+from collections.abc import Iterator
 from functools import lru_cache
 from typing import Any, TypeVar
 
@@ -138,6 +139,26 @@ def complete(system: str, user: str, model: str | None) -> str | None:
         return None
     completion = client.chat.completions.create(**_chat_kwargs(model, system, user))
     return completion.choices[0].message.content
+
+
+def stream_chat(system: str, turns: list[dict[str, str]], model: str | None) -> Iterator[str] | None:
+    """Multi-turn chat, yielding text as it is generated. None when no model resolves."""
+    if not model:
+        return None
+    client, _ = _client_for(model)
+    if client is None:
+        return None
+    kwargs: dict[str, Any] = {"model": model, "messages": [{"role": "system", "content": system}, *turns], "stream": True}
+    if settings.llm_temperature is not None:
+        kwargs["temperature"] = settings.llm_temperature
+    stream = client.chat.completions.create(**kwargs)
+
+    def tokens() -> Iterator[str]:
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
+
+    return tokens()
 
 
 def embed(texts: list[str]) -> list[list[float]] | None:
