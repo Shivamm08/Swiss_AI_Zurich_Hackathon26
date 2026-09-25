@@ -6,6 +6,7 @@ from sqlalchemy import func, nulls_last, or_, select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.domain import priority_for
 from app.ingest import jira_records, ticket_from_email, ticket_from_jira
 from app.models import Ticket, User
 from app.schemas import (
@@ -80,7 +81,20 @@ def list_tickets(
 
 @router.post("", response_model=TicketOut, status_code=201)
 def create_ticket(body: TicketCreate, db: Session = Depends(get_db)) -> Ticket:
-    ticket = Ticket(**body.model_dump(), raw={})
+    manual = body.manual.model_dump(exclude_none=True) if body.manual else {}
+    if manual.get("assignee") and db.get(User, manual["assignee"]) is None:
+        raise HTTPException(status_code=400, detail=f"Unknown assignee '{manual['assignee']}'. See GET /api/users.")
+    fields = body.model_dump(exclude={"manual"})
+    # Staff-confirmed values also become the ticket's intake values, so the UI shows them as received.
+    fields.update({k: v for k, v in {
+        "work_type": manual.get("work_type"),
+        "affected_service": manual.get("service"),
+        "urgency": manual.get("urgency"),
+        "impact": manual.get("impact"),
+    }.items() if v})
+    if manual.get("urgency") and manual.get("impact"):
+        fields["priority"] = priority_for(manual["urgency"], manual["impact"])
+    ticket = Ticket(**fields, raw={"manual": manual} if manual else {})
     db.add(ticket)
     db.commit()
     db.refresh(ticket)

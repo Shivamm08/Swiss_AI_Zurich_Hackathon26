@@ -2,18 +2,25 @@
 
 retrieve -> extract (LLM, votes) -> rubric (code) -> confidence + route (code)
 -> assignment (code) -> draft (LLM)
+
+`triage_events` yields one event per stage so the UI can show a live walkthrough;
+`run_triage` runs it to the end for batch use. Values staff confirmed when creating
+the ticket (`ticket.manual`) are kept; the pipeline only fills the gaps.
 """
 
 import time
+from collections.abc import Iterator
 from datetime import datetime, timezone
+from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.domain import normalize_level
+from app.config import settings
+from app.domain import normalize_level, priority_for
 from app.ingest import ticket_text
 from app.models import KbDocument, Ticket, TriageResult
 from app.pipeline import assignment, classify, confidence, draft, llm, retrieve, rubric, rules
-from app.schemas import Evidence
+from app.schemas import Evidence, TriageStreamEvent
 
 GENERIC_SERVICE = "Emailed Support Tickets"
 
@@ -30,9 +37,11 @@ def _changed_fields(ticket: Ticket, result: TriageResult) -> list[str]:
 
 
 def _reference_doc(db: Session, playbook_ref: str | None, evidence: list[Evidence], service: str) -> KbDocument | None:
-    """Matched playbook entry, else the best approved past ticket on the same service."""
+    """Matched playbook entry (if it belongs to the chosen service), else the best approved past ticket."""
     if playbook_ref:
-        return retrieve.get_document(db, playbook_ref)
+        doc = retrieve.get_document(db, playbook_ref)
+        if doc and doc.meta.get("service") == service:
+            return doc
     learned = next((e for e in evidence if e.kind == "historical_ticket" and e.title.startswith(service)), None)
     return retrieve.get_document(db, learned.ref_id) if learned else None
 
@@ -47,25 +56,62 @@ def _flags(ticket: Ticket, service: str) -> list[str]:
     return flags
 
 
-def run_triage(db: Session, ticket: Ticket, model: str | None = None) -> TriageResult:
-    """`model` comes from the UI; None = configured default, "heuristic" = no LLM."""
+def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: list | None = None) -> Iterator[TriageStreamEvent]:
+    """Run the pipeline, yielding an event per stage. The final TriageResult is appended to `sink`."""
     started = time.perf_counter()
     now = datetime.now(timezone.utc)
     model = llm.resolve_model(model)
+    manual = ticket.manual
+
+    def event(stage: str, status: str, message: str, data: dict[str, Any] | None = None) -> TriageStreamEvent:
+        return TriageStreamEvent(stage=stage, status=status, message=message, data=data or {},  # type: ignore[arg-type]
+                                 elapsed_ms=int((time.perf_counter() - started) * 1000))
 
     # 2. retrieve (embed once, reuse for search and confidence)
+    yield event("retrieve", "started", "Searching service cards, the resolution playbook and approved past tickets")
     text = ticket_text(ticket)
     query_vector = retrieve.embed_query(text)
     evidence = retrieve.search(db, text, k=6, query_vector=query_vector)
+    yield event("retrieve", "completed", f"Found {len(evidence)} relevant documents",
+                {"evidence": [e.model_dump() for e in evidence], "hybrid": query_vector is not None})
 
     # 3. extract facts with votes
-    cls = classify.classify(ticket, evidence, model)
+    votes = max(1, settings.llm_votes)
+    yield event("extract", "started",
+                f"Asking {model} for the observable facts: {votes} independent votes" if model else "No model selected: heuristic fallback")
+    it = classify.classify_iter(ticket, evidence, model)
+    while True:
+        try:
+            vote = next(it)
+        except StopIteration as stop:
+            cls = stop.value
+            break
+        yield event("vote", "completed" if vote["ok"] else "failed",
+                    f"Vote {vote['index']} " + ("answered" if vote["ok"] else f"failed: {vote['error']}"), vote)
     ex = cls.extraction
+    yield event("extract", "completed",
+                "Heuristic fallback: " + (cls.fallback_reason or "") if cls.heuristic
+                else f"Votes agree {round(cls.votes_score * 100)}%: {ex.work_type} on {ex.service}",
+                {"extraction": ex.model_dump(), "vote_agreement": cls.vote_agreement, "votes_score": cls.votes_score,
+                 "heuristic": cls.heuristic, "manual": sorted(k for k in manual if k in classify.MANUAL_EXTRACTION_FIELDS)})
     reference = _reference_doc(db, ex.playbook_ref, evidence, ex.service)
 
-    # 4. rubric -> impact, urgency, priority, 0..1 score
+    # 4. rubric -> impact, urgency, priority, 0..1 score (staff-set urgency/impact win)
     opened_at = ticket.source_created_at or ticket.created_at or now
     rub = rubric.apply_rubric(ex.facts(), ex.service, ex.work_type, age_days=(now - opened_at).total_seconds() / 86400)
+    urgency, impact = manual.get("urgency", rub.urgency), manual.get("impact", rub.impact)
+    priority, score, trace = rub.priority, rub.priority_score, list(rub.trace)
+    staff_set = [k for k in ("impact", "urgency") if k in manual]
+    if staff_set:
+        priority = priority_for(urgency, impact)
+        score = rubric.rescore(rub.priority, rub.priority_score, priority)
+        replaced = ("Priority", *(k.capitalize() for k in staff_set))
+        trace = [line for line in trace if not line.startswith(replaced)]
+        trace += [f"{k.capitalize()} {manual[k]}: set by staff" for k in staff_set]
+        trace.append(f"Priority {priority} = matrix[urgency {urgency}][impact {impact}]")
+    yield event("rubric", "completed", f"Impact {impact} · Urgency {urgency} → Priority {priority}",
+                {"facts": ex.facts().model_dump(), "impact": impact, "urgency": urgency, "priority": priority,
+                 "priority_score": score, "trace": trace, "critical": rub.critical})
 
     # 6-7. confidence, route, escalation, SLA
     candidates = [reference.ref_id] if reference else [e.ref_id for e in evidence if e.kind != "service_card"][:1]
@@ -77,33 +123,49 @@ def run_triage(db: Session, ticket: Ticket, model: str | None = None) -> TriageR
         cls.heuristic,
     )
     route = confidence.route_for(conf.overall)
+    escalated = priority == "Highest" and rub.critical
+    sla_due_at = confidence.sla_due(ticket.created_at or now, priority)
+    yield event("confidence", "completed", f"Confidence {round(conf.overall * 100)}% → route: {route}",
+                {"confidence": conf.model_dump(), "route": route, "escalated": escalated, "sla_due_at": sla_due_at.isoformat()})
 
-    # assignment: expert for the export, recommendation for the working queue
+    # assignment: expert for the export, recommendation for the working queue (staff choice wins)
     team = rules.team(ex.service)
     expert = rules.assignee(ex.service, reference)
     suggestion = assignment.suggest(db, team, ex.service, expert, ticket_id=ticket.id)
+    if manual.get("assignee"):
+        suggestion.recommended, suggestion.reason = manual["assignee"], "assignee set by staff"
+    working = suggestion.recommended if (route != "triage" or manual.get("assignee")) else None
+    yield event("assign", "completed",
+                f"Expert {expert or 'none'} · working assignee {working or 'none (Needs review)'}",
+                {"suggestion": suggestion.model_dump(), "working_assignee": working})
+
+    # 5. draft, in the voice of the agent who will close it (staff comment wins)
+    yield event("draft", "started", "Writing the resolution comment from the closest past solution")
+    comment = manual.get("resolution_comment") or draft.draft_comment(
+        ticket, ex, reference, model, assignee=manual.get("assignee") or expert or suggestion.recommended)
+    yield event("draft", "completed", "Resolution comment ready",
+                {"comment": comment, "reference": reference.ref_id if reference else None})
 
     result = TriageResult(
         ticket_id=ticket.id,
         work_type=ex.work_type,
         service=ex.service,
         team=team,
-        assignee=expert,
-        urgency=rub.urgency,
-        impact=rub.impact,
-        priority=rub.priority,
+        assignee=manual.get("assignee") or expert,
+        urgency=urgency,
+        impact=impact,
+        priority=priority,
         resolution=ex.resolution,
-        # 5. draft, in the voice of the agent who will close it
-        resolution_comment=draft.draft_comment(ticket, ex, reference, model, assignee=expert or suggestion.recommended),
+        resolution_comment=comment,
         confidence=conf.overall,
         confidence_detail=conf.model_dump(),
         facts=ex.facts().model_dump(),
-        priority_score=rub.priority_score,
-        rubric_trace=rub.trace,
+        priority_score=score,
+        rubric_trace=trace,
         vote_agreement=cls.vote_agreement,
         route=route,
-        escalated=rub.priority == "Highest" and rub.critical,
-        sla_due_at=confidence.sla_due(ticket.created_at or now, rub.priority),
+        escalated=escalated,
+        sla_due_at=sla_due_at,
         assignee_suggestion=suggestion.model_dump(),
         playbook_ref=reference.ref_id if reference else None,
         rationale=ex.rationale,
@@ -115,12 +177,22 @@ def run_triage(db: Session, ticket: Ticket, model: str | None = None) -> TriageR
 
     # Copy onto the ticket so the queue can filter/sort without joins.
     ticket.triage_state = "proposed"
-    ticket.assignee = suggestion.recommended if route != "triage" else None
+    ticket.assignee = working
     ticket.ai_service, ticket.ai_team, ticket.ai_priority = result.service, result.team, result.priority
     ticket.priority_score, ticket.confidence, ticket.route = result.priority_score, result.confidence, route
-    ticket.escalated, ticket.sla_due_at = result.escalated, result.sla_due_at
+    ticket.escalated, ticket.sla_due_at = escalated, sla_due_at
 
     db.add(result)
     db.commit()
     db.refresh(result)
-    return result
+    if sink is not None:
+        sink.append(result)
+    yield event("done", "completed", f"Proposal ready in {result.latency_ms / 1000:.1f}s", {"triage_result_id": str(result.id)})
+
+
+def run_triage(db: Session, ticket: Ticket, model: str | None = None) -> TriageResult:
+    """`model` comes from the UI; None = configured default, "heuristic" = no LLM."""
+    sink: list[TriageResult] = []
+    for _ in triage_events(db, ticket, model, sink):
+        pass
+    return sink[0]

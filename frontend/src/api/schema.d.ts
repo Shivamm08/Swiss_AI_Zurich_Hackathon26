@@ -213,6 +213,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tickets/{ticket_id}/triage/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stream Triage
+         * @description Live walkthrough: runs the pipeline and streams each stage as it happens.
+         */
+        get: operations["stream_triage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/triage/batch": {
         parameters: {
             query?: never;
@@ -788,6 +808,26 @@ export interface components {
              */
             models: components["schemas"]["ModelOption"][];
         };
+        /**
+         * ManualFields
+         * @description Values staff fill in themselves. The pipeline keeps them and only fills the gaps.
+         */
+        ManualFields: {
+            /** Work Type */
+            work_type?: ("Incident" | "Service Request") | null;
+            /** Service */
+            service?: ("Trading Platform" | "Order Management" | "Trade Matching" | "Securities Settlement" | "Corporate Actions" | "Fund Pricing" | "NAV Calculation" | "Portfolio Accounting" | "Cash Management" | "Risk & Compliance Monitoring" | "Regulatory Reporting" | "SimCorp Dimension" | "Rimes Data Feed" | "Client Reporting" | "Tax Reporting" | "CRM & Client Portal" | "Identity & Access Management" | "SharePoint & File Storage" | "Outlook & Email" | "Emailed Support Tickets") | null;
+            /** Urgency */
+            urgency?: ("Highest" | "High" | "Medium" | "Low" | "Lowest") | null;
+            /** Impact */
+            impact?: ("Highest" | "High" | "Medium" | "Low" | "Lowest") | null;
+            /** Assignee */
+            assignee?: string | null;
+            /** Resolution */
+            resolution?: ("done" | "cancelled" | "clarification" | "cannot reproduce") | null;
+            /** Resolution Comment */
+            resolution_comment?: string | null;
+        };
         /** Metrics */
         Metrics: {
             /** Tickets Total */
@@ -1044,8 +1084,8 @@ export interface components {
         };
         /**
          * TicketCreate
-         * @description Admin "New ticket" form: only summary, description and reporter are required;
-         *     the pipeline derives everything else.
+         * @description New-ticket form: summary, description and reporter are required; anything in `manual`
+         *     is confirmed by staff, everything else is derived by the pipeline.
          */
         TicketCreate: {
             /** Work Type */
@@ -1092,6 +1132,7 @@ export interface components {
              * @enum {string}
              */
             source: "challenge" | "training" | "manual" | "email";
+            manual?: components["schemas"]["ManualFields"] | null;
         };
         /** TicketDetail */
         TicketDetail: {
@@ -1181,6 +1222,12 @@ export interface components {
             escalated: boolean;
             /** Sla Due At */
             sla_due_at?: string | null;
+            /**
+             * Manual Fields
+             * @description Fields confirmed by staff at creation
+             * @default []
+             */
+            manual_fields: string[];
             latest_triage: components["schemas"]["TriageResultOut"] | null;
             /** Reviews */
             reviews: components["schemas"]["ReviewOut"][];
@@ -1273,6 +1320,12 @@ export interface components {
             escalated: boolean;
             /** Sla Due At */
             sla_due_at?: string | null;
+            /**
+             * Manual Fields
+             * @description Fields confirmed by staff at creation
+             * @default []
+             */
+            manual_fields: string[];
         };
         /** TicketPage */
         TicketPage: {
@@ -1391,6 +1444,39 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /**
+         * TriageStreamEvent
+         * @description One step of the live triage walkthrough (GET /api/tickets/{id}/triage/stream, server-sent events).
+         *
+         *     `data` per stage: retrieve -> {evidence, hybrid} · vote -> {index, ok, answer, error} ·
+         *     extract -> {extraction, vote_agreement, votes_score, heuristic, manual} ·
+         *     rubric -> {facts, impact, urgency, priority, priority_score, trace, critical} ·
+         *     confidence -> {confidence, route, escalated, sla_due_at} · assign -> {suggestion, working_assignee} ·
+         *     draft -> {comment, reference} · done -> {triage_result_id} · error -> {detail}
+         */
+        TriageStreamEvent: {
+            /**
+             * Stage
+             * @enum {string}
+             */
+            stage: "retrieve" | "extract" | "vote" | "rubric" | "confidence" | "assign" | "draft" | "done" | "error";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "started" | "completed" | "failed";
+            /** Elapsed Ms */
+            elapsed_ms: number;
+            /** Message */
+            message: string;
+            /**
+             * Data
+             * @default {}
+             */
+            data: {
+                [key: string]: unknown;
+            };
         };
         /** UserOut */
         UserOut: {
@@ -1878,6 +1964,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TriageResultOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stream_triage: {
+        parameters: {
+            query?: {
+                /** @description Model from /api/llm/models, or 'heuristic' */
+                model?: string | null;
+            };
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Server-sent events, one TriageStreamEvent per stage */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": unknown;
+                    "application/json": components["schemas"]["TriageStreamEvent"];
                 };
             };
             /** @description Validation Error */

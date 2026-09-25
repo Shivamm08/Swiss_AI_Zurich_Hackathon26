@@ -59,6 +59,15 @@ class Ticket(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
+    @property
+    def manual(self) -> dict[str, Any]:
+        """Values confirmed by staff in the New-ticket form (stored in raw, no extra column)."""
+        return dict((self.raw or {}).get("manual") or {})
+
+    @property
+    def manual_fields(self) -> list[str]:
+        return list(self.manual)
+
     triage_results: Mapped[list["TriageResult"]] = relationship(
         back_populates="ticket", order_by="TriageResult.created_at.desc()", cascade="all, delete-orphan"
     )

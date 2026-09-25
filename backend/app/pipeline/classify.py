@@ -12,7 +12,8 @@ enums/booleans only, and an ordered procedure with worked examples.
 
 import logging
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
+from collections.abc import Generator
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 
 from pydantic import BaseModel, Field
@@ -130,9 +131,31 @@ Service catalogue:
 """
 
 
+# Fields staff can confirm when creating a ticket; the AI must keep them.
+MANUAL_EXTRACTION_FIELDS = ("work_type", "service", "resolution")
+
+
 def _prompt(ticket: Ticket, evidence: list[Evidence]) -> str:
     refs = "\n\n".join(f"[{e.ref_id}] ({e.kind}) {e.title}\n{e.snippet}" for e in evidence)
-    return f"TICKET\n{ticket_text(ticket)}\n\nRETRIEVED KNOWLEDGE\n{refs or '(none)'}"
+    confirmed = {k: v for k, v in ticket.manual.items() if k in MANUAL_EXTRACTION_FIELDS}
+    staff = (
+        "\n\nCONFIRMED BY STAFF (keep these values exactly):\n" + "\n".join(f"- {k}: {v}" for k, v in confirmed.items())
+        if confirmed else ""
+    )
+    return f"TICKET\n{ticket_text(ticket)}{staff}\n\nRETRIEVED KNOWLEDGE\n{refs or '(none)'}"
+
+
+def _apply_manual(ticket: Ticket, cls: Classification) -> Classification:
+    """Staff-confirmed values win over the model and count as certain in the vote score."""
+    confirmed = {k: v for k, v in ticket.manual.items() if k in MANUAL_EXTRACTION_FIELDS}
+    if not confirmed:
+        return cls
+    cls.extraction = cls.extraction.model_copy(update=confirmed)
+    if not cls.heuristic:
+        cls.vote_agreement.update({k: 1.0 for k in confirmed})
+        total = sum(VOTE_WEIGHTS.values())
+        cls.votes_score = round(sum(cls.vote_agreement.get(n, 0) * w for n, w in VOTE_WEIGHTS.items()) / total, 3)
+    return cls
 
 
 def _heuristic(ticket: Ticket, evidence: list[Evidence], reason: str) -> Classification:
@@ -173,32 +196,51 @@ def _vote(samples: list[Extraction]) -> tuple[Extraction, dict[str, float], floa
     return Extraction(**merged), agreement, round(score, 3)
 
 
-def classify(ticket: Ticket, evidence: list[Evidence], model: str | None) -> Classification:
+VoteUpdate = dict  # {"index": int, "ok": bool, "answer": dict | None, "error": str | None}
+
+
+def classify_iter(
+    ticket: Ticket, evidence: list[Evidence], model: str | None
+) -> Generator[VoteUpdate, None, Classification]:
+    """Yields each vote as it arrives (for the live walkthrough), returns the merged Classification."""
     if not model:
-        return _heuristic(ticket, evidence, "no LLM model selected")
+        return _apply_manual(ticket, _heuristic(ticket, evidence, "no LLM model selected"))
 
     prompt = _prompt(ticket, evidence)
     votes = max(1, settings.llm_votes)
     samples: list[Extraction] = []
     errors: list[str] = []
     with ThreadPoolExecutor(max_workers=votes) as pool:
-        futures = [pool.submit(llm.parse, SYSTEM_PROMPT, prompt, Extraction, model) for _ in range(votes)]
-        for future in futures:
+        futures = {pool.submit(llm.parse, SYSTEM_PROMPT, prompt, Extraction, model): i for i in range(votes)}
+        for future in as_completed(futures):
+            index = futures[future] + 1
             try:
                 result = future.result()
-                if result is not None:
-                    samples.append(result)
+                if result is None:
+                    raise ValueError("empty response")
+                samples.append(result)
+                yield {"index": index, "ok": True, "answer": result.model_dump(), "error": None}
             except Exception as exc:  # one failed vote must not sink the ticket
                 errors.append(f"{type(exc).__name__}: {exc}")
+                yield {"index": index, "ok": False, "answer": None, "error": f"{type(exc).__name__}: {str(exc)[:200]}"}
 
     if not samples:
         log.warning("All %d votes failed on %s: %s", votes, model, errors[:1])
         first = errors[0].split(":")[0] if errors else "no response"
-        return _heuristic(ticket, evidence, f"{model} failed: {first}")
+        return _apply_manual(ticket, _heuristic(ticket, evidence, f"{model} failed: {first}"))
 
     extraction, agreement, score = _vote(samples)
     if extraction.playbook_ref and extraction.playbook_ref not in {e.ref_id for e in evidence}:
         extraction.playbook_ref = None  # never trust a reference that was not retrieved
     if len(samples) < votes:  # missing votes count as disagreement
         score = round(score * len(samples) / votes, 3)
-    return Classification(extraction=extraction, vote_agreement=agreement, votes_score=score)
+    return _apply_manual(ticket, Classification(extraction=extraction, vote_agreement=agreement, votes_score=score))
+
+
+def classify(ticket: Ticket, evidence: list[Evidence], model: str | None) -> Classification:
+    it = classify_iter(ticket, evidence, model)
+    while True:
+        try:
+            next(it)
+        except StopIteration as stop:
+            return stop.value

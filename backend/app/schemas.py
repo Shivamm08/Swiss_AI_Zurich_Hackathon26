@@ -118,13 +118,26 @@ class TicketBase(BaseModel):
     comments: list[str] = []
 
 
+class ManualFields(BaseModel):
+    """Values staff fill in themselves. The pipeline keeps them and only fills the gaps."""
+
+    work_type: WorkType | None = None
+    service: ServiceName | None = None
+    urgency: Level | None = None
+    impact: Level | None = None
+    assignee: str | None = None
+    resolution: Resolution | None = None
+    resolution_comment: str | None = None
+
+
 class TicketCreate(TicketBase):
-    """Admin "New ticket" form: only summary, description and reporter are required;
-    the pipeline derives everything else."""
+    """New-ticket form: summary, description and reporter are required; anything in `manual`
+    is confirmed by staff, everything else is derived by the pipeline."""
 
     summary: str = Field(min_length=3)
     description: str = Field(min_length=3)
     source: TicketSource = "manual"
+    manual: ManualFields | None = None
 
 
 class EmailIngest(BaseModel):
@@ -151,6 +164,27 @@ class TicketOut(TicketBase, ORM):
     route: Route | None = None
     escalated: bool = False
     sla_due_at: datetime | None = None
+    manual_fields: list[str] = Field(default=[], description="Fields confirmed by staff at creation")
+
+
+TriageStage = Literal["retrieve", "extract", "vote", "rubric", "confidence", "assign", "draft", "done", "error"]
+
+
+class TriageStreamEvent(BaseModel):
+    """One step of the live triage walkthrough (GET /api/tickets/{id}/triage/stream, server-sent events).
+
+    `data` per stage: retrieve -> {evidence, hybrid} · vote -> {index, ok, answer, error} ·
+    extract -> {extraction, vote_agreement, votes_score, heuristic, manual} ·
+    rubric -> {facts, impact, urgency, priority, priority_score, trace, critical} ·
+    confidence -> {confidence, route, escalated, sla_due_at} · assign -> {suggestion, working_assignee} ·
+    draft -> {comment, reference} · done -> {triage_result_id} · error -> {detail}
+    """
+
+    stage: TriageStage
+    status: Literal["started", "completed", "failed"]
+    elapsed_ms: int
+    message: str
+    data: dict[str, Any] = {}
 
 
 class TicketPage(BaseModel):

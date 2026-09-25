@@ -1,16 +1,17 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import validate_model
 from app.api.tickets import get_ticket_or_404
-from app.db import get_db
+from app.db import SessionLocal, get_db
 from app.domain import priority_for, team_for
 from app.kb.learn import learn_from_review
 from app.models import Review, Ticket, TriageResult
-from app.pipeline.pipeline import run_triage
+from app.pipeline.pipeline import run_triage, triage_events
 from app.pipeline.rubric import is_critical, rescore
 from app.schemas import (
     BatchTriageRequest,
@@ -20,6 +21,7 @@ from app.schemas import (
     ReviewOut,
     TriageRequest,
     TriageResultOut,
+    TriageStreamEvent,
 )
 
 router = APIRouter(tags=["triage"])
@@ -33,6 +35,38 @@ def triage_ticket(
 ) -> TriageResult:
     model = validate_model(body.model if body else None)
     return run_triage(db, get_ticket_or_404(db, ticket_id), model)
+
+
+@router.get(
+    "/tickets/{ticket_id}/triage/stream",
+    response_class=StreamingResponse,
+    responses={200: {"model": TriageStreamEvent, "content": {"text/event-stream": {}},
+                     "description": "Server-sent events, one TriageStreamEvent per stage"}},
+)
+def stream_triage(
+    ticket_id: uuid.UUID,
+    model: str | None = Query(None, description="Model from /api/llm/models, or 'heuristic'"),
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    """Live walkthrough: runs the pipeline and streams each stage as it happens."""
+    model = validate_model(model)
+    get_ticket_or_404(db, ticket_id)
+
+    def events():
+        # Own session: the request-scoped one may close before the stream ends.
+        with SessionLocal() as session:
+            ticket = session.get(Ticket, ticket_id)
+            try:
+                for event in triage_events(session, ticket, model):
+                    yield f"data: {event.model_dump_json()}\n\n"
+            except Exception as exc:  # surface failures in the walkthrough instead of a broken stream
+                session.rollback()
+                failed = TriageStreamEvent(stage="error", status="failed", elapsed_ms=0,
+                                           message=f"Triage failed: {type(exc).__name__}", data={"detail": str(exc)[:500]})
+                yield f"data: {failed.model_dump_json()}\n\n"
+
+    return StreamingResponse(events(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @router.post("/triage/batch", response_model=BatchTriageResult)

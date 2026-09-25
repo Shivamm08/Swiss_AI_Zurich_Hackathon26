@@ -686,6 +686,69 @@
         }
       }
     },
+    "/api/tickets/{ticket_id}/triage/stream": {
+      "get": {
+        "tags": [
+          "triage"
+        ],
+        "summary": "Stream Triage",
+        "description": "Live walkthrough: runs the pipeline and streams each stage as it happens.",
+        "operationId": "stream_triage",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Model from /api/llm/models, or 'heuristic'",
+              "title": "Model"
+            },
+            "description": "Model from /api/llm/models, or 'heuristic'"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server-sent events, one TriageStreamEvent per stage",
+            "content": {
+              "text/event-stream": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriageStreamEvent"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/triage/batch": {
       "post": {
         "tags": [
@@ -2161,6 +2224,136 @@
         ],
         "title": "LlmModels"
       },
+      "ManualFields": {
+        "properties": {
+          "work_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Incident",
+                  "Service Request"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Type"
+          },
+          "service": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Trading Platform",
+                  "Order Management",
+                  "Trade Matching",
+                  "Securities Settlement",
+                  "Corporate Actions",
+                  "Fund Pricing",
+                  "NAV Calculation",
+                  "Portfolio Accounting",
+                  "Cash Management",
+                  "Risk & Compliance Monitoring",
+                  "Regulatory Reporting",
+                  "SimCorp Dimension",
+                  "Rimes Data Feed",
+                  "Client Reporting",
+                  "Tax Reporting",
+                  "CRM & Client Portal",
+                  "Identity & Access Management",
+                  "SharePoint & File Storage",
+                  "Outlook & Email",
+                  "Emailed Support Tickets"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service"
+          },
+          "urgency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Highest",
+                  "High",
+                  "Medium",
+                  "Low",
+                  "Lowest"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgency"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Highest",
+                  "High",
+                  "Medium",
+                  "Low",
+                  "Lowest"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "done",
+                  "cancelled",
+                  "clarification",
+                  "cannot reproduce"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "resolution_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Comment"
+          }
+        },
+        "type": "object",
+        "title": "ManualFields",
+        "description": "Values staff fill in themselves. The pipeline keeps them and only fills the gaps."
+      },
       "Metrics": {
         "properties": {
           "tickets_total": {
@@ -3037,6 +3230,16 @@
             ],
             "title": "Source",
             "default": "manual"
+          },
+          "manual": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ManualFields"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -3045,7 +3248,7 @@
           "description"
         ],
         "title": "TicketCreate",
-        "description": "Admin \"New ticket\" form: only summary, description and reporter are required;\nthe pipeline derives everything else."
+        "description": "New-ticket form: summary, description and reporter are required; anything in `manual`\nis confirmed by staff, everything else is derived by the pipeline."
       },
       "TicketDetail": {
         "properties": {
@@ -3320,6 +3523,15 @@
               }
             ],
             "title": "Sla Due At"
+          },
+          "manual_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Manual Fields",
+            "description": "Fields confirmed by staff at creation",
+            "default": []
           },
           "latest_triage": {
             "anyOf": [
@@ -3626,6 +3838,15 @@
               }
             ],
             "title": "Sla Due At"
+          },
+          "manual_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Manual Fields",
+            "description": "Fields confirmed by staff at creation",
+            "default": []
           }
         },
         "type": "object",
@@ -3963,6 +4184,57 @@
           "created_at"
         ],
         "title": "TriageResultOut"
+      },
+      "TriageStreamEvent": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": [
+              "retrieve",
+              "extract",
+              "vote",
+              "rubric",
+              "confidence",
+              "assign",
+              "draft",
+              "done",
+              "error"
+            ],
+            "title": "Stage"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "started",
+              "completed",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "title": "Elapsed Ms"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "status",
+          "elapsed_ms",
+          "message"
+        ],
+        "title": "TriageStreamEvent",
+        "description": "One step of the live triage walkthrough (GET /api/tickets/{id}/triage/stream, server-sent events).\n\n`data` per stage: retrieve -> {evidence, hybrid} \u00b7 vote -> {index, ok, answer, error} \u00b7\nextract -> {extraction, vote_agreement, votes_score, heuristic, manual} \u00b7\nrubric -> {facts, impact, urgency, priority, priority_score, trace, critical} \u00b7\nconfidence -> {confidence, route, escalated, sla_due_at} \u00b7 assign -> {suggestion, working_assignee} \u00b7\ndraft -> {comment, reference} \u00b7 done -> {triage_result_id} \u00b7 error -> {detail}"
       },
       "UserOut": {
         "properties": {
