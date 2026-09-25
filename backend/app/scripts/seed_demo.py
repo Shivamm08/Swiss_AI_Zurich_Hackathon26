@@ -9,9 +9,10 @@ How it is simulated (all numbers are assumptions, tuned to look like a normal se
 - about 22% arrive with the wrong intake service (a sibling service or the generic email bucket);
 - facts come from the ticket template, then the REAL rubric computes impact/urgency/priority;
 - confidence depends on how clear the template is; routing uses the real thresholds;
-- everything older than 3 days is resolved; only recent tickets are open work;
-- reviews: the likelier to be approved the more confident the proposal; a mild improvement over the
-  four weeks stands in for the learning loop. This is illustrative, not a measured result.
+- every ticket passes an analyst (the team lead): the more confident the proposal, the likelier it is
+  approved as-is; a mild improvement over the four weeks stands in for the learning loop;
+- approved tickets go to a specialist, who works them: everything older than 3 days is done, recent
+  ones are assigned, in progress or waiting for information. Illustrative, not a measured result.
 
     python -m app.scripts.seed_demo             # (re)create the demo history
     python -m app.scripts.seed_demo --clear     # remove it
@@ -85,6 +86,10 @@ def clear(db: Session) -> tuple[int, int]:
     return len(tickets), msgs or 0
 
 
+def _act(ticket: Ticket, when: datetime, by: str | None, action: str, note: str | None) -> None:
+    ticket.activity = [*(ticket.activity or []), {"at": when.isoformat(), "by": by or "analyst", "action": action, "note": note}]
+
+
 def _pick(rng: random.Random, weights: dict[str, float]) -> str:
     return rng.choices(list(weights), weights=list(weights.values()))[0]
 
@@ -99,8 +104,8 @@ def seed(db: Session, rng: random.Random) -> dict[str, int]:
                if (r.get("Affected Business or IT Services") or [GENERIC])[0] != GENERIC]
     playbook = {d.meta["service"]: d for d in db.scalars(select(KbDocument).where(KbDocument.kind == "playbook"))}
     users = [u for u in db.scalars(select(User)) if u.role != "admin"]
-    members = {t: [u.email for u in users if t in (u.teams or [])] for t in TEAMS}
-    leads = {t: next((u.email for u in users if u.role == "lead" and t in (u.teams or [])), None) for t in TEAMS}
+    members = {t: [u.email for u in users if u.role == "specialist" and t in (u.teams or [])] for t in TEAMS}
+    leads = {t: next((u.email for u in users if u.role == "analyst" and t in (u.teams or [])), None) for t in TEAMS}
     siblings = {s: [o for o in SERVICE_CATALOG if o != s and team_for(o) == team_for(s)] for s in SERVICE_CATALOG}
     today = datetime.now(timezone.utc).date()
     load: dict[str, int] = {u.email: 0 for u in users}
@@ -131,8 +136,9 @@ def seed(db: Session, rng: random.Random) -> dict[str, int]:
             if clear_incident and rng.random() < 0.07:
                 facts.outage_extent = "full_unavailability"
             age_days = (datetime.now(timezone.utc) - created).total_seconds() / 86400
-            reviewed = back >= 1 and rng.random() < 0.9 or back == 0 and rng.random() < 0.3
-            rub = rubric.apply_rubric(facts, true_service, work_type, age_days=age_days, resolved=reviewed and back >= 2)
+            reviewed = back >= 1 or rng.random() < 0.45  # every ticket gets an analyst decision; today's partly pending
+            done_by_now = back >= 3 or back == 2 and rng.random() < 0.5 or back == 1 and rng.random() < 0.15
+            rub = rubric.apply_rubric(facts, true_service, work_type, age_days=age_days, resolved=reviewed and done_by_now)
 
             conf = rng.uniform(lo, hi) - (0.08 if misrouted else 0) + 0.04 * progress
             conf = round(min(max(conf, 0.12), 0.99), 3)
@@ -141,10 +147,9 @@ def seed(db: Session, rng: random.Random) -> dict[str, int]:
             expert_doc = playbook.get(true_service)
             expert = expert_doc.meta["resolver"] if expert_doc else None
             pool = members[team] or [None]
-            working = None
-            if route != "triage":  # like the real rule: the expert unless clearly busier than the least-loaded teammate
-                least = min(pool, key=lambda p: load.get(p, 0) if p else 0)
-                working = expert if expert in pool and load.get(expert, 0) <= load.get(least, 0) + 1 else least
+            # like the real rule: the expert unless clearly busier than the least-loaded specialist
+            least = min(pool, key=lambda p: load.get(p, 0) if p else 0)
+            working = expert if expert in pool and load.get(expert, 0) <= load.get(least, 0) + 1 else least
             resolution = _pick(rng, res_weights)
             comment = (expert_doc.meta["note"] if expert_doc and resolution == "done" and rng.random() < 0.7
                        else FALLBACK_COMMENT[resolution].format(service=true_service))
@@ -155,7 +160,7 @@ def seed(db: Session, rng: random.Random) -> dict[str, int]:
                 affected_service=intake_service, business_entity=(rec.get("Business Entity") or [None])[0],
                 reporter=rec.get("Reporter"), urgency=normalize_level(rec.get("Urgency")), impact=normalize_level(rec.get("Impact")),
                 priority=normalize_level(rec.get("Priority")), status="open", linked_issues=[], comments=[], raw={"demo": True},
-                triage_state="proposed", assignee=working, ai_service=true_service, ai_team=team, ai_priority=rub.priority,
+                triage_state="proposed", assignee=None, work_status="open", ai_service=true_service, ai_team=team, ai_priority=rub.priority,
                 priority_score=rub.priority_score, confidence=conf, route=route, escalated=escalated,
                 sla_due_at=confidence.sla_due(created, rub.priority), created_at=created, updated_at=created,
             )
@@ -176,13 +181,14 @@ def seed(db: Session, rng: random.Random) -> dict[str, int]:
             )
             db.add(result)
             db.flush()
+            _act(ticket, triaged_at, chat.SYSTEM_SENDER, "triaged", f"{route} · {round(conf * 100)}% · gpt-5.4-mini")
             made["tickets"] += 1
             per_team_tickets[team].append(ticket)
             if escalated:
                 made["escalations"] += 1
                 escalated_refs.append((ticket, team, triaged_at))
 
-            if reviewed and route != "triage" or reviewed and rng.random() < 0.6:
+            if reviewed:
                 p_right = min(0.97, 0.22 + 0.74 * conf + 0.05 * progress)  # proposal is right as-is
                 if rng.random() < p_right:
                     action = "approve" if rng.random() < 0.9 else "edit"  # sometimes only the wording is polished
@@ -211,22 +217,31 @@ def seed(db: Session, rng: random.Random) -> dict[str, int]:
                     else:
                         final["resolution_comment"] = comment.replace("Resolution:", "Resolution (edited):")
                         overridden = ["resolution_comment"]
-                reviewer = working or leads.get(team) or rng.choice(pool)
+                reviewer = leads.get(team) or "admin@intcom.com"
+                decided_at = triaged_at + timedelta(minutes=rng.randint(4, 150))
                 db.add(Review(
                     ticket_id=ticket.id, triage_result_id=result.id, action=action,
                     final=final if action != "reject" else None, overridden_fields=overridden, reviewer=reviewer or "analyst",
                     review_seconds=round(rng.lognormvariate(4.1 - 0.35 * progress, 0.45), 1),
-                    created_at=triaged_at + timedelta(minutes=rng.randint(4, 150)),
+                    created_at=decided_at,
                 ))
                 made["reviews"] += 1
                 ticket.triage_state = {"approve": "approved", "edit": "edited", "reject": "rejected"}[action]
+                _act(ticket, decided_at, reviewer, ticket.triage_state, None)
                 if action == "reject":
-                    ticket.route, ticket.assignee = "triage", None
-                elif back >= 2:
-                    ticket.status = "done"
-            if back >= 3:  # a real desk resolves its backlog: only the last few days stay open
-                ticket.status = "done"
-            if ticket.assignee and ticket.status != "done":
+                    ticket.route = "triage"
+                if action != "reject" or back >= 1:  # rejected ones are classified by hand, then dispatched
+                    ticket.assignee = final["assignee"] if action == "edit" and "assignee" in overridden else working
+                    ticket.work_status = "assigned"
+                    if done_by_now:
+                        ticket.work_status, ticket.resolution = "done", final["resolution"]
+                        ticket.resolution_comment = final["resolution_comment"].replace("Resolution (edited):", "Resolution:")
+                        ticket.resolved_by = ticket.assignee
+                        ticket.resolved_at = min(decided_at + timedelta(hours=rng.uniform(0.5, 30)), datetime.now(timezone.utc) - timedelta(minutes=5))
+                        _act(ticket, ticket.resolved_at, ticket.assignee, "resolve", ticket.resolution)
+                    elif back >= 1 or rng.random() < 0.5:
+                        ticket.work_status = _pick(rng, {"in_progress": 0.7, "waiting": 0.3})
+            if ticket.assignee and ticket.work_status != "done":
                 load[ticket.assignee] = load.get(ticket.assignee, 0) + 1
 
     made["messages"] = _seed_messages(db, rng, per_team_tickets, escalated_refs, members, leads, today)
@@ -267,26 +282,26 @@ def _seed_messages(db: Session, rng: random.Random, per_team: dict[str, list[Tic
         t1, t2, t3 = (rng.choice(tickets) for _ in range(3))
         a, b = rng.choice(others), rng.choice(people)
         replies = ["Taking it now.", "On it, I'll update the ticket within the hour.", "Mine. Vendor ticket already opened.",
-                   "Picked up. The draft looks right, verifying before I approve.", "Assigned to me, thanks for flagging.",
+                   "Picked up. The suggested fix looks right, I'll mark it done once verified.", "Assigned to me, thanks for flagging.",
                    "Looking now; looks like the same mapping issue as last week."]
         fyis = ["FYI the fix from #{n} worked again today; Copilot suggested it straight away.",
                 "Closed #{n} with the suggested resolution, confirmed with the desk.",
                 "#{n} was misrouted to us at intake, the AI caught it and moved it. Nice.",
                 "Note for everyone: #{n} is the reference case for this kind of alert now."]
         script = [
-            (26, 8, lead, f"Morning team. New triage flow is live: the Copilot proposes, we approve. Please review your queue before 10:00.", "message", None),
+            (26, 8, lead, f"Morning team. New triage flow is live: the AI proposes, I check and dispatch, you resolve. Please mark tickets done with a proper closing note, that's what the Copilot learns from.", "message", None),
             (21, 10, a, f"Vendor maintenance on {rng.choice(services)} tonight 22:00-23:00 CET. Expect alerts; they will be auto-routed to us.", "message", None),
             (17, 14, b, f"@{first.get(a, 'team')} could you take #{t1.number if t1 else '—'}? I'm at capacity until the change window is done.", "handoff", t1),
             (17, 14, a, "On it. The suggested fix matches what we did last month.", "message", None),
-            (11, 9, lead, f"Nice work this week: fewer tickets bounced to other teams. Keep correcting the AI when it's wrong, it learns from approved fixes.", "message", None),
+            (11, 9, lead, f"Nice work this week: fewer tickets bounced to other teams. Keep writing specific closing notes, the AI learns from every ticket you close.", "message", None),
             (6, 16, rng.choice(others), rng.choice(fyis).format(n=t2.number if t2 else '—'), "message", t2),
-            (2, 11, lead, f"Reminder: two items in Needs review for {team}. Can someone pick up #{t3.number if t3 else '—'}?", "message", t3),
+            (2, 11, lead, f"Dispatched #{t3.number if t3 else '—'} to the team, it's on the SLA clock. Shout if you're at capacity.", "message", t3),
             (1, 15, rng.choice(others), rng.choice(replies), "message", None),
         ]
         for days_back, hour, sender, body, kind, ticket in script:
             add(ch, sender, body, at(days_back, hour), kind, ticket)
 
-    # Direct messages: leads with analysts, and the admin with a few leads.
+    # Direct messages: analysts (team leads) with their specialists, and the admin with a few leads.
     pairs = []
     for team in rng.sample(TEAMS, 5):
         lead, others = leads[team], [p for p in members[team] if p != leads[team]]
@@ -296,7 +311,7 @@ def _seed_messages(db: Session, rng: random.Random, per_team: dict[str, list[Tic
         ch = chat.dm_channel(sender, receiver)
         tk = rng.choice(per_team[team]) if per_team[team] else None
         add(ch, sender, f"Hi {first.get(receiver, '')}, can you own #{tk.number if tk else '—'} today? Priority went up after triage.", at(3, 9), "handoff", tk)
-        add(ch, receiver, "Yes, picking it up. The draft resolution looks right, I'll verify and approve.", at(3, 9))
+        add(ch, receiver, "Yes, picking it up. The suggested resolution looks right, I'll mark it done once it's verified.", at(3, 9))
         add(ch, sender, "Great, thanks. Ping me if you need the vendor contact.", at(3, 10))
     admin = "admin@intcom.com"
     for team in rng.sample(TEAMS, 3):

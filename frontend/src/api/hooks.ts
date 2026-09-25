@@ -12,6 +12,7 @@ import type {
   MessageCreate,
   RubricPreviewRequest,
   ReviewCreate,
+  WorkUpdate,
   TicketCreate,
   TicketListParams,
   TicketSource,
@@ -163,8 +164,18 @@ export const useReviewTriage = () => {
 export const useAssignTicket = () => {
   const invalidate = useInvalidateTickets()
   return useMutation({
-    mutationFn: ({ ticketId, assignee }: { ticketId: string; assignee: string }) =>
-      unwrap(api.POST('/api/tickets/{ticket_id}/assign', { params: { path: { ticket_id: ticketId } }, body: { assignee } })),
+    mutationFn: ({ ticketId, assignee, by }: { ticketId: string; assignee: string; by?: string }) =>
+      unwrap(api.POST('/api/tickets/{ticket_id}/assign', { params: { path: { ticket_id: ticketId } }, body: { assignee, by } })),
+    onSuccess: invalidate,
+  })
+}
+
+/** A specialist moving their ticket along: start, wait, resume, resolve (done). */
+export const useWorkUpdate = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: ({ ticketId, body }: { ticketId: string; body: WorkUpdate }) =>
+      unwrap(api.POST('/api/tickets/{ticket_id}/work', { params: { path: { ticket_id: ticketId } }, body })),
     onSuccess: invalidate,
   })
 }

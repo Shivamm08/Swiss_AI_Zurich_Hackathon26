@@ -11,7 +11,7 @@ from app.domain import SERVICE_CATALOG, TEAMS
 from app.ingest import ticket_text
 from app.models import Message, Ticket, User
 from app.pipeline import llm
-from app.pipeline.assignment import open_clause, open_counts
+from app.pipeline.assignment import open_counts
 from app.schemas import (
     ChannelOut,
     Department,
@@ -124,7 +124,7 @@ def draft_message(body: DraftRequest, db: Session = Depends(get_db)) -> DraftOut
 def get_directory(db: Session = Depends(get_db)) -> list[Department]:
     users = db.scalars(select(User).where(User.role != "admin")).all()
     counts = open_counts(db)
-    active = db.scalars(select(Ticket).where(open_clause())).all()
+    active = db.scalars(select(Ticket).where(Ticket.work_status != "done", Ticket.ai_team.is_not(None))).all()
     week_ago = datetime.now(timezone.utc) - timedelta(days=7)
     weekly = dict(db.execute(select(Message.channel, func.count()).where(Message.created_at >= week_ago)
                              .group_by(Message.channel)).all())
@@ -132,12 +132,12 @@ def get_directory(db: Session = Depends(get_db)) -> list[Department]:
     for team in TEAMS:
         members = [MemberBrief(email=u.email, name=u.name, role=u.role, open=counts[u.email], capacity=u.capacity)  # type: ignore[arg-type]
                    for u in users if team in (u.teams or [])]
-        members.sort(key=lambda m: (m.role != "lead", m.name))
+        members.sort(key=lambda m: (m.role != "analyst", m.name))
         team_tickets = [t for t in active if t.ai_team == team]
         out.append(Department(
             team=team, channel=chat.team_channel(team),
             services=[ServiceBrief(name=s, criticality=c) for s, (t, c) in SERVICE_CATALOG.items() if t == team],
-            lead=next((m for m in members if m.role == "lead"), None), members=members,
+            lead=next((m for m in members if m.role == "analyst"), None), members=members,
             open_tickets=len(team_tickets), escalations=sum(1 for t in team_tickets if t.escalated),
             messages_7d=weekly.get(chat.team_channel(team), 0),
         ))

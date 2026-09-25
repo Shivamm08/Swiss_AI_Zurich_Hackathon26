@@ -19,8 +19,13 @@ TriageState = Literal["new", "proposed", "approved", "edited", "rejected"]
 ReviewAction = Literal["approve", "edit", "reject"]
 EvidenceKind = Literal["service_card", "playbook", "historical_ticket"]
 Route = Literal["auto", "review", "triage"]
-Role = Literal["analyst", "lead", "admin"]
-TicketView = Literal["mine", "team", "needs_review", "escalations", "all"]
+# admin: runs the system · analyst: team lead who checks the AI triage and dispatches · specialist: does the work
+Role = Literal["admin", "analyst", "specialist"]
+# open: waiting for an analyst · assigned: dispatched to a specialist · in_progress · waiting (for information) · done
+WorkStatus = Literal["open", "assigned", "in_progress", "waiting", "done"]
+WorkAction = Literal["start", "wait", "resume", "resolve"]
+# inbox: the analyst's department, waiting for their decision · needs_review: untriaged or low confidence (any analyst)
+TicketView = Literal["mine", "inbox", "team", "needs_review", "escalations", "all"]
 
 # Observable facts the LLM extracts (enums/booleans only); the rubric turns them into Impact/Urgency.
 Scope = Literal["individual", "team", "one_entity", "multi_entity", "external_counterparty"]
@@ -138,6 +143,7 @@ class TicketCreate(TicketBase):
     description: str = Field(min_length=3)
     source: TicketSource = "manual"
     manual: ManualFields | None = None
+    created_by: str | None = Field(None, description="Email of the analyst/admin creating it (for the activity log)")
 
 
 class EmailIngest(BaseModel):
@@ -165,6 +171,11 @@ class TicketOut(TicketBase, ORM):
     escalated: bool = False
     sla_due_at: datetime | None = None
     manual_fields: list[str] = Field(default=[], description="Fields confirmed by staff at creation")
+    work_status: WorkStatus = "open"
+    resolution: str | None = Field(None, description="Set by the specialist when the ticket is done")
+    resolution_comment: str | None = None
+    resolved_by: str | None = None
+    resolved_at: datetime | None = None
 
 
 TriageStage = Literal["retrieve", "extract", "vote", "rubric", "confidence", "assign", "draft", "done", "error"]
@@ -318,6 +329,7 @@ class ReviewOut(ORM):
 
 class AssignRequest(BaseModel):
     assignee: str
+    by: str | None = Field(None, description="Who is assigning (for the activity log)")
 
 
 class RubricPreviewRequest(BaseModel):
@@ -334,9 +346,27 @@ class RubricPreview(BaseModel):
     rubric_trace: list[str]
 
 
+class ActivityEntry(BaseModel):
+    at: datetime
+    by: str
+    action: str = Field(description="triaged | approved | edited | rejected | assigned | start | wait | resume | resolve")
+    note: str | None = None
+
+
+class WorkUpdate(BaseModel):
+    """A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done)."""
+
+    action: WorkAction
+    by: str = Field(description="Email of the person acting (the assigned specialist, or an admin)")
+    note: str | None = Field(None, description="What information is missing (wait)")
+    resolution: Resolution | None = Field(None, description="Required for resolve")
+    resolution_comment: str | None = Field(None, description="Required for resolve: root cause, action taken, verification")
+
+
 class TicketDetail(TicketOut):
     latest_triage: TriageResultOut | None
     reviews: list[ReviewOut]
+    activity: list[ActivityEntry] = []
 
 
 # ---------------------------------------------------------------- knowledge base / RAG
@@ -427,7 +457,7 @@ class WorkloadMember(BaseModel):
     share: float = Field(description="Share of the team's open tickets")
     high_open: int = Field(description="Open tickets with priority High or Highest")
     oldest_open_at: datetime | None
-    approved_7d: int
+    resolved_7d: int = Field(description="Tickets this person closed in the last 7 days")
 
 
 class Workload(BaseModel):

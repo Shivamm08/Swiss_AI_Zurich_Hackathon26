@@ -188,8 +188,31 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Assign Ticket */
+        /**
+         * Assign Ticket
+         * @description Dispatch or reassign to a specialist (analysts and admins).
+         */
         post: operations["assign_ticket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tickets/{ticket_id}/work": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Update Work
+         * @description The specialist moves their ticket along. `resolve` closes it and adds it to the knowledge base.
+         */
+        post: operations["update_work"];
         delete?: never;
         options?: never;
         head?: never;
@@ -276,7 +299,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Review Triage */
+        /**
+         * Review Triage
+         * @description The analyst's decision on the AI proposal. Approve/edit dispatches the ticket to a specialist;
+         *     reject sends it to Needs review. (The knowledge base learns later, when the work is done.)
+         */
         post: operations["review_triage"];
         delete?: never;
         options?: never;
@@ -420,7 +447,8 @@ export interface paths {
         /**
          * Export Submission
          * @description Challenge-format records with our decisions filled in.
-         *     Uses the analyst-approved/edited decision when there is one, else the latest AI proposal.
+         *     Uses the analyst-approved/edited decision when there is one, else the latest AI proposal; a
+         *     ticket that is done uses the specialist's actual resolution and closing comment.
          *     TODO: confirm the exact expected submission format with Swiss Life.
          */
         get: operations["export_submission"];
@@ -562,10 +590,32 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActivityEntry */
+        ActivityEntry: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** By */
+            by: string;
+            /**
+             * Action
+             * @description triaged | approved | edited | rejected | assigned | start | wait | resume | resolve
+             */
+            action: string;
+            /** Note */
+            note?: string | null;
+        };
         /** AssignRequest */
         AssignRequest: {
             /** Assignee */
             assignee: string;
+            /**
+             * By
+             * @description Who is assigning (for the activity log)
+             */
+            by?: string | null;
         };
         /** AssigneeCandidate */
         AssigneeCandidate: {
@@ -1144,7 +1194,7 @@ export interface components {
              * Role
              * @enum {string}
              */
-            role: "analyst" | "lead" | "admin";
+            role: "admin" | "analyst" | "specialist";
             /** Open */
             open: number;
             /** Capacity */
@@ -1523,6 +1573,11 @@ export interface components {
              */
             source: "challenge" | "training" | "manual" | "email" | "demo";
             manual?: components["schemas"]["ManualFields"] | null;
+            /**
+             * Created By
+             * @description Email of the analyst/admin creating it (for the activity log)
+             */
+            created_by?: string | null;
         };
         /** TicketDetail */
         TicketDetail: {
@@ -1618,9 +1673,31 @@ export interface components {
              * @default []
              */
             manual_fields: string[];
+            /**
+             * Work Status
+             * @default open
+             * @enum {string}
+             */
+            work_status: "open" | "assigned" | "in_progress" | "waiting" | "done";
+            /**
+             * Resolution
+             * @description Set by the specialist when the ticket is done
+             */
+            resolution?: string | null;
+            /** Resolution Comment */
+            resolution_comment?: string | null;
+            /** Resolved By */
+            resolved_by?: string | null;
+            /** Resolved At */
+            resolved_at?: string | null;
             latest_triage: components["schemas"]["TriageResultOut"] | null;
             /** Reviews */
             reviews: components["schemas"]["ReviewOut"][];
+            /**
+             * Activity
+             * @default []
+             */
+            activity: components["schemas"]["ActivityEntry"][];
         };
         /** TicketOut */
         TicketOut: {
@@ -1716,6 +1793,23 @@ export interface components {
              * @default []
              */
             manual_fields: string[];
+            /**
+             * Work Status
+             * @default open
+             * @enum {string}
+             */
+            work_status: "open" | "assigned" | "in_progress" | "waiting" | "done";
+            /**
+             * Resolution
+             * @description Set by the specialist when the ticket is done
+             */
+            resolution?: string | null;
+            /** Resolution Comment */
+            resolution_comment?: string | null;
+            /** Resolved By */
+            resolved_by?: string | null;
+            /** Resolved At */
+            resolved_at?: string | null;
         };
         /** TicketPage */
         TicketPage: {
@@ -1878,7 +1972,7 @@ export interface components {
              * Role
              * @enum {string}
              */
-            role: "analyst" | "lead" | "admin";
+            role: "admin" | "analyst" | "specialist";
             /** Teams */
             teams: string[];
             /** Capacity */
@@ -1896,6 +1990,37 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * WorkUpdate
+         * @description A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done).
+         */
+        WorkUpdate: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "start" | "wait" | "resume" | "resolve";
+            /**
+             * By
+             * @description Email of the person acting (the assigned specialist, or an admin)
+             */
+            by: string;
+            /**
+             * Note
+             * @description What information is missing (wait)
+             */
+            note?: string | null;
+            /**
+             * Resolution
+             * @description Required for resolve
+             */
+            resolution?: ("done" | "cancelled" | "clarification" | "cannot reproduce") | null;
+            /**
+             * Resolution Comment
+             * @description Required for resolve: root cause, action taken, verification
+             */
+            resolution_comment?: string | null;
         };
         /** Workload */
         Workload: {
@@ -1918,7 +2043,7 @@ export interface components {
              * Role
              * @enum {string}
              */
-            role: "analyst" | "lead" | "admin";
+            role: "admin" | "analyst" | "specialist";
             /** Open */
             open: number;
             /** Capacity */
@@ -1935,8 +2060,11 @@ export interface components {
             high_open: number;
             /** Oldest Open At */
             oldest_open_at: string | null;
-            /** Approved 7D */
-            approved_7d: number;
+            /**
+             * Resolved 7D
+             * @description Tickets this person closed in the last 7 days
+             */
+            resolved_7d: number;
         };
     };
     responses: never;
@@ -2097,11 +2225,12 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Queue tab */
-                view?: "mine" | "team" | "needs_review" | "escalations" | "all";
+                view?: "mine" | "inbox" | "team" | "needs_review" | "escalations" | "all";
                 /** @description Email of the person viewing (for 'mine' / 'team') */
                 as_user?: string | null;
                 sort?: string;
                 state?: ("new" | "proposed" | "approved" | "edited" | "rejected") | null;
+                work_status?: ("open" | "assigned" | "in_progress" | "waiting" | "done") | null;
                 source?: ("challenge" | "training" | "manual" | "email" | "demo") | null;
                 /** @description AI service */
                 service?: string | null;
@@ -2109,8 +2238,8 @@ export interface operations {
                 team?: string | null;
                 /** @description Search summary and description */
                 q?: string | null;
-                /** @description Also list closed tickets (status done) */
-                include_closed?: boolean;
+                /** @description Also list tickets that are done */
+                include_done?: boolean;
                 limit?: number;
                 offset?: number;
             };
@@ -2311,6 +2440,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AssignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_work: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkUpdate"];
             };
         };
         responses: {

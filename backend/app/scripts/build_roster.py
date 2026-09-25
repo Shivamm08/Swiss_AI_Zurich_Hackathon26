@@ -4,7 +4,8 @@ The training data has no real team membership (all 30 assignees appear in every
 team), so we build a plausible, deterministic roster:
 - every playbook resolver joins the team(s) owning the services they resolve;
 - the remaining people are spread round-robin so each team has 2-4 members;
-- the first non-resolver member of each team is its lead; one admin account.
+- the first non-resolver member of each team is its team lead / analyst (dispatches work);
+  everyone else is a specialist (does the work); one admin account.
 
     python -m app.scripts.build_roster /data/jira_first_20000_requested_fields_synthetic.json
 """
@@ -50,7 +51,7 @@ def build(training_path: str) -> list[dict]:
         {
             "email": person,
             "name": _name(person),
-            "role": "lead" if person in leads.values() else "analyst",
+            "role": "analyst" if person in leads.values() else "specialist",
             "teams": teams_of[person],
             "capacity": settings.default_capacity,
         }

@@ -72,7 +72,8 @@ def get_calibration(db: Session = Depends(get_db)) -> Calibration:
 @router.get("/export/submission", response_model=list[dict[str, Any]])
 def export_submission(source: TicketSource = "challenge", db: Session = Depends(get_db)) -> list[dict[str, Any]]:
     """Challenge-format records with our decisions filled in.
-    Uses the analyst-approved/edited decision when there is one, else the latest AI proposal.
+    Uses the analyst-approved/edited decision when there is one, else the latest AI proposal; a
+    ticket that is done uses the specialist's actual resolution and closing comment.
     TODO: confirm the exact expected submission format with Swiss Life."""
     records = []
     for ticket in db.scalars(select(Ticket).where(Ticket.source == source).order_by(Ticket.number)):
@@ -84,6 +85,8 @@ def export_submission(source: TicketSource = "challenge", db: Session = Depends(
                 "impact", "priority", "resolution", "resolution_comment",
             )}
         record = dict(ticket.raw)
+        if decision and ticket.work_status == "done" and ticket.resolution_comment:
+            decision = {**decision, "resolution": ticket.resolution, "resolution_comment": ticket.resolution_comment}
         if decision:
             record.update({
                 "Work type": decision["work_type"],

@@ -3,33 +3,33 @@
 Two assignees are kept apart on purpose:
 - expert:      resolver of the matched playbook entry. This is what the challenge
                scores, so the proposal/export uses it.
-- recommended: best team member after balancing expertise and availability;
-               becomes the ticket's working assignee in the app.
+- recommended: best specialist in the team after balancing expertise and availability;
+               the analyst dispatches the ticket to them (or picks someone else).
 """
 
 from collections import Counter
 
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.models import Review, Ticket, User
+from app.models import Ticket, User
 from app.schemas import AssigneeCandidate, AssigneeSuggestion
 
-ACTIVE_STATES = ("proposed", "approved", "edited")
+ACTIVE_WORK = ("assigned", "in_progress", "waiting")  # with a specialist, not done yet
 
 
 def open_clause():
-    """SQL condition for 'still being worked on': triaged or approved, and not closed (status done)."""
-    return Ticket.triage_state.in_(ACTIVE_STATES) & or_(Ticket.status.is_(None), Ticket.status != "done")
+    """SQL condition for 'a specialist is working on it' (counts towards their workload)."""
+    return Ticket.work_status.in_(ACTIVE_WORK)
 
 
 def is_open(ticket: Ticket) -> bool:
-    return ticket.triage_state in ACTIVE_STATES and ticket.status != "done"
+    return ticket.work_status in ACTIVE_WORK
 
 
 W_EXPERTISE, W_AVAILABILITY = 0.6, 0.4
-EXPERTISE_SATURATION = 5  # approved tickets on a service for full learned expertise
+EXPERTISE_SATURATION = 5  # closed tickets on a service for full learned expertise
 
 
 def open_counts(db: Session, exclude_ticket=None) -> Counter:
@@ -39,18 +39,15 @@ def open_counts(db: Session, exclude_ticket=None) -> Counter:
     return Counter(db.scalars(stmt))
 
 
-def approved_on_service(db: Session, service: str) -> Counter:
-    """How many approved/edited tickets on this service each person worked (learned expertise)."""
-    rows = db.execute(
-        select(Ticket.assignee, Review.final)
-        .join(Review, Review.ticket_id == Ticket.id)
-        .where(Review.action.in_(("approve", "edit")), Ticket.assignee.is_not(None))
-    )
-    return Counter(assignee for assignee, final in rows if final and final.get("service") == service)
+def resolved_on_service(db: Session, service: str) -> Counter:
+    """How many tickets on this service each specialist closed (learned expertise)."""
+    return Counter(db.scalars(select(Ticket.resolved_by).where(
+        Ticket.work_status == "done", Ticket.ai_service == service, Ticket.resolved_by.is_not(None))))
 
 
 def team_members(db: Session, team: str) -> list[User]:
-    return [u for u in db.scalars(select(User).where(User.role != "admin")) if team in (u.teams or [])]
+    """The specialists of a team: the people who can be assigned work."""
+    return [u for u in db.scalars(select(User).where(User.role == "specialist")) if team in (u.teams or [])]
 
 
 def suggest(db: Session, team: str, service: str, expert: str | None, ticket_id=None) -> AssigneeSuggestion:
@@ -60,7 +57,7 @@ def suggest(db: Session, team: str, service: str, expert: str | None, ticket_id=
 
     counts = open_counts(db, exclude_ticket=ticket_id)
     team_open = sum(counts[m.email] for m in members)
-    learned = approved_on_service(db, service)
+    learned = resolved_on_service(db, service)
 
     candidates: list[AssigneeCandidate] = []
     for m in members:

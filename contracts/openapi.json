@@ -187,6 +187,7 @@
             "schema": {
               "enum": [
                 "mine",
+                "inbox",
                 "team",
                 "needs_review",
                 "escalations",
@@ -249,6 +250,29 @@
                 }
               ],
               "title": "State"
+            }
+          },
+          {
+            "name": "work_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "open",
+                    "assigned",
+                    "in_progress",
+                    "waiting",
+                    "done"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Work Status"
             }
           },
           {
@@ -329,16 +353,16 @@
             "description": "Search summary and description"
           },
           {
-            "name": "include_closed",
+            "name": "include_done",
             "in": "query",
             "required": false,
             "schema": {
               "type": "boolean",
-              "description": "Also list closed tickets (status done)",
+              "description": "Also list tickets that are done",
               "default": false,
-              "title": "Include Closed"
+              "title": "Include Done"
             },
-            "description": "Also list closed tickets (status done)"
+            "description": "Also list tickets that are done"
           },
           {
             "name": "limit",
@@ -592,6 +616,7 @@
           "tickets"
         ],
         "summary": "Assign Ticket",
+        "description": "Dispatch or reassign to a specialist (analysts and admins).",
         "operationId": "assign_ticket",
         "parameters": [
           {
@@ -611,6 +636,60 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AssignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tickets/{ticket_id}/work": {
+      "post": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "Update Work",
+        "description": "The specialist moves their ticket along. `resolve` closes it and adds it to the knowledge base.",
+        "operationId": "update_work",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkUpdate"
               }
             }
           }
@@ -852,6 +931,7 @@
           "triage"
         ],
         "summary": "Review Triage",
+        "description": "The analyst's decision on the AI proposal. Approve/edit dispatches the ticket to a specialist;\nreject sends it to Needs review. (The knowledge base learns later, when the work is done.)",
         "operationId": "review_triage",
         "parameters": [
           {
@@ -1156,7 +1236,7 @@
           "insights"
         ],
         "summary": "Export Submission",
-        "description": "Challenge-format records with our decisions filled in.\nUses the analyst-approved/edited decision when there is one, else the latest AI proposal.\nTODO: confirm the exact expected submission format with Swiss Life.",
+        "description": "Challenge-format records with our decisions filled in.\nUses the analyst-approved/edited decision when there is one, else the latest AI proposal; a\nticket that is done uses the specialist's actual resolution and closing comment.\nTODO: confirm the exact expected submission format with Swiss Life.",
         "operationId": "export_submission",
         "parameters": [
           {
@@ -1572,11 +1652,59 @@
   },
   "components": {
     "schemas": {
+      "ActivityEntry": {
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "by": {
+            "type": "string",
+            "title": "By"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "triaged | approved | edited | rejected | assigned | start | wait | resume | resolve"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "at",
+          "by",
+          "action"
+        ],
+        "title": "ActivityEntry"
+      },
       "AssignRequest": {
         "properties": {
           "assignee": {
             "type": "string",
             "title": "Assignee"
+          },
+          "by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "By",
+            "description": "Who is assigning (for the activity log)"
           }
         },
         "type": "object",
@@ -3235,9 +3363,9 @@
           "role": {
             "type": "string",
             "enum": [
+              "admin",
               "analyst",
-              "lead",
-              "admin"
+              "specialist"
             ],
             "title": "Role"
           },
@@ -4326,6 +4454,18 @@
                 "type": "null"
               }
             ]
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By",
+            "description": "Email of the analyst/admin creating it (for the activity log)"
           }
         },
         "type": "object",
@@ -4620,6 +4760,64 @@
             "description": "Fields confirmed by staff at creation",
             "default": []
           },
+          "work_status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "assigned",
+              "in_progress",
+              "waiting",
+              "done"
+            ],
+            "title": "Work Status",
+            "default": "open"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution",
+            "description": "Set by the specialist when the ticket is done"
+          },
+          "resolution_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Comment"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
           "latest_triage": {
             "anyOf": [
               {
@@ -4636,6 +4834,14 @@
             },
             "type": "array",
             "title": "Reviews"
+          },
+          "activity": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityEntry"
+            },
+            "type": "array",
+            "title": "Activity",
+            "default": []
           }
         },
         "type": "object",
@@ -4935,6 +5141,64 @@
             "title": "Manual Fields",
             "description": "Fields confirmed by staff at creation",
             "default": []
+          },
+          "work_status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "assigned",
+              "in_progress",
+              "waiting",
+              "done"
+            ],
+            "title": "Work Status",
+            "default": "open"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution",
+            "description": "Set by the specialist when the ticket is done"
+          },
+          "resolution_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Comment"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
           }
         },
         "type": "object",
@@ -5337,9 +5601,9 @@
           "role": {
             "type": "string",
             "enum": [
+              "admin",
               "analyst",
-              "lead",
-              "admin"
+              "specialist"
             ],
             "title": "Role"
           },
@@ -5405,6 +5669,74 @@
         ],
         "title": "ValidationError"
       },
+      "WorkUpdate": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "start",
+              "wait",
+              "resume",
+              "resolve"
+            ],
+            "title": "Action"
+          },
+          "by": {
+            "type": "string",
+            "title": "By",
+            "description": "Email of the person acting (the assigned specialist, or an admin)"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "What information is missing (wait)"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "done",
+                  "cancelled",
+                  "clarification",
+                  "cannot reproduce"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution",
+            "description": "Required for resolve"
+          },
+          "resolution_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Comment",
+            "description": "Required for resolve: root cause, action taken, verification"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "by"
+        ],
+        "title": "WorkUpdate",
+        "description": "A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done)."
+      },
       "Workload": {
         "properties": {
           "team": {
@@ -5452,9 +5784,9 @@
           "role": {
             "type": "string",
             "enum": [
+              "admin",
               "analyst",
-              "lead",
-              "admin"
+              "specialist"
             ],
             "title": "Role"
           },
@@ -5488,9 +5820,10 @@
             ],
             "title": "Oldest Open At"
           },
-          "approved_7d": {
+          "resolved_7d": {
             "type": "integer",
-            "title": "Approved 7D"
+            "title": "Resolved 7D",
+            "description": "Tickets this person closed in the last 7 days"
           }
         },
         "type": "object",
@@ -5503,7 +5836,7 @@
           "share",
           "high_open",
           "oldest_open_at",
-          "approved_7d"
+          "resolved_7d"
         ],
         "title": "WorkloadMember"
       }

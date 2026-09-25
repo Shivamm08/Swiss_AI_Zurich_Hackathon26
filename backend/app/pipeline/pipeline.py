@@ -130,16 +130,18 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
     yield event("confidence", "completed", f"Confidence {round(conf.overall * 100)}% → route: {route}",
                 {"confidence": conf.model_dump(), "route": route, "escalated": escalated, "sla_due_at": sla_due_at.isoformat()})
 
-    # assignment: expert for the export, recommendation for the working queue (staff choice wins)
+    # assignment: expert for the export, a suggested specialist for the analyst (staff choice wins).
+    # The AI never dispatches: an analyst approves every ticket before a specialist gets it.
     team = rules.team(ex.service)
     expert = rules.assignee(ex.service, reference)
     suggestion = assignment.suggest(db, team, ex.service, expert, ticket_id=ticket.id)
     if manual.get("assignee"):
         suggestion.recommended, suggestion.reason = manual["assignee"], "assignee set by staff"
-    working = suggestion.recommended if (route != "triage" or manual.get("assignee")) else None
+    suggested = suggestion.recommended if (route != "triage" or manual.get("assignee")) else None
+    waiting_for = f"{team} analyst" if route != "triage" else "Needs review (any analyst)"
     yield event("assign", "completed",
-                f"Expert {expert or 'none'} · working assignee {working or 'none (Needs review)'}",
-                {"suggestion": suggestion.model_dump(), "working_assignee": working})
+                f"Expert {expert or 'none'} · suggested specialist {suggested or 'none'} · waiting for the {waiting_for}",
+                {"suggestion": suggestion.model_dump(), "suggested_assignee": suggested, "waiting_for": waiting_for})
 
     # 5. draft, in the voice of the agent who will close it (staff comment wins)
     yield event("draft", "started", "Writing the resolution comment from the closest past solution")
@@ -177,19 +179,23 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
     result.changed_fields = _changed_fields(ticket, result)
     result.latency_ms = int((time.perf_counter() - started) * 1000)
 
-    # Copy onto the ticket so the queue can filter/sort without joins.
+    # Copy onto the ticket so the queue can filter/sort without joins. Work already dispatched
+    # or under way keeps its assignee; otherwise the ticket waits for an analyst.
     ticket.triage_state = "proposed"
-    ticket.assignee = working
+    if ticket.work_status == "open":
+        ticket.assignee = None
+    ticket.add_activity(chat.SYSTEM_SENDER, "triaged", f"{route} · {round(conf.overall * 100)}% · {llm.model_name(model)}")
     ticket.ai_service, ticket.ai_team, ticket.ai_priority = result.service, result.team, result.priority
     ticket.priority_score, ticket.confidence, ticket.route = result.priority_score, result.confidence, route
     ticket.escalated, ticket.sla_due_at = escalated, sla_due_at
 
     db.add(result)
     if escalated and not was_escalated:  # tell the owning team right away
-        who = chat.names(db).get(working or "", "nobody yet")
+        who = chat.names(db).get(suggested or "", "")
         chat.post(db, chat.team_channel(team), chat.SYSTEM_SENDER,
                   f"Escalation: #{ticket.number} \"{ticket.summary}\" is {priority} on {ex.service} (critical). "
-                  f"Assigned to {who}. Response due within {confidence.SLA_HOURS[priority]:g} h.",
+                  f"Needs an analyst decision now{f'; suggested specialist {who}' if who else ''}. "
+                  f"Response due within {confidence.SLA_HOURS[priority]:g} h.",
                   kind="escalation", ticket_id=ticket.id)
     db.commit()
     db.refresh(result)

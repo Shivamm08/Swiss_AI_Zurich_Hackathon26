@@ -1,4 +1,4 @@
--- ROLLBACK of the triage-copilot migrations (0002 + 0003_messaging) on the shared Supabase.
+-- ROLLBACK of the triage-copilot migrations (0002 + 0003_messaging + 0004_work_lifecycle) on the shared Supabase.
 -- Removes ONLY what our migrations added. Manan's objects are never touched:
 --   * his alembic_version table (stays at his revision),
 --   * his ticket columns: service_team, assignee, resolution_status, resolution_date, resolution_comments.
@@ -14,7 +14,14 @@ DROP INDEX IF EXISTS ix_tickets_ai_team;
 DROP INDEX IF EXISTS ix_tickets_assignee;        -- our index on his column; the column itself stays
 DROP INDEX IF EXISTS ix_tickets_priority_score;
 DROP INDEX IF EXISTS ix_tickets_route;
+DROP INDEX IF EXISTS ix_tickets_work_status;
 ALTER TABLE tickets
+  DROP COLUMN IF EXISTS work_status,
+  DROP COLUMN IF EXISTS resolution,
+  DROP COLUMN IF EXISTS resolution_comment,
+  DROP COLUMN IF EXISTS resolved_by,
+  DROP COLUMN IF EXISTS resolved_at,
+  DROP COLUMN IF EXISTS activity,
   DROP COLUMN IF EXISTS ai_service,
   DROP COLUMN IF EXISTS ai_team,
   DROP COLUMN IF EXISTS ai_priority,
