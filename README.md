@@ -51,6 +51,18 @@ On start the backend applies DB migrations and loads the knowledge base
    **Never commit it. This repo is public.**
 4. `make up`. The first start creates the tables and enables `pgvector`.
 
+**Schema changes on the shared database.** The backend runs `alembic upgrade head` on every
+start, so the first teammate who starts a newer version migrates Supabase for everyone.
+Migrations are additive (new tables, nullable or defaulted columns), so teammates on older
+code keep working. To apply one by hand instead, paste the matching file from
+`backend/migrations_sql/` into the Supabase SQL Editor; it also bumps `alembic_version`, so
+the automatic step then does nothing. Generate that file for a new migration with
+`docker compose run --rm --no-deps backend alembic upgrade <from>:<to> --sql`.
+
+On start the backend also loads `backend/app/kb/roster.yaml` into the `users` table. It's a
+generated roster (the data has no real team membership); edit the YAML to change teams,
+roles or capacity.
+
 ---
 
 ## Keeping frontend and backend compatible
