@@ -7,7 +7,7 @@ that the ticket screen shows as it happens.
 
 | Step | Name | Done by | Output |
 |---|---|---|---|
-| 1 | Retrieve precedent | search (code + embeddings) | 6 most relevant knowledge documents |
+| 1 | Retrieve precedent | search (code + embeddings) | Only the relevant knowledge documents: 0 to 6 |
 | 2 | Read the ticket | LLM, 3 votes | work type, service, 5 facts, resolution status, matching document |
 | 3 | Decide priority | code | impact, urgency, priority, 0–1 score, plain-language reasons |
 | 4 | Measure confidence | code | confidence parts, route, escalation, SLA deadline |
@@ -36,7 +36,12 @@ The ticket text is embedded once and searched in two ways:
 - **Keyword search (BM25):** rewards rare exact words like `MT536`, `SCD_POS_SYNC`, `SSI`.
 - **Meaning search (vectors):** finds "cash shortfall" when the document says "missing balance".
 
-The two rankings are merged, and the top 6 documents come back with a score (best = 1.00).
+The two rankings are merged, then **only relevant documents are kept**: at least 40% similar to the
+ticket and close to the best hit, up to 6. A clear case returns 1–3 documents; a brand-new kind of
+problem returns none. **No precedent** means: no matched fix, the `no_precedent` flag, confidence at
+most 30% (so the ticket goes to Needs review), no expert (the suggestion is balanced by workload),
+and a draft of **"No matching past fix. Suggested first steps: …"** instead of a resolution. Once a
+specialist closes that ticket, it becomes the precedent for the next one.
 Details: [Knowledge base and RAG](07-Knowledge-Base-and-RAG.md).
 
 ## Step 2: Read the ticket (3 votes)

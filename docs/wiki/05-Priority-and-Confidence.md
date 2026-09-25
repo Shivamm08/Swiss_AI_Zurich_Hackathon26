@@ -105,6 +105,12 @@ overall = min(votes, past-case match) × flag multipliers
 Taking the **weaker** part means that if either part is unsure, a human looks. In heuristic mode
 (no model), overall is fixed at **20%**.
 
+### No precedent
+
+When no past fix matches, the flag `no_precedent` is added (informational: the past-case part of
+confidence is already capped at 30%, so the ticket lands in Needs review). The draft becomes
+"No matching past fix. Suggested first steps: …", never a resolution.
+
 ### Staff disagreement
 
 Values staff set on the New-ticket form are kept, but they are **checked**:

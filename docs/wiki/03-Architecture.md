@@ -42,7 +42,7 @@ sequenceDiagram
   participant LLM as OpenAI
   UI->>API: GET /api/tickets/{id}/triage/stream?model=…
   API->>LLM: embed ticket text
-  API->>KB: keyword + vector search (top 6)
+  API->>KB: keyword + vector search (only relevant docs, up to 6)
   API-->>UI: event: retrieve completed
   par 3 votes in parallel
     API->>LLM: extract facts (vote 1)

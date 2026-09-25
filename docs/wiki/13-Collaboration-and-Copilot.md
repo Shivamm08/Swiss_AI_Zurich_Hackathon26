@@ -10,10 +10,12 @@ in the top bar, **Ask Copilot** in the sidebar, or **⌘K / Ctrl+K**. Close it w
 
 | Feature | How it works |
 |---|---|
-| **Grounded answers** | For each question it retrieves the 5 most relevant knowledge documents (service cards, playbook, learned tickets) and answers only from them |
-| **Citations** | Answers cite sources as `[ref_id]`; each shows as a chip under the answer. Click a chip to see the source |
+| **Grounded answers** | For each question it retrieves only the **relevant** knowledge (at least 40% similar, up to 5 documents) and answers only from it |
+| **Citations** | Answers cite sources as `[ref_id]`; each shows as a chip with its similarity under the answer. A cited id that wasn't retrieved is shown struck through in red, never as a source |
+| **Scope filter** | Off-topic questions (weather, recipes, writing code…) are refused with a fixed reply; nothing is generated |
+| **No matching knowledge** | On-topic but not in the knowledge base: the Copilot says so and suggests the owning team. It may explain how the app works from its built-in app guide, but never guesses a fix |
 | **Streaming** | Words appear as they're generated, with a typing indicator and a caret. **Stop** interrupts |
-| **Conversation memory** | The last 10 messages are sent with each question, so follow-ups work ("and who usually fixes that?") |
+| **Conversation memory** | The last 10 messages are sent with each question. A follow-up (short, or referring back with "it/that") is searched together with the previous question; a new topic is searched on its own, so old sources can't leak in |
 | **Ticket context** | On a ticket page the ticket is attached automatically ("#21 in context"); remove it with ×. Suggestions change to ticket-specific ones |
 | **Model** | Uses the model picked in the top bar |
 
@@ -21,7 +23,21 @@ API: `POST /api/assistant/stream` with `{messages: [{role, content}], ticket_id?
 server-sent events: one `sources` event (the citations), many `token` events, then `done` (or `error`).
 Code: `backend/app/api/knowledge.py` (`stream_copilot`), `frontend/src/copilot/`, `frontend/src/api/copilot.ts`.
 
-Without an AI model the Copilot lists the most relevant sources instead of answering.
+Without an AI model the Copilot lists the relevant sources instead of answering (or says none match).
+
+### How an answer is fetched
+
+```mermaid
+flowchart LR
+  Q[Question] --> R[Search the knowledge base<br/>keep only ≥ 40% similar]
+  R -->|sources found<br/>or a ticket is open| A[Answer from them,<br/>cite ref_ids]
+  R -->|nothing relevant| S{Scope check<br/>small AI call}
+  S -->|off-topic| X[Fixed refusal,<br/>nothing generated]
+  S -->|on-topic| N[Say it's not in the<br/>knowledge base; app guide only]
+```
+
+Each answer is labelled with what it rests on (`grounding` in the stream): sources, the open
+ticket, no matching knowledge, or off-topic. Code: `backend/app/pipeline/copilot.py`.
 
 ## Messages
 
