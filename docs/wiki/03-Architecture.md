@@ -73,15 +73,18 @@ backend/
     models.py          database tables
     ingest.py          Jira record / email → ticket; ticket → text for the AI
     chat.py            messaging helpers (channels, posting)
-    api/               routes: tickets, triage, knowledge (+ Copilot), insights (+ Impact), people, chat, system
+    api/               routes: tickets (+ work, reopen, escalations), triage, knowledge (+ Copilot), insights
+                       (+ Impact, KPIs, challenge statistics), people, chat, system; deps.py = who may do what
     pipeline/
       pipeline.py      runs the steps in order, yields live events
-      retrieve.py      hybrid search (keywords + embeddings)
+      retrieve.py      hybrid search (keywords + embeddings), only relevant documents (≥ 40% similar)
       classify.py      the LLM extraction with 3 votes
       rubric.py        facts → impact, urgency, priority, 0–1 score
       confidence.py    confidence, routing, SLA
       assignment.py    expert vs recommended assignee, workload
-      draft.py         resolution comment
+      draft.py         resolution comment (or "first steps" when no past fix matches)
+      copilot.py       Copilot grounding: relevant sources, scope filter, app guide
+      intake_check.py  rejects New-ticket text that isn't a ticket (rules + a small AI check)
       rules.py         team lookup, expert from matched document
       llm.py           OpenAI / Azure / Apertus client, model choice
     kb/
@@ -96,13 +99,15 @@ backend/
   tests/               pytest
 frontend/src/
   api/                 generated types, typed client, hooks, live stream reader
-  components/          layout, UI primitives, triage widgets, walkthrough, charts, persona switcher, compose dialog
+  components/          layout, UI primitives, triage widgets (+ AI/Rule/Lookup tags with (i)), walkthrough, charts,
+                       persona switcher, compose dialog; fields.ts = how every field is produced
   copilot/             the Copilot chat panel and its state
   pages/               one file per screen
   viewas/, model/      "View as" and model-picker state
 contracts/openapi.json the API contract (generated)
 data/                  training data + teammates' data scripts; data/raw/ is git-ignored
 docs/wiki/             this wiki
+docs/images/           screenshots used by the README and the screen tour
 ```
 
 ## The contract between frontend and backend

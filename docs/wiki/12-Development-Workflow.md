@@ -39,6 +39,9 @@ make test         # backend pytest + frontend lint and build
 | `test_ingest.py` | Jira record → ticket mapping |
 | `test_chat.py` | Channel ids and validation |
 | `test_contract.py` | `contracts/openapi.json` is up to date |
+| `test_work.py` | Work transitions, hand back, permission rules per role, one Team Lead / Analyst per department |
+| `test_retrieval.py` | Relevance filter (clear match, broad match, new or off-topic problem), no-precedent draft, Copilot follow-up detection |
+| `test_intake_kpis.py` | Intake check (gibberish rejected, vague accepted), desk KPI definitions |
 
 ## Database changes
 
