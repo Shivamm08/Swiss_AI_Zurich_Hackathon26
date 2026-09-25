@@ -119,7 +119,11 @@ export interface paths {
         /** List Tickets */
         get: operations["list_tickets"];
         put?: never;
-        /** Create Ticket */
+        /**
+         * Create Ticket
+         * @description New-ticket form: Team Leads / Analysts and admins only. Jira import and email are the
+         *     automatic intake channels.
+         */
         post: operations["create_ticket"];
         delete?: never;
         options?: never;
@@ -190,7 +194,7 @@ export interface paths {
         put?: never;
         /**
          * Assign Ticket
-         * @description Dispatch or reassign to a specialist (analysts and admins).
+         * @description Dispatch or reassign to a specialist: the department's Team Lead / Analyst or an admin.
          */
         post: operations["assign_ticket"];
         delete?: never;
@@ -210,9 +214,30 @@ export interface paths {
         put?: never;
         /**
          * Update Work
-         * @description The specialist moves their ticket along. `resolve` closes it and adds it to the knowledge base.
+         * @description The specialist moves their ticket along. `resolve` closes it and adds it to the knowledge base;
+         *     `handback` returns it to the department's analyst with a reason.
          */
         post: operations["update_work"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tickets/{ticket_id}/deescalate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deescalate
+         * @description The escalation is handled: the department's Team Lead / Analyst or an admin clears it.
+         */
+        post: operations["deescalate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -601,7 +626,7 @@ export interface components {
             by: string;
             /**
              * Action
-             * @description triaged | approved | edited | rejected | assigned | start | wait | resume | resolve
+             * @description triaged | approved | edited | rejected | assigned | start | wait | resume | resolve | handback | escalated | deescalated
              */
             action: string;
             /** Note */
@@ -609,13 +634,16 @@ export interface components {
         };
         /** AssignRequest */
         AssignRequest: {
-            /** Assignee */
+            /**
+             * Assignee
+             * @description A specialist in the ticket's department
+             */
             assignee: string;
             /**
              * By
-             * @description Who is assigning (for the activity log)
+             * @description The Team Lead / Analyst or admin doing it
              */
-            by?: string | null;
+            by: string;
         };
         /** AssigneeCandidate */
         AssigneeCandidate: {
@@ -966,7 +994,7 @@ export interface components {
              * @default escalate
              * @enum {string}
              */
-            purpose: "escalate" | "handoff" | "question";
+            purpose: "escalate" | "question";
             /** Model */
             model?: string | null;
         };
@@ -1575,9 +1603,9 @@ export interface components {
             manual?: components["schemas"]["ManualFields"] | null;
             /**
              * Created By
-             * @description Email of the analyst/admin creating it (for the activity log)
+             * @description Email of the Team Lead / Analyst or admin creating it (specialists can't)
              */
-            created_by?: string | null;
+            created_by: string;
         };
         /** TicketDetail */
         TicketDetail: {
@@ -1698,6 +1726,13 @@ export interface components {
              * @default []
              */
             activity: components["schemas"]["ActivityEntry"][];
+        };
+        /** TicketNote */
+        TicketNote: {
+            /** By */
+            by: string;
+            /** Note */
+            note?: string | null;
         };
         /** TicketOut */
         TicketOut: {
@@ -1993,14 +2028,15 @@ export interface components {
         };
         /**
          * WorkUpdate
-         * @description A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done).
+         * @description A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done), or
+         *     handback: give it back to the department's analyst to reassign (note required).
          */
         WorkUpdate: {
             /**
              * Action
              * @enum {string}
              */
-            action: "start" | "wait" | "resume" | "resolve";
+            action: "start" | "wait" | "resume" | "resolve" | "handback";
             /**
              * By
              * @description Email of the person acting (the assigned specialist, or an admin)
@@ -2008,7 +2044,7 @@ export interface components {
             by: string;
             /**
              * Note
-             * @description What information is missing (wait)
+             * @description What information is missing (wait), or why you're handing it back (handback)
              */
             note?: string | null;
             /**
@@ -2401,7 +2437,10 @@ export interface operations {
     };
     delete_ticket: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description Admin email */
+                by: string;
+            };
             header?: never;
             path: {
                 ticket_id: string;
@@ -2475,6 +2514,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["WorkUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deescalate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketNote"];
             };
         };
         responses: {

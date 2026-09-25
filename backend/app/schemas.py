@@ -23,7 +23,7 @@ Route = Literal["auto", "review", "triage"]
 Role = Literal["admin", "analyst", "specialist"]
 # open: waiting for an analyst · assigned: dispatched to a specialist · in_progress · waiting (for information) · done
 WorkStatus = Literal["open", "assigned", "in_progress", "waiting", "done"]
-WorkAction = Literal["start", "wait", "resume", "resolve"]
+WorkAction = Literal["start", "wait", "resume", "resolve", "handback"]
 # inbox: the analyst's department, waiting for their decision · needs_review: untriaged or low confidence (any analyst)
 TicketView = Literal["mine", "inbox", "team", "needs_review", "escalations", "all"]
 
@@ -143,7 +143,7 @@ class TicketCreate(TicketBase):
     description: str = Field(min_length=3)
     source: TicketSource = "manual"
     manual: ManualFields | None = None
-    created_by: str | None = Field(None, description="Email of the analyst/admin creating it (for the activity log)")
+    created_by: str = Field(description="Email of the Team Lead / Analyst or admin creating it (specialists can't)")
 
 
 class EmailIngest(BaseModel):
@@ -328,8 +328,13 @@ class ReviewOut(ORM):
 
 
 class AssignRequest(BaseModel):
-    assignee: str
-    by: str | None = Field(None, description="Who is assigning (for the activity log)")
+    assignee: str = Field(description="A specialist in the ticket's department")
+    by: str = Field(description="The Team Lead / Analyst or admin doing it")
+
+
+class TicketNote(BaseModel):
+    by: str
+    note: str | None = None
 
 
 class RubricPreviewRequest(BaseModel):
@@ -349,16 +354,18 @@ class RubricPreview(BaseModel):
 class ActivityEntry(BaseModel):
     at: datetime
     by: str
-    action: str = Field(description="triaged | approved | edited | rejected | assigned | start | wait | resume | resolve")
+    action: str = Field(description="triaged | approved | edited | rejected | assigned | start | wait | resume | resolve | "
+                                     "handback | escalated | deescalated")
     note: str | None = None
 
 
 class WorkUpdate(BaseModel):
-    """A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done)."""
+    """A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done), or
+    handback: give it back to the department's analyst to reassign (note required)."""
 
     action: WorkAction
     by: str = Field(description="Email of the person acting (the assigned specialist, or an admin)")
-    note: str | None = Field(None, description="What information is missing (wait)")
+    note: str | None = Field(None, description="What information is missing (wait), or why you're handing it back (handback)")
     resolution: Resolution | None = Field(None, description="Required for resolve")
     resolution_comment: str | None = Field(None, description="Required for resolve: root cause, action taken, verification")
 
@@ -480,7 +487,8 @@ class SettingsOut(BaseModel):
 
 ChannelKind = Literal["team", "dm"]
 MessageKind = Literal["message", "system", "escalation", "handoff"]
-DraftPurpose = Literal["escalate", "handoff", "question"]
+# Hand-offs are not a message any more: a specialist hands a ticket back (POST /tickets/{id}/work).
+DraftPurpose = Literal["escalate", "question"]
 
 
 class MessageOut(ORM):

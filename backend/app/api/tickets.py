@@ -6,8 +6,10 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from sqlalchemy import func, nulls_last, or_, select
 from sqlalchemy.orm import Session
 
+from app import chat
+from app.api.deps import get_actor, require_creator, require_manager
 from app.db import get_db
-from app.domain import priority_for
+from app.domain import priority_for, team_for
 from app.ingest import jira_records, ticket_from_email, ticket_from_jira
 from app.kb.learn import learn_from_resolution
 from app.models import Ticket, User
@@ -18,6 +20,7 @@ from app.schemas import (
     ImportResult,
     ReviewOut,
     TicketCreate,
+    TicketNote,
     TicketDetail,
     TicketOut,
     TicketPage,
@@ -37,6 +40,16 @@ def get_ticket_or_404(db: Session, ticket_id: uuid.UUID) -> Ticket:
     if ticket is None:
         raise HTTPException(status_code=404, detail="Ticket not found")
     return ticket
+
+
+def require_specialist(db: Session, email: str, team: str | None) -> User:
+    """Work only goes to specialists, and only within the ticket's department."""
+    user = db.get(User, email)
+    if user is None or user.role != "specialist":
+        raise HTTPException(status_code=400, detail=f"'{email}' is not a specialist. Tickets are dispatched to specialists only.")
+    if team and team not in (user.teams or []):
+        raise HTTPException(status_code=400, detail=f"{user.name} isn't in {team}. Change the service first to move the ticket to another department.")
+    return user
 
 
 @router.get("", response_model=TicketPage)
@@ -66,8 +79,9 @@ def list_tickets(
         (Ticket.triage_state == "new") | (Ticket.route == "triage") | (Ticket.triage_state == "rejected"))
     if view == "mine":
         stmt = stmt.where(Ticket.assignee == as_user, Ticket.work_status != "open")
-    elif view == "inbox":  # AI proposals for the analyst's department, waiting for their decision
-        stmt = stmt.where(Ticket.work_status == "open", Ticket.triage_state == "proposed", Ticket.route != "triage")
+    elif view == "inbox":  # the analyst's department: new AI proposals and tickets handed back to them
+        stmt = stmt.where(Ticket.work_status == "open", Ticket.triage_state.in_(("proposed", "approved", "edited")),
+                          Ticket.route != "triage")
         if not everyone:
             stmt = stmt.where(Ticket.ai_team.in_(my_teams))
     elif view == "team":
@@ -76,7 +90,7 @@ def list_tickets(
         stmt = stmt.where(needs_review)
     elif view == "escalations":
         stmt = stmt.where(Ticket.escalated.is_(True))
-        if not everyone and user.role == "analyst":
+        if not everyone:  # an analyst's or specialist's own department
             stmt = stmt.where(Ticket.ai_team.in_(my_teams))
     if work_status:
         stmt = stmt.where(Ticket.work_status == work_status)
@@ -103,9 +117,13 @@ def list_tickets(
 
 @router.post("", response_model=TicketOut, status_code=201)
 def create_ticket(body: TicketCreate, db: Session = Depends(get_db)) -> Ticket:
+    """New-ticket form: Team Leads / Analysts and admins only. Jira import and email are the
+    automatic intake channels."""
+    creator = get_actor(db, body.created_by)
+    require_creator(creator)
     manual = body.manual.model_dump(exclude_none=True) if body.manual else {}
-    if manual.get("assignee") and db.get(User, manual["assignee"]) is None:
-        raise HTTPException(status_code=400, detail=f"Unknown assignee '{manual['assignee']}'. See GET /api/users.")
+    if manual.get("assignee"):
+        require_specialist(db, manual["assignee"], team_for(manual["service"]) if manual.get("service") else None)
     fields = body.model_dump(exclude={"manual", "created_by"})
     # Staff-confirmed values also become the ticket's intake values, so the UI shows them as received.
     fields.update({k: v for k, v in {
@@ -119,7 +137,7 @@ def create_ticket(body: TicketCreate, db: Session = Depends(get_db)) -> Ticket:
     ticket = Ticket(**fields, raw={"manual": manual} if manual else {})
     if manual.get("assignee"):  # only analysts and admins create tickets: choosing the specialist is their dispatch
         ticket.assignee, ticket.work_status = manual["assignee"], "assigned"
-        ticket.add_activity(body.created_by or "staff", "assigned", manual["assignee"])
+        ticket.add_activity(creator.email, "assigned", manual["assignee"])
     db.add(ticket)
     db.commit()
     db.refresh(ticket)
@@ -170,18 +188,18 @@ def get_ticket(ticket_id: uuid.UUID, db: Session = Depends(get_db)) -> TicketDet
 
 @router.post("/{ticket_id}/assign", response_model=TicketOut)
 def assign_ticket(ticket_id: uuid.UUID, body: AssignRequest, db: Session = Depends(get_db)) -> Ticket:
-    """Dispatch or reassign to a specialist (analysts and admins)."""
+    """Dispatch or reassign to a specialist: the department's Team Lead / Analyst or an admin."""
     ticket = get_ticket_or_404(db, ticket_id)
-    if db.get(User, body.assignee) is None:
-        raise HTTPException(status_code=400, detail=f"Unknown user '{body.assignee}'. See GET /api/users.")
+    require_manager(get_actor(db, body.by), ticket, "dispatch or reassign this ticket")
     if ticket.work_status == "done":
         raise HTTPException(status_code=409, detail="Ticket is already done")
+    require_specialist(db, body.assignee, ticket.ai_team)
     ticket.assignee = body.assignee
     if ticket.work_status == "open":  # a human dispatched it: it leaves the analysts' queues
         ticket.work_status = "assigned"
         if ticket.route == "triage":
             ticket.route = "review"
-    ticket.add_activity(body.by or "analyst", "assigned", body.assignee)
+    ticket.add_activity(body.by, "assigned", body.assignee)
     db.commit()
     db.refresh(ticket)
     return ticket
@@ -193,16 +211,16 @@ TRANSITIONS: dict[str, tuple[tuple[str, ...], str]] = {
     "wait": (("assigned", "in_progress"), "waiting"),
     "resume": (("waiting",), "in_progress"),
     "resolve": (("assigned", "in_progress", "waiting"), "done"),
+    "handback": (("assigned", "in_progress", "waiting"), "open"),  # back to the analyst to reassign
 }
 
 
 @router.post("/{ticket_id}/work", response_model=TicketOut)
 def update_work(ticket_id: uuid.UUID, body: WorkUpdate, db: Session = Depends(get_db)) -> Ticket:
-    """The specialist moves their ticket along. `resolve` closes it and adds it to the knowledge base."""
+    """The specialist moves their ticket along. `resolve` closes it and adds it to the knowledge base;
+    `handback` returns it to the department's analyst with a reason."""
     ticket = get_ticket_or_404(db, ticket_id)
-    actor = db.get(User, body.by)
-    if actor is None:
-        raise HTTPException(status_code=400, detail=f"Unknown user '{body.by}'")
+    actor = get_actor(db, body.by)
     if actor.email != ticket.assignee and actor.role != "admin":
         raise HTTPException(status_code=403, detail="Only the assigned specialist (or an admin) can update the work")
     allowed, target = TRANSITIONS[body.action]
@@ -215,6 +233,12 @@ def update_work(ticket_id: uuid.UUID, body: WorkUpdate, db: Session = Depends(ge
         ticket.resolution, ticket.resolution_comment = body.resolution, body.resolution_comment.strip()
         ticket.resolved_by, ticket.resolved_at = ticket.assignee, datetime.now(timezone.utc)
         note = body.resolution
+    if body.action == "handback":
+        if not (body.note or "").strip():
+            raise HTTPException(status_code=422, detail="Say why you're handing it back, so the analyst can reassign it")
+        chat.post(db, chat.team_channel(ticket.ai_team), actor.email,
+                  f"Handing #{ticket.number} back for reassignment: {body.note.strip()}", kind="handoff", ticket_id=ticket.id)
+        ticket.assignee = None
     ticket.work_status = target
     ticket.add_activity(body.by, body.action, note)
     if target == "done" and ticket.triage_results:
@@ -224,7 +248,23 @@ def update_work(ticket_id: uuid.UUID, body: WorkUpdate, db: Session = Depends(ge
     return ticket
 
 
+@router.post("/{ticket_id}/deescalate", response_model=TicketOut)
+def deescalate(ticket_id: uuid.UUID, body: TicketNote, db: Session = Depends(get_db)) -> Ticket:
+    """The escalation is handled: the department's Team Lead / Analyst or an admin clears it."""
+    ticket = get_ticket_or_404(db, ticket_id)
+    require_manager(get_actor(db, body.by), ticket, "de-escalate this ticket")
+    if not ticket.escalated:
+        raise HTTPException(status_code=409, detail="Ticket is not escalated")
+    ticket.escalated = False
+    ticket.add_activity(body.by, "deescalated", body.note)
+    db.commit()
+    db.refresh(ticket)
+    return ticket
+
+
 @router.delete("/{ticket_id}", status_code=204)
-def delete_ticket(ticket_id: uuid.UUID, db: Session = Depends(get_db)) -> None:
+def delete_ticket(ticket_id: uuid.UUID, by: str = Query(..., description="Admin email"), db: Session = Depends(get_db)) -> None:
+    if get_actor(db, by).role != "admin":
+        raise HTTPException(status_code=403, detail="Only an admin can delete tickets")
     db.delete(get_ticket_or_404(db, ticket_id))
     db.commit()

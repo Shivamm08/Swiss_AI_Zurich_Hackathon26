@@ -120,9 +120,9 @@ export const useImportTickets = () => {
 export const useDeleteTicket = () => {
   const invalidate = useInvalidateTickets()
   return useMutation({
-    mutationFn: async (ticketId: string) => {
+    mutationFn: async ({ ticketId, by }: { ticketId: string; by: string }) => {
       const { response, error } = await api.DELETE('/api/tickets/{ticket_id}', {
-        params: { path: { ticket_id: ticketId } },
+        params: { path: { ticket_id: ticketId }, query: { by } },  // admin only
       })
       if (!response.ok) throw new ApiError(response.status, error)
     },
@@ -170,7 +170,17 @@ export const useAssignTicket = () => {
   })
 }
 
-/** A specialist moving their ticket along: start, wait, resume, resolve (done). */
+/** The department's analyst (or admin) clears an escalation once it's handled. */
+export const useDeescalate = () => {
+  const invalidate = useInvalidateTickets()
+  return useMutation({
+    mutationFn: ({ ticketId, by, note }: { ticketId: string; by: string; note?: string }) =>
+      unwrap(api.POST('/api/tickets/{ticket_id}/deescalate', { params: { path: { ticket_id: ticketId } }, body: { by, note } })),
+    onSuccess: invalidate,
+  })
+}
+
+/** A specialist moving their ticket along: start, wait, resume, resolve (done), hand back. */
 export const useWorkUpdate = () => {
   const invalidate = useInvalidateTickets()
   return useMutation({

@@ -416,6 +416,7 @@
           "tickets"
         ],
         "summary": "Create Ticket",
+        "description": "New-ticket form: Team Leads / Analysts and admins only. Jira import and email are the\nautomatic intake channels.",
         "operationId": "create_ticket",
         "requestBody": {
           "required": true,
@@ -591,6 +592,17 @@
               "format": "uuid",
               "title": "Ticket Id"
             }
+          },
+          {
+            "name": "by",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Admin email",
+              "title": "By"
+            },
+            "description": "Admin email"
           }
         ],
         "responses": {
@@ -616,7 +628,7 @@
           "tickets"
         ],
         "summary": "Assign Ticket",
-        "description": "Dispatch or reassign to a specialist (analysts and admins).",
+        "description": "Dispatch or reassign to a specialist: the department's Team Lead / Analyst or an admin.",
         "operationId": "assign_ticket",
         "parameters": [
           {
@@ -670,7 +682,7 @@
           "tickets"
         ],
         "summary": "Update Work",
-        "description": "The specialist moves their ticket along. `resolve` closes it and adds it to the knowledge base.",
+        "description": "The specialist moves their ticket along. `resolve` closes it and adds it to the knowledge base;\n`handback` returns it to the department's analyst with a reason.",
         "operationId": "update_work",
         "parameters": [
           {
@@ -690,6 +702,60 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/WorkUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tickets/{ticket_id}/deescalate": {
+      "post": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "Deescalate",
+        "description": "The escalation is handled: the department's Team Lead / Analyst or an admin clears it.",
+        "operationId": "deescalate",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketNote"
               }
             }
           }
@@ -1666,7 +1732,7 @@
           "action": {
             "type": "string",
             "title": "Action",
-            "description": "triaged | approved | edited | rejected | assigned | start | wait | resume | resolve"
+            "description": "triaged | approved | edited | rejected | assigned | start | wait | resume | resolve | handback | escalated | deescalated"
           },
           "note": {
             "anyOf": [
@@ -1692,24 +1758,19 @@
         "properties": {
           "assignee": {
             "type": "string",
-            "title": "Assignee"
+            "title": "Assignee",
+            "description": "A specialist in the ticket's department"
           },
           "by": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "string",
             "title": "By",
-            "description": "Who is assigning (for the activity log)"
+            "description": "The Team Lead / Analyst or admin doing it"
           }
         },
         "type": "object",
         "required": [
-          "assignee"
+          "assignee",
+          "by"
         ],
         "title": "AssignRequest"
       },
@@ -2694,7 +2755,6 @@
             "type": "string",
             "enum": [
               "escalate",
-              "handoff",
               "question"
             ],
             "title": "Purpose",
@@ -4456,22 +4516,16 @@
             ]
           },
           "created_by": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "string",
             "title": "Created By",
-            "description": "Email of the analyst/admin creating it (for the activity log)"
+            "description": "Email of the Team Lead / Analyst or admin creating it (specialists can't)"
           }
         },
         "type": "object",
         "required": [
           "summary",
-          "description"
+          "description",
+          "created_by"
         ],
         "title": "TicketCreate",
         "description": "New-ticket form: summary, description and reporter are required; anything in `manual`\nis confirmed by staff, everything else is derived by the pipeline."
@@ -4857,6 +4911,30 @@
           "reviews"
         ],
         "title": "TicketDetail"
+      },
+      "TicketNote": {
+        "properties": {
+          "by": {
+            "type": "string",
+            "title": "By"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "by"
+        ],
+        "title": "TicketNote"
       },
       "TicketOut": {
         "properties": {
@@ -5677,7 +5755,8 @@
               "start",
               "wait",
               "resume",
-              "resolve"
+              "resolve",
+              "handback"
             ],
             "title": "Action"
           },
@@ -5696,7 +5775,7 @@
               }
             ],
             "title": "Note",
-            "description": "What information is missing (wait)"
+            "description": "What information is missing (wait), or why you're handing it back (handback)"
           },
           "resolution": {
             "anyOf": [
@@ -5735,7 +5814,7 @@
           "by"
         ],
         "title": "WorkUpdate",
-        "description": "A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done)."
+        "description": "A specialist moving their ticket along: start -> (wait -> resume) -> resolve (done), or\nhandback: give it back to the department's analyst to reassign (note required)."
       },
       "Workload": {
         "properties": {

@@ -291,8 +291,9 @@ def _seed_messages(db: Session, rng: random.Random, per_team: dict[str, list[Tic
         script = [
             (26, 8, lead, f"Morning team. New triage flow is live: the AI proposes, I check and dispatch, you resolve. Please mark tickets done with a proper closing note, that's what the Copilot learns from.", "message", None),
             (21, 10, a, f"Vendor maintenance on {rng.choice(services)} tonight 22:00-23:00 CET. Expect alerts; they will be auto-routed to us.", "message", None),
-            (17, 14, b, f"@{first.get(a, 'team')} could you take #{t1.number if t1 else '—'}? I'm at capacity until the change window is done.", "handoff", t1),
-            (17, 14, a, "On it. The suggested fix matches what we did last month.", "message", None),
+            (17, 14, b, f"Handing #{t1.number if t1 else '—'} back for reassignment: at capacity until the change window is done.", "handoff", t1),
+            (17, 14, lead, f"Reassigned to {first.get(a, 'a colleague')}. Thanks for flagging early.", "message", None),
+            (17, 15, a, "On it. The suggested fix matches what we did last month.", "message", None),
             (11, 9, lead, f"Nice work this week: fewer tickets bounced to other teams. Keep writing specific closing notes, the AI learns from every ticket you close.", "message", None),
             (6, 16, rng.choice(others), rng.choice(fyis).format(n=t2.number if t2 else '—'), "message", t2),
             (2, 11, lead, f"Dispatched #{t3.number if t3 else '—'} to the team, it's on the SLA clock. Shout if you're at capacity.", "message", t3),
@@ -310,7 +311,7 @@ def _seed_messages(db: Session, rng: random.Random, per_team: dict[str, list[Tic
     for sender, receiver, team in pairs:
         ch = chat.dm_channel(sender, receiver)
         tk = rng.choice(per_team[team]) if per_team[team] else None
-        add(ch, sender, f"Hi {first.get(receiver, '')}, can you own #{tk.number if tk else '—'} today? Priority went up after triage.", at(3, 9), "handoff", tk)
+        add(ch, sender, f"Hi {first.get(receiver, '')}, I've dispatched #{tk.number if tk else '—'} to you: priority went up after triage.", at(3, 9), "message", tk)
         add(ch, receiver, "Yes, picking it up. The suggested resolution looks right, I'll mark it done once it's verified.", at(3, 9))
         add(ch, sender, "Great, thanks. Ping me if you need the vendor contact.", at(3, 10))
     admin = "admin@intcom.com"
