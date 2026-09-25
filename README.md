@@ -199,6 +199,9 @@ as a Team Lead / Analyst, a Specialist or the Admin.
 | http://localhost:5173 | The app |
 | http://localhost:8000/docs | API documentation (try every endpoint) |
 
+**Deploying?** Backend on Render (`render.yaml`, root directory `backend`), frontend on Vercel (root directory
+`frontend`, `VITE_API_URL` = the Render URL): see [Deploying](docs/wiki/02-Setup-and-Running.md#deploying-vercel--render).
+
 No OpenAI key? The app still runs in **heuristic mode**: it keeps the intake values and marks
 everything low-confidence. Stop the app with `Ctrl+C` or `make down`.
 

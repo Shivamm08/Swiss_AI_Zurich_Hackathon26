@@ -39,7 +39,9 @@ export const useHealth = () =>
   useQuery({
     queryKey: queryKeys.health,
     queryFn: () => unwrap(api.GET('/api/health')),
-    refetchInterval: 30_000,
+    retry: false,
+    // Every 3 s while the backend is unreachable (e.g. still starting), every 30 s once it's up.
+    refetchInterval: (query) => (query.state.status === 'error' ? 3_000 : 30_000),
   })
 
 export const useReference = () =>

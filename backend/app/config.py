@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     # Supabase: use the "Session pooler" URI from Project Settings -> Database.
     # postgres:// and postgresql:// URIs are accepted and converted below.
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:54322/triage"
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:5173"  # comma-separated exact origins
+    cors_origin_regex: str | None = None  # e.g. https://.*\.vercel\.app for every Vercel preview URL
 
     # LLM provider: Azure OpenAI wins if configured, otherwise OpenAI, otherwise heuristic mode.
     openai_api_key: str | None = None

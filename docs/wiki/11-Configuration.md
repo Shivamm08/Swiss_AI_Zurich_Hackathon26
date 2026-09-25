@@ -46,7 +46,15 @@ SLA hours are in code (`pipeline/confidence.py`, `SLA_HOURS`).
 
 | Variable | Default | Notes |
 |---|---|---|
-| `CORS_ORIGINS` | `http://localhost:5173` | Only needed if the frontend runs somewhere other than the Vite proxy |
+| `CORS_ORIGINS` | `http://localhost:5173` | Browser origins that may call the API directly (comma-separated). Needed when the frontend is deployed elsewhere, e.g. your Vercel URL |
+| `CORS_ORIGIN_REGEX` | – | A pattern of allowed origins, e.g. `https://.*\.vercel\.app` for every Vercel preview deployment |
+| `PORT` | `8000` | The port the backend listens on. Hosts like Render set it themselves |
+
+### Frontend (build time)
+
+| Variable | Where | What it does |
+|---|---|---|
+| `VITE_API_URL` | Vercel → Environment Variables (deployed); `frontend/.env.production` for local production builds (git-ignored) | The deployed backend's URL, e.g. `https://triage-copilot-api.onrender.com`. Empty = same origin. Public: it ends up in the JavaScript bundle, so never put a secret in a frontend env file. Local development needs none: Vite proxies `/api` |
 
 ## Files that act as configuration
 

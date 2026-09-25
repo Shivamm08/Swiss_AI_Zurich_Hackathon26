@@ -86,12 +86,14 @@ def sync_roster(db: Session) -> int:
     if not path.exists():
         return 0
     people = yaml.safe_load(path.read_text()) or []
+    existing = {u.email: u for u in db.scalars(select(User))}  # one query, not one per person (remote DB)
     for person in people:
-        user = db.get(User, person["email"]) or User(email=person["email"])
-        user.name = person["name"]
-        user.role = person.get("role", "specialist")
-        user.teams = person.get("teams", [])
-        user.capacity = person.get("capacity", settings.default_capacity)
-        db.add(user)
+        user = existing.get(person["email"]) or User(email=person["email"])
+        values = {"name": person["name"], "role": person.get("role", "specialist"), "teams": person.get("teams", []),
+                  "capacity": person.get("capacity", settings.default_capacity)}
+        if user not in existing.values() or any(getattr(user, k) != v for k, v in values.items()):
+            for k, v in values.items():
+                setattr(user, k, v)
+            db.add(user)
     db.commit()
     return len(people)

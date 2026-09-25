@@ -1,0 +1,24 @@
+# Render blueprint for the backend (New → Blueprint, or copy these settings into a Web Service).
+# Secrets are marked sync: false: Render asks for them once and never reads them from git.
+services:
+  - type: web
+    name: triage-copilot-api
+    runtime: docker
+    # Both paths are relative to the repo root. The build CONTEXT must be ./backend too:
+    # the Dockerfile copies requirements.txt and the app from there.
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    buildFilter:              # only redeploy when the backend changes
+      paths: ["backend/**"]
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL          # the Supabase pooler URL (same as in your local .env)
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LLM_MODEL_CHOICES
+        value: gpt-5.4-mini,gpt-5.5,gpt-6-sol,gpt-4.1-mini
+      - key: CORS_ORIGINS          # your Vercel URL, e.g. https://triage-copilot.vercel.app
+        sync: false
+      - key: CORS_ORIGIN_REGEX     # optional: allow every Vercel preview deployment
+        value: https://.*\.vercel\.app

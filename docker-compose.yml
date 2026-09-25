@@ -20,6 +20,12 @@ services:
       db:
         condition: service_healthy
         required: false
+    healthcheck:  # healthy once migrations and the knowledge-base sync are done and the API answers
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)"]
+      interval: 3s
+      timeout: 5s
+      retries: 60
+      start_period: 90s
 
   frontend:
     build: ./frontend
@@ -32,7 +38,8 @@ services:
       - /app/node_modules
       - ./contracts:/contracts
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy  # start once the API answers, so the first page load never hits a dead backend
 
   db:
     image: pgvector/pgvector:pg16

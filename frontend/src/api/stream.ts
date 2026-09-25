@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { components } from './schema'
+import { API_BASE } from './client'
 
 export type TriageEvent = components['schemas']['TriageStreamEvent']
 
@@ -32,7 +33,7 @@ export function useTriageStream(ticketId: string) {
       setRunning(true)
       try {
         const query = model ? `?model=${encodeURIComponent(model)}` : ''
-        const res = await fetch(`${import.meta.env.VITE_API_URL ?? ''}/api/tickets/${ticketId}/triage/stream${query}`, {
+        const res = await fetch(`${API_BASE}/api/tickets/${ticketId}/triage/stream${query}`, {
           signal: controller.signal,
         })
         if (!res.ok || !res.body) throw new Error(await errorText(res))

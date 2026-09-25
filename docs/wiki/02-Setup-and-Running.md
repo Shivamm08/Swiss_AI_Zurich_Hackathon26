@@ -88,13 +88,60 @@ Supabase details:
   shared schema for everyone. Read [Data and database → Migrations](08-Data-and-Database.md#migrations) first.
 - Run `make import-challenge` **once for the whole team**. Running it again duplicates the tickets.
 
+## Deploying (Vercel + Render)
+
+The frontend is a static site (Vercel); the backend is a Docker web service (Render) that talks to
+the shared Supabase. The browser calls the backend directly, so the live walkthrough and the Copilot
+stream without a proxy in between.
+
+**1. Backend on Render.** Only the backend goes on Render. New → Blueprint with `render.yaml`
+(repo root), or a Web Service with **Root Directory `backend`**, runtime Docker, Dockerfile path
+`./Dockerfile`, health check `/api/health`. Environment variables are below.
+
+| Render build log says | Cause | Fix (Settings → Build & Deploy) |
+|---|---|---|
+| `node:22-alpine` … `"/package-lock.json": not found` | It's building the **frontend** Dockerfile | Dockerfile Path `./backend/Dockerfile` |
+| `"/requirements.txt": not found` | Right Dockerfile, but the build **context** is the repo root | Docker Build Context Directory `./backend` (or Root Directory `backend` with Dockerfile Path `./Dockerfile`) |
+
+Environment variables:
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | The Supabase URL from your local `.env` |
+| `OPENAI_API_KEY` | Your key (never in git) |
+| `LLM_MODEL_CHOICES` | `gpt-5.4-mini,gpt-5.5,gpt-6-sol,gpt-4.1-mini` |
+| `CORS_ORIGINS` | Your Vercel URL, e.g. `https://triage-copilot.vercel.app` |
+| `CORS_ORIGIN_REGEX` | Optional: `https://.*\.vercel\.app` to allow preview deployments |
+
+The container listens on Render's `$PORT`, runs migrations and the knowledge-base sync on start
+(about 25 s), then answers `/api/health`. Note the service URL, e.g.
+`https://triage-copilot-api.onrender.com`.
+
+**2. Frontend on Vercel.** Import the repo with **root directory `frontend`** (framework Vite;
+`frontend/vercel.json` sets the build and sends every path to `index.html`, so reloading
+`/tickets/123` works). Tell it where the backend is, either way:
+
+set **`VITE_API_URL`** in Vercel → Settings → Environment Variables to the **Render** URL (not the
+Vercel one), e.g. `https://triage-copilot-api.onrender.com`, then redeploy. `frontend/.env*` files are
+git-ignored, so Vercel never sees a local `frontend/.env.production`; it's only for local production
+builds. The value is read at **build** time (change it → redeploy) and is public, so nothing secret
+belongs in the frontend. A trailing slash is tolerated.
+
+**3. Check.** Open the Vercel URL: the top bar should say *All systems go*. If it says *Connecting
+to the backend…*, open the browser console: a CORS error means the Vercel URL is missing from
+`CORS_ORIGINS`; a 404 on `/api/...` at the Vercel domain means `VITE_API_URL` is empty.
+
+Render's free plan sleeps after inactivity; the first request then takes about a minute while the
+backend wakes up. The frontend keeps retrying and loads everything once it answers.
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
 | `service "backend" is not running` on `make import-challenge` | The app isn't started | Run `make up-local` first and wait for `Application startup complete` |
-| Backend exits with `Can't locate revision identified by '000X'` | The database has one of *our* migrations your code doesn't have yet | Pull the latest `triage-copilot`; see [Migrations](08-Data-and-Database.md#migrations) |
+| Backend exits with `Can't locate revision identified by '000X'` | The database has one of *our* migrations your code doesn't have yet | Pull the latest `main`; see [Migrations](08-Data-and-Database.md#migrations) |
 | Frontend shows `Failed to resolve import "lucide-react"` (or another package) | Old `node_modules` in the container after a dependency change | `make down` then `make up` / `make up-local` (they refresh dependencies). With plain docker: `docker compose up --build --renew-anon-volumes` |
+| Top bar says **Connecting to the backend…** right after starting | The backend is still applying migrations and syncing the knowledge base (about 20 s against Supabase) | Nothing: the frontend starts once the backend is healthy (compose healthcheck), polls every 3 s while disconnected, and reloads all data the moment it's back. Your `.env` is git-ignored, so pulling never changes it |
 | Top bar says **Heuristic mode** | No model configured | Set `OPENAI_API_KEY` in `.env`, then `make down && make up-local` |
 | `Bind for 0.0.0.0:5173 failed: port is already allocated` | Another app uses the port | Stop it, or stop an older copy of this stack (`docker ps`) |
 | Model picker lists 50+ models | `LLM_MODEL_CHOICES` missing in your `.env` | Add the line and restart |

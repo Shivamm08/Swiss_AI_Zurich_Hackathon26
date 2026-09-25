@@ -3,8 +3,10 @@ import type { paths } from './schema'
 
 // Typed against the backend contract (schema.d.ts is generated from
 // contracts/openapi.json). A wrong path, param or body is a compile error.
-// Empty baseUrl = same origin (/api is proxied by Vite in dev).
-export const api = createClient<paths>({ baseUrl: import.meta.env.VITE_API_URL ?? '' })
+// Empty = same origin (/api is proxied by Vite in dev). Deployed: the backend URL from VITE_API_URL,
+// with any trailing slash removed so paths never become "//api".
+export const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')
+export const api = createClient<paths>({ baseUrl: API_BASE })
 
 export class ApiError extends Error {
   readonly status: number

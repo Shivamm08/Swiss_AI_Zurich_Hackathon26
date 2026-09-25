@@ -11,6 +11,8 @@ import {
   UsersRound,
   type LucideIcon,
 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useChannels, useHealth, useTickets } from '../api/hooks'
 import type { Role } from '../api/types'
@@ -51,8 +53,18 @@ const NAV: { section: string; items: NavItem[] }[] = [
 
 function HealthDot() {
   const { data, isError } = useHealth()
+  const qc = useQueryClient()
+  const wasDown = useRef(false)
+  // When the backend comes back (it starts after the frontend), reload everything that failed meanwhile.
+  useEffect(() => {
+    if (isError) wasDown.current = true
+    else if (data && wasDown.current) {
+      wasDown.current = false
+      qc.invalidateQueries()
+    }
+  }, [isError, data, qc])
   const ok = !isError && data?.database && data.llm_configured
-  const label = isError ? 'Backend unreachable' : !data ? '…' : !data.database ? 'Database down' : data.llm_configured ? 'All systems go' : 'Heuristic mode'
+  const label = isError ? 'Connecting to the backend…' : !data ? '…' : !data.database ? 'Database down' : data.llm_configured ? 'All systems go' : 'Heuristic mode'
   return (
     <span className="inline-flex items-center gap-1.5 text-xs text-muted">
       <span className={`h-2 w-2 rounded-full ${ok ? 'bg-emerald-500 shadow-[0_0_0_3px_rgb(16_185_129/0.15)]' : 'bg-amber-500'}`} />

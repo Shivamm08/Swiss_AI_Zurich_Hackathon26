@@ -2,6 +2,7 @@
 // ("sources" first, then "token" chunks, then "done").
 import { useCallback, useRef, useState } from 'react'
 import type { CopilotEvent, Evidence } from './types'
+import { API_BASE } from './client'
 
 export interface ChatMessage {
   id: string
@@ -40,7 +41,7 @@ export function useCopilotChat() {
     commit([...current.current, user, answer])
     setBusy(true)
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL ?? ''}/api/assistant/stream`, {
+      const res = await fetch(`${API_BASE}/api/assistant/stream`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ messages: history, ticket_id: opts.ticketId ?? null, model: opts.model ?? null }),
