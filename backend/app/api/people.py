@@ -8,7 +8,7 @@ from app.config import settings
 from app.db import get_db
 from app.domain import TEAMS
 from app.models import Review, Ticket, User
-from app.pipeline.assignment import ACTIVE_STATES, open_counts, team_members
+from app.pipeline.assignment import open_clause, open_counts, team_members
 from app.schemas import TicketOut, UserOut, Workload, WorkloadMember
 
 router = APIRouter(tags=["people"])
@@ -26,7 +26,7 @@ def get_workload(team: str = Query(..., description="Team name, e.g. 'Client Ser
         raise HTTPException(status_code=404, detail=f"Unknown team '{team}'")
     members = team_members(db, team)
     counts = open_counts(db)
-    active = db.scalars(select(Ticket).where(Ticket.ai_team == team, Ticket.triage_state.in_(ACTIVE_STATES))).all()
+    active = db.scalars(select(Ticket).where(Ticket.ai_team == team, open_clause())).all()
     team_open = sum(counts[m.email] for m in members)
     week_ago = datetime.now(timezone.utc) - timedelta(days=7)
     approved = db.execute(

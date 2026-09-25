@@ -9,6 +9,7 @@ from app.db import get_db
 from app.domain import priority_for
 from app.ingest import jira_records, ticket_from_email, ticket_from_jira
 from app.models import Ticket, User
+from app.pipeline.assignment import open_clause
 from app.schemas import (
     AssignRequest,
     EmailIngest,
@@ -57,7 +58,7 @@ def list_tickets(
     elif view == "needs_review":
         stmt = stmt.where(Ticket.route == "triage", Ticket.triage_state.in_(("proposed", "rejected")))
     elif view == "escalations":
-        stmt = stmt.where(Ticket.escalated.is_(True), Ticket.triage_state.in_(("proposed", "approved", "edited")))
+        stmt = stmt.where(Ticket.escalated.is_(True), open_clause())
     if service:
         stmt = stmt.where(Ticket.ai_service == service)
     if team:

@@ -1,4 +1,4 @@
-.PHONY: help up up-local down logs contract test migration migrate import-challenge build-playbook
+.PHONY: help up up-local down logs contract test migration migrate import-challenge build-playbook seed-demo clear-demo
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*## ' Makefile | sed 's/:.*## /\t/'
@@ -35,3 +35,9 @@ import-challenge: ## Load the 20 challenge tickets into the DB
 build-playbook: ## Rebuild the playbook from training data and reload the KB
 	docker compose exec backend python -m app.scripts.build_playbook /data/jira_first_20000_requested_fields_synthetic.json
 	docker compose exec backend python -m app.scripts.sync_kb
+
+seed-demo: ## (Re)create 4 weeks of SIMULATED desk history for demos (tickets, reviews, chat)
+	docker compose exec backend python -m app.scripts.seed_demo
+
+clear-demo: ## Remove the simulated demo history (real tickets are untouched)
+	docker compose exec backend python -m app.scripts.seed_demo --clear

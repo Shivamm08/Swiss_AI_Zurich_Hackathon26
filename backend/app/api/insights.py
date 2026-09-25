@@ -1,14 +1,17 @@
-from collections import Counter
-from datetime import datetime, timezone
+from collections import Counter, defaultdict
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.db import get_db
-from app.models import Review, Ticket, TriageResult
-from app.schemas import Calibration, CalibrationBucket, Metrics, TicketSource
+from app.domain import normalize_level
+from app.models import KbDocument, Review, Ticket, TriageResult, User
+from app.pipeline.assignment import is_open
+from app.schemas import Calibration, CalibrationBucket, DailyPoint, Impact, Metrics, TicketSource
 
 router = APIRouter(tags=["insights"])
 
@@ -26,7 +29,7 @@ def get_metrics(db: Session = Depends(get_db)) -> Metrics:
     times = [r.review_seconds for r in reviews if r.review_seconds is not None]
     overrides = Counter(f for r in reviews for f in r.overridden_fields)
     tickets = db.scalars(select(Ticket)).all()
-    active = [t for t in tickets if t.triage_state in ("proposed", "approved", "edited")]
+    active = [t for t in tickets if is_open(t)]
     now = datetime.now(timezone.utc)
 
     return Metrics(
@@ -96,3 +99,83 @@ def export_submission(source: TicketSource = "challenge", db: Session = Depends(
             })
         records.append(record)
     return records
+
+
+@router.get("/metrics/impact", response_model=Impact)
+def get_impact(
+    include_demo: bool = True,
+    days: int = 28,
+    db: Session = Depends(get_db),
+) -> Impact:
+    """Business view: the service-desk pain points and how much of each the system handled."""
+    tickets = [t for t in db.scalars(select(Ticket)) if include_demo or t.source != "demo"]
+    ids = {t.id for t in tickets}
+    results = [r for r in db.scalars(select(TriageResult).order_by(TriageResult.created_at)) if r.ticket_id in ids]
+    latest = {r.ticket_id: r for r in results}  # ordered by time, so the last one wins
+    reviews = [r for r in db.scalars(select(Review)) if r.ticket_id in ids]
+    by_id = {t.id: t for t in tickets}
+
+    def misrouted(r: TriageResult) -> bool:
+        intake = by_id[r.ticket_id].affected_service
+        return bool(intake) and intake != r.service
+
+    routed = [r.route for r in latest.values() if r.route]
+    actions = Counter(r.action for r in reviews)
+    review_secs = [r.review_seconds for r in reviews if r.review_seconds is not None]
+    triage_secs = [r.latency_ms / 1000 for r in latest.values()]
+    minutes_saved = max(0.0, len(latest) * settings.manual_triage_minutes - sum(review_secs) / 60)
+
+    # Workload balance: open tickets per person against their capacity.
+    capacity = {u.email: u.capacity or settings.default_capacity for u in db.scalars(select(User)) if u.role != "admin"}
+    open_per = Counter(t.assignee for t in tickets if t.assignee and is_open(t))
+    loads = [open_per[p] / c for p, c in capacity.items() if c]
+
+    start = (datetime.now(timezone.utc) - timedelta(days=days - 1)).date()
+    buckets: dict[str, dict] = {
+        (start + timedelta(days=i)).isoformat(): defaultdict(int) | {"review_secs": []} for i in range(days)
+    }
+    for t in tickets:
+        if (d := t.created_at.date().isoformat()) in buckets:
+            buckets[d]["created"] += 1
+    for r in results:
+        if (d := r.created_at.date().isoformat()) in buckets:
+            b = buckets[d]
+            b["triaged"] += 1
+            b[r.route or "review"] += 1
+            b["misroutes"] += misrouted(r)
+    for rv in reviews:
+        if (d := rv.created_at.date().isoformat()) in buckets:
+            b = buckets[d]
+            b[{"approve": "approved", "edit": "edited", "reject": "rejected"}[rv.action]] += 1
+            if rv.review_seconds is not None:
+                b["review_secs"].append(rv.review_seconds)
+    points = []
+    for day, b in buckets.items():
+        reviewed = b["approved"] + b["edited"] + b["rejected"]
+        points.append(DailyPoint(
+            day=day, created=b["created"], triaged=b["triaged"], approved=b["approved"], edited=b["edited"],
+            rejected=b["rejected"], auto=b["auto"], review=b["review"], triage=b["triage"], misroutes=b["misroutes"],
+            avg_review_seconds=round(sum(b["review_secs"]) / len(b["review_secs"]), 1) if b["review_secs"] else None,
+            acceptance_rate=round(b["approved"] / reviewed, 3) if reviewed else None,
+        ))
+
+    return Impact(
+        include_demo=include_demo,
+        tickets=len(tickets),
+        tickets_triaged=len(latest),
+        misroutes_caught=sum(1 for r in latest.values() if misrouted(r)),
+        priority_corrected=sum(1 for r in latest.values()
+                               if (p := normalize_level(by_id[r.ticket_id].priority)) and p != r.priority),
+        clarifications_requested=sum(1 for r in latest.values() if r.resolution == "clarification"),
+        escalations=sum(1 for t in tickets if t.escalated),
+        auto_routed_share=round(routed.count("auto") / len(routed), 3) if routed else None,
+        acceptance_rate=round(actions["approve"] / len(reviews), 3) if reviews else None,
+        avg_triage_seconds=round(sum(triage_secs) / len(triage_secs), 1) if triage_secs else None,
+        avg_review_seconds=round(sum(review_secs) / len(review_secs), 1) if review_secs else None,
+        minutes_saved=round(minutes_saved),
+        manual_triage_minutes=settings.manual_triage_minutes,
+        max_load=round(max(loads), 3) if loads else None,
+        over_capacity=sum(1 for load in loads if load >= 1),
+        learned_documents=db.scalar(select(func.count()).select_from(KbDocument).where(KbDocument.kind == "historical_ticket")) or 0,
+        days=points,
+    )

@@ -50,6 +50,8 @@ class Settings(BaseSettings):
     triage_threshold: float = 0.50     # below this -> Service Desk triage queue
     default_capacity: int = 8          # open tickets per analyst
     max_share: float = 0.30            # nobody holds more than this share of a team's open tickets
+    # Assumption for the Impact dashboard: minutes an analyst spends triaging a ticket by hand.
+    manual_triage_minutes: float = 8.0
 
     kb_dir: Path = Path(__file__).parent / "kb"
 

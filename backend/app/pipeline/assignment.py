@@ -9,7 +9,7 @@ Two assignees are kept apart on purpose:
 
 from collections import Counter
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -17,12 +17,23 @@ from app.models import Review, Ticket, User
 from app.schemas import AssigneeCandidate, AssigneeSuggestion
 
 ACTIVE_STATES = ("proposed", "approved", "edited")
+
+
+def open_clause():
+    """SQL condition for 'still being worked on': triaged or approved, and not closed (status done)."""
+    return Ticket.triage_state.in_(ACTIVE_STATES) & or_(Ticket.status.is_(None), Ticket.status != "done")
+
+
+def is_open(ticket: Ticket) -> bool:
+    return ticket.triage_state in ACTIVE_STATES and ticket.status != "done"
+
+
 W_EXPERTISE, W_AVAILABILITY = 0.6, 0.4
 EXPERTISE_SATURATION = 5  # approved tickets on a service for full learned expertise
 
 
 def open_counts(db: Session, exclude_ticket=None) -> Counter:
-    stmt = select(Ticket.assignee).where(Ticket.assignee.is_not(None), Ticket.triage_state.in_(ACTIVE_STATES))
+    stmt = select(Ticket.assignee).where(Ticket.assignee.is_not(None), open_clause())
     if exclude_ticket is not None:
         stmt = stmt.where(Ticket.id != exclude_ticket)
     return Counter(db.scalars(stmt))
@@ -63,7 +74,9 @@ def suggest(db: Session, team: str, service: str, expert: str | None, ticket_id=
     candidates.sort(key=lambda c: c.score, reverse=True)
 
     def blocked(c: AssigneeCandidate) -> bool:
-        over_share = team_open >= 3 and c.open / max(team_open, 1) >= settings.max_share
+        # The share rule only applies once the team has real volume (2+ open tickets per member);
+        # below that, small teams would be blocked from their natural fair share.
+        over_share = team_open >= 2 * len(members) and c.open / max(team_open, 1) >= settings.max_share
         return c.open >= c.capacity or over_share
 
     eligible = [c for c in candidates if not blocked(c)] or candidates
