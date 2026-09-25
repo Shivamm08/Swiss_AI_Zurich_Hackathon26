@@ -19,9 +19,9 @@ from app import chat
 from app.config import settings
 from app.domain import normalize_level, priority_for
 from app.ingest import ticket_text
-from app.models import KbDocument, Ticket, TriageResult
+from app.models import KbDocument, Ticket, TriageResult, User
 from app.pipeline import assignment, classify, confidence, draft, llm, retrieve, rubric, rules
-from app.schemas import Evidence, TriageStreamEvent
+from app.schemas import Evidence, StaffCheck, TriageStreamEvent
 
 GENERIC_SERVICE = "Emailed Support Tickets"
 
@@ -95,12 +95,14 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
                 "Heuristic fallback: " + (cls.fallback_reason or "") if cls.heuristic
                 else f"Votes agree {round(cls.votes_score * 100)}%: {ex.work_type} on {ex.service}",
                 {"extraction": ex.model_dump(), "vote_agreement": cls.vote_agreement, "votes_score": cls.votes_score,
-                 "heuristic": cls.heuristic, "manual": sorted(k for k in manual if k in classify.MANUAL_EXTRACTION_FIELDS)})
+                 "heuristic": cls.heuristic, "manual": sorted(k for k in manual if k in classify.MANUAL_EXTRACTION_FIELDS),
+                 "staff_checks": cls.staff_checks})
     reference = _reference_doc(db, ex.playbook_ref, evidence, ex.service)
 
     # 4. rubric -> impact, urgency, priority, 0..1 score (staff-set urgency/impact win)
     opened_at = ticket.source_created_at or ticket.created_at or now
     rub = rubric.apply_rubric(ex.facts(), ex.service, ex.work_type, age_days=(now - opened_at).total_seconds() / 86400)
+    staff_checks = list(cls.staff_checks)
     urgency, impact = manual.get("urgency", rub.urgency), manual.get("impact", rub.impact)
     priority, score, trace = rub.priority, rub.priority_score, list(rub.trace)
     staff_set = [k for k in ("impact", "urgency") if k in manual]
@@ -110,6 +112,11 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
         replaced = ("Priority", *(k.capitalize() for k in staff_set))
         trace = [line for line in trace if not line.startswith(replaced)]
         trace += [f"{k.capitalize()} {manual[k]}: set by staff" for k in staff_set]
+        for k in staff_set:  # the rules' own answer is the check on the staff value
+            ruled = getattr(rub, k)
+            if manual[k] != ruled:
+                why = next((line for line in rub.trace if line.startswith(k.capitalize())), f"{k.capitalize()} {ruled}")
+                staff_checks.append({"field": k, "staff": manual[k], "checked": ruled, "by": "rules", "note": why})
         trace.append(f"Priority {priority} = matrix[urgency {urgency}][impact {impact}]")
     yield event("rubric", "completed", f"Impact {impact} · Urgency {urgency} → Priority {priority}",
                 {"facts": ex.facts().model_dump(), "impact": impact, "urgency": urgency, "priority": priority,
@@ -118,12 +125,20 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
     # 6-7. confidence, route, escalation, SLA
     candidates = [reference.ref_id] if reference else [e.ref_id for e in evidence if e.kind != "service_card"][:1]
     similarity = retrieve.cosine_similarity(db, query_vector, candidates).get(candidates[0]) if candidates else None
+    team = rules.team(ex.service)
+    if manual.get("assignee"):  # the roster is the check on a staff-chosen specialist
+        person = db.get(User, manual["assignee"])
+        if person is None or person.role != "specialist" or team not in (person.teams or []):
+            staff_checks.append({"field": "assignee", "staff": manual["assignee"], "checked": f"a {team} specialist",
+                                 "by": "rules", "note": f"{team} owns {ex.service}; this person isn't one of its specialists"})
+    flags = _flags(ticket, ex.service) + (["staff_disagreement"] if staff_checks else [])
     conf = confidence.score(
         cls.votes_score,
         confidence.retrieval_score(similarity, matched=reference is not None),
-        _flags(ticket, ex.service),
+        flags,
         cls.heuristic,
     )
+    conf.staff_checks = [StaffCheck(**c) for c in staff_checks]
     route = confidence.route_for(conf.overall)
     escalated = priority == "Highest" and rub.critical
     sla_due_at = confidence.sla_due(ticket.created_at or now, priority)
@@ -132,7 +147,6 @@ def triage_events(db: Session, ticket: Ticket, model: str | None = None, sink: l
 
     # assignment: expert for the export, a suggested specialist for the analyst (staff choice wins).
     # The AI never dispatches: an analyst approves every ticket before a specialist gets it.
-    team = rules.team(ex.service)
     expert = rules.assignee(ex.service, reference)
     suggestion = assignment.suggest(db, team, ex.service, expert, ticket_id=ticket.id)
     if manual.get("assignee"):

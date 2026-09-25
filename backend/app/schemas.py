@@ -233,11 +233,23 @@ class Decision(BaseModel):
     resolution_comment: str
 
 
+class StaffCheck(BaseModel):
+    """A value staff set that the independent check disagrees with. Staff's value is kept; the
+    analyst sees the disagreement before dispatching."""
+
+    field: str
+    staff: str = Field(description="What staff entered (kept)")
+    checked: str = Field(description="What the independent check found")
+    by: Literal["ai", "rules"] = Field(description="ai: the blind AI reading (votes); rules: the rubric / roster")
+    note: str
+
+
 class ConfidenceOut(BaseModel):
     overall: float = Field(ge=0, le=1, description="min(votes, retrieval) x flag multipliers")
     votes: float = Field(description="How consistently the model answered across votes")
     retrieval: float = Field(description="How closely the matched past solution fits")
-    flags: list[str] = Field(description="Reasons for caution, e.g. generic_service, unclear_input")
+    flags: list[str] = Field(description="Reasons for caution, e.g. generic_service, unclear_input, staff_disagreement")
+    staff_checks: list[StaffCheck] = Field(default=[], description="Staff-set values the AI reading or the rules disagree with")
 
 
 class AssigneeCandidate(BaseModel):

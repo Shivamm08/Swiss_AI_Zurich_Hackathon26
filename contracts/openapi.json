@@ -2180,7 +2180,16 @@
             },
             "type": "array",
             "title": "Flags",
-            "description": "Reasons for caution, e.g. generic_service, unclear_input"
+            "description": "Reasons for caution, e.g. generic_service, unclear_input, staff_disagreement"
+          },
+          "staff_checks": {
+            "items": {
+              "$ref": "#/components/schemas/StaffCheck"
+            },
+            "type": "array",
+            "title": "Staff Checks",
+            "description": "Staff-set values the AI reading or the rules disagree with",
+            "default": []
           }
         },
         "type": "object",
@@ -4366,6 +4375,47 @@
           "default_capacity"
         ],
         "title": "SettingsOut"
+      },
+      "StaffCheck": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "staff": {
+            "type": "string",
+            "title": "Staff",
+            "description": "What staff entered (kept)"
+          },
+          "checked": {
+            "type": "string",
+            "title": "Checked",
+            "description": "What the independent check found"
+          },
+          "by": {
+            "type": "string",
+            "enum": [
+              "ai",
+              "rules"
+            ],
+            "title": "By",
+            "description": "ai: the blind AI reading (votes); rules: the rubric / roster"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "staff",
+          "checked",
+          "by",
+          "note"
+        ],
+        "title": "StaffCheck",
+        "description": "A value staff set that the independent check disagrees with. Staff's value is kept; the\nanalyst sees the disagreement before dispatching."
       },
       "TicketCreate": {
         "properties": {

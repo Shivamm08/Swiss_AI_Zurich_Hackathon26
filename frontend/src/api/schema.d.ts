@@ -806,9 +806,15 @@ export interface components {
             retrieval: number;
             /**
              * Flags
-             * @description Reasons for caution, e.g. generic_service, unclear_input
+             * @description Reasons for caution, e.g. generic_service, unclear_input, staff_disagreement
              */
             flags: string[];
+            /**
+             * Staff Checks
+             * @description Staff-set values the AI reading or the rules disagree with
+             * @default []
+             */
+            staff_checks: components["schemas"]["StaffCheck"][];
         };
         /**
          * CopilotEvent
@@ -1549,6 +1555,33 @@ export interface components {
             max_share: number;
             /** Default Capacity */
             default_capacity: number;
+        };
+        /**
+         * StaffCheck
+         * @description A value staff set that the independent check disagrees with. Staff's value is kept; the
+         *     analyst sees the disagreement before dispatching.
+         */
+        StaffCheck: {
+            /** Field */
+            field: string;
+            /**
+             * Staff
+             * @description What staff entered (kept)
+             */
+            staff: string;
+            /**
+             * Checked
+             * @description What the independent check found
+             */
+            checked: string;
+            /**
+             * By
+             * @description ai: the blind AI reading (votes); rules: the rubric / roster
+             * @enum {string}
+             */
+            by: "ai" | "rules";
+            /** Note */
+            note: string;
         };
         /**
          * TicketCreate

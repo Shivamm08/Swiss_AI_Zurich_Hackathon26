@@ -209,6 +209,8 @@ def notify_done(db: Session, ticket: Ticket) -> None:
     """Tell the department's Team Lead / Analyst that the work is finished: a direct message from the
     specialist with the resolution and closing note, linked to the ticket."""
     analysts = [u for u in db.scalars(select(User).where(User.role == "analyst")) if ticket.ai_team in (u.teams or [])]
+    # A department without a Team Lead / Analyst falls back to the admin, who covers every department.
+    analysts = analysts or list(db.scalars(select(User).where(User.role == "admin")))
     for analyst in analysts:
         if analyst.email != ticket.resolved_by:
             chat.post(db, chat.dm_channel(ticket.resolved_by, analyst.email), ticket.resolved_by,

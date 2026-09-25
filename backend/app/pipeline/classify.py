@@ -71,6 +71,7 @@ class Classification:
     votes_score: float = 0.0
     heuristic: bool = False
     fallback_reason: str | None = None
+    staff_checks: list[dict] = field(default_factory=list)  # staff values the blind AI reading disagrees with
 
 
 def _catalogue() -> str:
@@ -131,25 +132,29 @@ Service catalogue:
 """
 
 
-# Fields staff can confirm when creating a ticket; the AI must keep them.
+# Fields staff can set when creating a ticket that the AI would otherwise read. Staff values are kept,
+# but the AI still reads the ticket WITHOUT seeing them, so its reading is an independent check.
 MANUAL_EXTRACTION_FIELDS = ("work_type", "service", "resolution")
 
 
 def _prompt(ticket: Ticket, evidence: list[Evidence]) -> str:
     refs = "\n\n".join(f"[{e.ref_id}] ({e.kind}) {e.title}\n{e.snippet}" for e in evidence)
-    confirmed = {k: v for k, v in ticket.manual.items() if k in MANUAL_EXTRACTION_FIELDS}
-    staff = (
-        "\n\nCONFIRMED BY STAFF (keep these values exactly):\n" + "\n".join(f"- {k}: {v}" for k, v in confirmed.items())
-        if confirmed else ""
-    )
-    return f"TICKET\n{ticket_text(ticket)}{staff}\n\nRETRIEVED KNOWLEDGE\n{refs or '(none)'}"
+    return f"TICKET\n{ticket_text(ticket)}\n\nRETRIEVED KNOWLEDGE\n{refs or '(none)'}"
 
 
 def _apply_manual(ticket: Ticket, cls: Classification) -> Classification:
-    """Staff-confirmed values win over the model and count as certain in the vote score."""
+    """Staff-set values win over the model and count as certain in the vote score. Where the blind
+    AI reading disagrees, the disagreement is recorded as a staff check for the analyst."""
     confirmed = {k: v for k, v in ticket.manual.items() if k in MANUAL_EXTRACTION_FIELDS}
     if not confirmed:
         return cls
+    if not cls.heuristic:
+        for name, staff in confirmed.items():
+            read = getattr(cls.extraction, name)
+            if read != staff:
+                share = cls.vote_agreement.get(name, 0)
+                cls.staff_checks.append({"field": name, "staff": staff, "checked": read, "by": "ai",
+                                         "note": f"{round(share * 100)}% of the AI's votes read {read}"})
     cls.extraction = cls.extraction.model_copy(update=confirmed)
     if not cls.heuristic:
         cls.vote_agreement.update({k: 1.0 for k in confirmed})

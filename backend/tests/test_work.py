@@ -56,3 +56,17 @@ def test_escalation_rights():
     assert not can_escalate(SPECIALIST, ticket(assignee="someone@x.com"))
     assert can_escalate(ANALYST, ticket()) and can_escalate(ADMIN, ticket())
     assert not can_escalate(OTHER_ANALYST, ticket())
+
+
+def test_roster_has_exactly_one_team_lead_per_department():
+    import yaml
+
+    from app.config import settings
+    from app.domain import TEAMS
+
+    roster = yaml.safe_load((settings.kb_dir / "roster.yaml").read_text())
+    for team in TEAMS:
+        leads = [p["email"] for p in roster if p["role"] == "analyst" and team in p["teams"]]
+        specialists = [p["email"] for p in roster if p["role"] == "specialist" and team in p["teams"]]
+        assert len(leads) == 1, f"{team} needs exactly one Team Lead / Analyst, has {leads}"
+        assert specialists, f"{team} has no specialists to dispatch to"
