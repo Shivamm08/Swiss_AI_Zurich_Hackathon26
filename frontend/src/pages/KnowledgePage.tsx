@@ -7,7 +7,7 @@ const KINDS: { value: EvidenceKind | undefined; label: string }[] = [
   { value: undefined, label: 'All' },
   { value: 'service_card', label: 'Service cards' },
   { value: 'playbook', label: 'Playbook' },
-  { value: 'historical_ticket', label: 'Historical tickets' },
+  { value: 'historical_ticket', label: 'Learned (approved tickets)' },
 ]
 
 export default function KnowledgePage() {

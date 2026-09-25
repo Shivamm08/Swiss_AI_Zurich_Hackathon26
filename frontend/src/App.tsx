@@ -1,22 +1,30 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import AssistantPage from './pages/AssistantPage'
 import DashboardPage from './pages/DashboardPage'
 import ImportPage from './pages/ImportPage'
 import KnowledgePage from './pages/KnowledgePage'
+import NewTicketPage from './pages/NewTicketPage'
+import QueuePage from './pages/QueuePage'
+import SettingsPage from './pages/SettingsPage'
+import TeamPage from './pages/TeamPage'
 import TicketPage from './pages/TicketPage'
-import TicketsPage from './pages/TicketsPage'
 
 export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="tickets" element={<TicketsPage />} />
+        <Route index element={<QueuePage />} />
+        <Route path="tickets" element={<Navigate to="/" replace />} />
         <Route path="tickets/:ticketId" element={<TicketPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="team" element={<TeamPage />} />
+        <Route path="new" element={<NewTicketPage />} />
         <Route path="knowledge" element={<KnowledgePage />} />
         <Route path="assistant" element={<AssistantPage />} />
-        <Route path="import" element={<ImportPage />} />
+        <Route path="intake" element={<ImportPage />} />
+        <Route path="import" element={<Navigate to="/intake" replace />} />
+        <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<p>Page not found.</p>} />
       </Route>
     </Routes>
