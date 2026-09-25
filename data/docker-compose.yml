@@ -5,5 +5,13 @@ services:
       dockerfile: Dockerfile
     container_name: swiss-ai-backend
     restart: unless-stopped
+    environment:
+      OUTPUT_FILE: /output/jira_first_20000_priority_mod.csv
+      HF_HOME: /root/.cache/huggingface
     volumes:
       - .:/app
+      - ./output:/output
+      - huggingface_cache:/root/.cache/huggingface
+
+volumes:
+  huggingface_cache:

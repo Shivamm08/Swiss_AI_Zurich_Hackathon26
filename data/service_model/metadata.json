@@ -1,0 +1,39 @@
+{
+  "embedding_model": "ProsusAI/finbert",
+  "embedded_columns": [
+    "Summary",
+    "Description",
+    "Service Team(s)"
+  ],
+  "target_column": "Affected Business or IT Services",
+  "approved_services": [
+    "Trading Platform",
+    "Order Management",
+    "Trade Matching",
+    "Securities Settlement",
+    "Corporate Actions",
+    "Fund Pricing",
+    "NAV Calculation",
+    "Portfolio Accounting",
+    "Cash Management",
+    "Risk & Compliance Monitoring",
+    "Regulatory Reporting",
+    "SimCorp Dimension",
+    "Rimes Data Feed",
+    "Client Reporting",
+    "Tax Reporting",
+    "CRM & Client Portal",
+    "Identity & Access Management",
+    "SharePoint & File Storage",
+    "Outlook & Email",
+    "Emailed Support Tickets"
+  ],
+  "weights": {
+    "Summary": 0.4,
+    "Description": 0.4,
+    "Service Team(s)": 0.2
+  },
+  "similarity": "cosine",
+  "rows": 20000,
+  "accuracy_against_existing_labels": 0.62835
+}
